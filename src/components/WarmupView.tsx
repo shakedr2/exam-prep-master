@@ -45,7 +45,7 @@ export function WarmupView({ warmupQuestions, onComplete }: WarmupViewProps) {
           initial={{ opacity: 0, x: -15 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 15 }}
-          className="rounded-2xl border border-primary/30 bg-primary/5 p-5 space-y-4"
+          className="rounded-2xl border border-primary/30 bg-card p-5 space-y-4"
         >
           <div className="flex items-center gap-2 mb-2">
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
@@ -67,7 +67,7 @@ export function WarmupView({ warmupQuestions, onComplete }: WarmupViewProps) {
                 }}
                 className={`w-full rounded-xl border p-3 text-right transition-all ${
                   !answered
-                    ? "border-primary/20 bg-primary/5 hover:border-primary/40 text-foreground"
+                    ? "border-primary/20 bg-secondary hover:border-primary/40 text-foreground"
                     : i === wq.correctIndex
                     ? "border-success bg-success/10 text-success"
                     : i === selected
