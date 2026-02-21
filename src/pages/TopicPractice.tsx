@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { topics, getQuestionsByTopic, type Question, type QuizQuestion, type TracingQuestion, type CodingQuestion } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
+import { AiTutor } from "@/components/AiTutor";
 
 function CodeBlock({ code }: { code: string }) {
   return (
@@ -255,6 +256,13 @@ const TopicPractice = () => {
           <ChevronLeft className="h-4 w-4" />
         </Button>
       </div>
+
+      <AiTutor
+        questionContext={`סוג: ${q.type}, נושא: ${topic.name}, קושי: ${q.difficulty}\n${
+          q.type === "coding" ? `כותרת: ${(q as any).title}\nתיאור: ${(q as any).description}` :
+          `שאלה: ${(q as any).question}\n${(q as any).code ? `קוד:\n${(q as any).code}` : ""}`
+        }`}
+      />
     </div>
   );
 };

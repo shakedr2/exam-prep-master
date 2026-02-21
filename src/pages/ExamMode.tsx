@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { getRandomQuestions, type Question, type QuizQuestion, type TracingQuestion } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
+import { AiTutor } from "@/components/AiTutor";
 
 const EXAM_DURATION = 3 * 60 * 60; // 3 hours in seconds
 const EXAM_QUESTIONS = 5;
@@ -188,6 +189,13 @@ const ExamMode = () => {
           )}
         </div>
       </div>
+
+      <AiTutor
+        questionContext={`שאלה במבחן סימולציה\nסוג: ${q.type}\n${
+          q.type === "coding" ? `כותרת: ${(q as any).title}\nתיאור: ${(q as any).description}` :
+          `שאלה: ${(q as any).question}\n${(q as any).code ? `קוד:\n${(q as any).code}` : ""}`
+        }`}
+      />
     </div>
   );
 };
