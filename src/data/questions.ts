@@ -2,6 +2,14 @@ export type QuestionType = "quiz" | "tracing" | "coding";
 export type TopicId = "tracing" | "conditions" | "loops" | "lists" | "math";
 export type Difficulty = "easy" | "medium" | "hard";
 
+export interface WarmupQuestion {
+  question: string;
+  code?: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
 export interface QuizQuestion {
   id: string;
   type: "quiz";
@@ -13,6 +21,7 @@ export interface QuizQuestion {
   correctIndex: number;
   explanation: string;
   examSource?: string;
+  warmupQuestions?: WarmupQuestion[];
 }
 
 export interface TracingQuestion {
@@ -25,6 +34,7 @@ export interface TracingQuestion {
   correctAnswer: string;
   explanation: string;
   examSource?: string;
+  warmupQuestions?: WarmupQuestion[];
 }
 
 export interface CodingQuestion {
@@ -39,6 +49,7 @@ export interface CodingQuestion {
   solution: string;
   solutionExplanation: string;
   examSource?: string;
+  warmupQuestions?: WarmupQuestion[];
 }
 
 export type Question = QuizQuestion | TracingQuestion | CodingQuestion;
@@ -94,6 +105,20 @@ mystery(4, 2)`,
     correctAnswer: "4 2 ",
     explanation: "a מתחיל ב-4 ויורד ב-1. כשa מתחלק ב-b (=2) הוא מודפס. 4%2==0 ✓, 3%2!=0, 2%2==0 ✓, 1%2!=0.",
     examSource: "מבחן 2",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 6 % 2?",
+        options: ["0", "2", "3", "1"],
+        correctIndex: 0,
+        explanation: "6 מתחלק ב-2 בדיוק, לכן השארית (%) היא 0."
+      },
+      {
+        question: "כמה פעמים תרוץ הלולאה while a > 0 אם a מתחיל ב-4 ויורד ב-1 כל פעם?",
+        options: ["3", "4", "5", "אינסוף"],
+        correctIndex: 1,
+        explanation: "a = 4,3,2,1 ואז a=0 והלולאה נעצרת. 4 איטרציות."
+      }
+    ],
   },
   {
     id: "t3",
@@ -114,6 +139,20 @@ mystery("hello")`,
     correctAnswer: "HeLlO",
     explanation: "אינדקסים זוגיים (0,2,4) הופכים לאותיות גדולות: H, L, O. אינדקסים אי-זוגיים (1,3) נשארים: e, l.",
     examSource: "מבחן 3",
+    warmupQuestions: [
+      {
+        question: "מה הערך של \"hello\"[2]?",
+        options: ["e", "l", "h", "o"],
+        correctIndex: 1,
+        explanation: "אינדקסים מתחילים מ-0: h=0, e=1, l=2. לכן \"hello\"[2] = 'l'."
+      },
+      {
+        question: "מה עושה הפונקציה .upper() על התו 'a'?",
+        options: ["'A'", "'a'", "שגיאה", "1"],
+        correctIndex: 0,
+        explanation: ".upper() הופכת אות קטנה לגדולה. 'a'.upper() = 'A'."
+      }
+    ],
   },
   {
     id: "t4",
@@ -132,6 +171,20 @@ mystery([3,1,4,1,5])`,
     correctAnswer: "2",
     explanation: "סופרים כמה פעמים איבר גדול מהאיבר הבא: 3>1 ✓, 1>4 ✗, 4>1 ✓, 1>5 ✗. סה\"כ 2.",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "עבור רשימה בגודל 5, מה הערך של range(len(lst)-1)?",
+        options: ["range(4) → 0,1,2,3", "range(5) → 0,1,2,3,4", "range(4) → 1,2,3,4", "range(3) → 0,1,2"],
+        correctIndex: 0,
+        explanation: "len([3,1,4,1,5]) = 5. range(5-1) = range(4) = 0,1,2,3."
+      },
+      {
+        question: "אם lst = [3,1,4,1,5], מה הערך של lst[2] > lst[3]?",
+        options: ["True (כי 4 > 1)", "False (כי 4 < 1)", "True (כי 1 > 5)", "שגיאה"],
+        correctIndex: 0,
+        explanation: "lst[2] = 4, lst[3] = 1. 4 > 1 → True."
+      }
+    ],
   },
   {
     id: "t5",
@@ -149,6 +202,26 @@ mystery(5)`,
     correctAnswer: "5",
     explanation: "זוהי סדרת פיבונאצ'י. הערכים: (0,1)→(1,1)→(1,2)→(2,3)→(3,5)→(5,8). אחרי 5 איטרציות a=5.",
     examSource: "מבחן 6",
+    warmupQuestions: [
+      {
+        question: "מה עושה השורה a, b = b, a + b כאשר a=2 ו-b=3?",
+        options: ["a=3, b=5", "a=5, b=3", "a=3, b=6", "a=2, b=5"],
+        correctIndex: 0,
+        explanation: "Python מחשבת את הצד הימני קודם: b=3, a+b=5. ואז a=3, b=5."
+      },
+      {
+        question: "בסדרת פיבונאצ'י: F(0)=0, F(1)=1. מה הערך של F(3)?",
+        options: ["2", "3", "1", "5"],
+        correctIndex: 0,
+        explanation: "F(2) = F(1)+F(0) = 1+0 = 1. F(3) = F(2)+F(1) = 1+1 = 2."
+      },
+      {
+        question: "כמה פעמים תרוץ הלולאה for i in range(5)?",
+        options: ["4", "5", "6", "3"],
+        correctIndex: 1,
+        explanation: "range(5) מייצר את 0,1,2,3,4 — סה\"כ 5 איטרציות."
+      }
+    ],
   },
 
   // === CONDITIONS ===
@@ -184,6 +257,20 @@ print(result)`,
     correctIndex: 0,
     explanation: "x*y = 50 > 40 ✓ וגם x(5) < y(10) ✓. שני התנאים מתקיימים, לכן התוצאה היא \"big\".",
     examSource: "מבחן 2",
+    warmupQuestions: [
+      {
+        question: "מה הערך של True and True?",
+        options: ["True", "False", "None", "שגיאה"],
+        correctIndex: 0,
+        explanation: "and מחזיר True רק אם שני הצדדים True."
+      },
+      {
+        question: 'מה הערך של "yes" if 3 > 2 else "no"?',
+        options: ['"yes"', '"no"', "True", "3"],
+        correctIndex: 0,
+        explanation: "3 > 2 הוא True, לכן הביטוי הטרנרי מחזיר את הערך הראשון: \"yes\"."
+      }
+    ],
   },
   {
     id: "c3",
@@ -230,6 +317,20 @@ print(grade(85))`,
     correctIndex: 1,
     explanation: "85 >= 80 (ולא >= 90), לכן g = \"B\". B != \"F\" לכן מחזירים \"B - עובר\".",
     examSource: "מבחן 4",
+    warmupQuestions: [
+      {
+        question: "בשרשרת if/elif, אם התנאי הראשון לא מתקיים, מה קורה?",
+        options: ["בודקים את ה-elif הבא", "נכנסים ל-else", "הקוד נעצר", "שגיאה"],
+        correctIndex: 0,
+        explanation: "Python בודקת כל תנאי לפי הסדר. אם if לא מתקיים, עוברים ל-elif."
+      },
+      {
+        question: "מה הערך של \"B\" != \"F\"?",
+        options: ["True", "False", '"B"', "שגיאה"],
+        correctIndex: 0,
+        explanation: "!= בודק אי-שוויון. \"B\" שונה מ-\"F\" → True."
+      }
+    ],
   },
 
   // === LOOPS ===
@@ -329,6 +430,14 @@ print(count)`,
     correctIndex: 0,
     explanation: "סופרים איברים גדולים מ-5: 3>5 ✗, 7>5 ✓, 1>5 ✗, 9>5 ✓, 4>5 ✗. סה\"כ 2.",
     examSource: "מבחן 3",
+    warmupQuestions: [
+      {
+        question: "מה עושה count += 1?",
+        options: ["מגדיל את count ב-1", "מאפס את count", "מכפיל את count", "מחזיר count"],
+        correctIndex: 0,
+        explanation: "count += 1 זהה ל-count = count + 1, מגדיל את המונה ב-1."
+      }
+    ],
   },
   {
     id: "li3",
@@ -349,6 +458,20 @@ print(count)`,
     return min_d`,
     solutionExplanation: "ממיינים את הרשימה [1,3,4,7,9]. ההפרשים בין שכנים: 3-1=2, 4-3=1, 7-4=3, 9-7=2. המינימום הוא 1.",
     examSource: "מבחן 4",
+    warmupQuestions: [
+      {
+        question: "מה עושה sorted([4,9,1,7,3])?",
+        options: ["[1,3,4,7,9]", "[9,7,4,3,1]", "[4,9,1,7,3]", "שגיאה"],
+        correctIndex: 0,
+        explanation: "sorted() מחזירה רשימה חדשה ממוינת בסדר עולה."
+      },
+      {
+        question: "למה כדאי למיין את הרשימה לפני חיפוש הפרש מינימלי?",
+        options: ["ההפרש המינימלי תמיד בין שכנים ברשימה ממוינת", "כי Python דורש מיון", "כדי שהלולאה תרוץ מהר יותר", "אין צורך במיון"],
+        correctIndex: 0,
+        explanation: "ברשימה ממוינת, ההפרש המינימלי חייב להיות בין שני איברים עוקבים. זה חוסך השוואות."
+      }
+    ],
   },
   {
     id: "li4",
@@ -387,6 +510,20 @@ print(mystery([1,2,3,2,1,4]))`,
     correctIndex: 0,
     explanation: "17 >= 2 ✓. בודקים חלוקה מ-2 עד 16: 17 לא מתחלק באף אחד מהם. לכן 17 ראשוני ומחזירים True.",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "מה זה מספר ראשוני?",
+        options: ["מספר שמתחלק רק ב-1 ובעצמו", "מספר זוגי", "מספר גדול מ-10", "מספר שלילי"],
+        correctIndex: 0,
+        explanation: "מספר ראשוני מתחלק בדיוק בשני מספרים: 1 והמספר עצמו."
+      },
+      {
+        question: "האם 6 הוא מספר ראשוני?",
+        options: ["לא, כי 6 = 2×3", "כן, כי 6 > 1", "כן, כי 6 זוגי", "לא, כי 6 < 10"],
+        correctIndex: 0,
+        explanation: "6 מתחלק ב-2 וב-3 (מלבד 1 ו-6), לכן הוא לא ראשוני."
+      }
+    ],
   },
   {
     id: "m2",
@@ -402,6 +539,20 @@ print(mystery([1,2,3,2,1,4]))`,
     return len(digits) == len(set(digits))`,
     solutionExplanation: "ממירים למחרוזת ובודקים אם אורך המחרוזת שווה לאורך ה-set שלה. אם יש ספרות חוזרות, ה-set יהיה קצר יותר.",
     examSource: "מבחן 5",
+    warmupQuestions: [
+      {
+        question: "מה עושה set(\"hello\")?",
+        options: ['{"h","e","l","o"} - 4 תווים', '{"h","e","l","l","o"} - 5 תווים', "שגיאה", '"hello"'],
+        correctIndex: 0,
+        explanation: "set מסיר כפילויות. 'l' מופיע פעמיים אבל ב-set נשמר פעם אחת בלבד."
+      },
+      {
+        question: "מה הערך של len(\"1234\")?",
+        options: ["4", "1234", "3", "10"],
+        correctIndex: 0,
+        explanation: "len מחזיר את אורך המחרוזת. \"1234\" מכילה 4 תווים."
+      }
+    ],
   },
   {
     id: "m3",
@@ -423,6 +574,26 @@ print(mystery([1,2,3,2,1,4]))`,
     return b`,
     solutionExplanation: "P(0)=0, P(1)=1, P(2)=2*1+0=2, P(3)=2*2+1=5, P(4)=2*5+2=12, P(5)=2*12+5=29.",
     examSource: "מבחן 6",
+    warmupQuestions: [
+      {
+        question: "בסדרת Pell: P(0)=0, P(1)=1, P(n)=2*P(n-1)+P(n-2). מה הערך של P(2)?",
+        options: ["2", "1", "3", "0"],
+        correctIndex: 0,
+        explanation: "P(2) = 2*P(1) + P(0) = 2*1 + 0 = 2."
+      },
+      {
+        question: "חשבו: P(3) = 2*P(2) + P(1) = ?",
+        options: ["5", "4", "3", "6"],
+        correctIndex: 0,
+        explanation: "P(3) = 2*2 + 1 = 5."
+      },
+      {
+        question: "איך שומרים שני ערכים קודמים בלולאה?",
+        options: ["a, b = b, 2*b+a", "a = b; b = 2*b+a", "temp = a; a = b; b = temp", "a += b"],
+        correctIndex: 0,
+        explanation: "בPython, a, b = b, 2*b+a מעדכנת את שניהם בו-זמנית בלי צורך במשתנה זמני."
+      }
+    ],
   },
   {
     id: "m4",
@@ -541,6 +712,14 @@ print(mystery("a1b2c3"))`,
     correctAnswer: "123",
     explanation: "עוברים על כל תו במחרוזת. רק ספרות (isdigit) מתווספות: '1', '2', '3' → \"123\".",
     examSource: "מבחן 4",
+    warmupQuestions: [
+      {
+        question: "מה עושה הפונקציה .isdigit() על התו '3'?",
+        options: ["True", "False", "3", "שגיאה"],
+        correctIndex: 0,
+        explanation: "'3'.isdigit() מחזיר True כי '3' הוא תו ספרה."
+      }
+    ],
   },
   {
     id: "t8",
@@ -604,6 +783,26 @@ print(mystery(12, 8))`,
     correctAnswer: "4",
     explanation: "זהו אלגוריתם GCD (מחלק משותף מקסימלי). mystery(12,8)→mystery(8,4)→mystery(4,0)→4.",
     examSource: "מבחן 7",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 12 % 8?",
+        options: ["4", "1", "0", "8"],
+        correctIndex: 0,
+        explanation: "12 = 1*8 + 4, לכן השארית היא 4."
+      },
+      {
+        question: "מה קורה כשפונקציה קוראת לעצמה?",
+        options: ["רקורסיה - הפונקציה רצה שוב עם פרמטרים חדשים", "שגיאה", "הפונקציה נעצרת", "לולאה אינסופית תמיד"],
+        correctIndex: 0,
+        explanation: "זו רקורסיה. הפונקציה קוראת לעצמה עם ערכים חדשים עד שמגיעה לתנאי עצירה."
+      },
+      {
+        question: "ברקורסיה mystery(b, a%b), מה תנאי העצירה?",
+        options: ["b == 0", "a == 0", "a == b", "a > b"],
+        correctIndex: 0,
+        explanation: "כש-b מגיע ל-0, הפונקציה מחזירה a (זה הבסיס של הרקורסיה)."
+      }
+    ],
   },
   {
     id: "t12",
@@ -660,6 +859,20 @@ print(tax(8000))`,
     correctIndex: 1,
     explanation: "8000 נופל בטווח 5001-10000. מס = 500 + (8000-5000)*0.2 = 500 + 600 = 1100.",
     examSource: "מבחן 6",
+    warmupQuestions: [
+      {
+        question: "אם ההכנסה היא 3000, באיזה טווח היא נופלת?",
+        options: ["עד 5000", "5001-10000", "מעל 10000", "אף אחד"],
+        correctIndex: 0,
+        explanation: "3000 <= 5000, לכן נכנסים לתנאי הראשון."
+      },
+      {
+        question: "מה הערך של 500 + (8000-5000) * 0.2?",
+        options: ["1100", "1600", "800", "1500"],
+        correctIndex: 0,
+        explanation: "(8000-5000) = 3000. 3000 * 0.2 = 600. 500 + 600 = 1100."
+      }
+    ],
   },
   {
     id: "c8",
