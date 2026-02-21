@@ -6,17 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import { PythonCodeBlock } from "@/components/PythonCodeBlock";
 import { topics, getQuestionsByTopic, type Question, type QuizQuestion, type TracingQuestion, type CodingQuestion } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { AiTutor } from "@/components/AiTutor";
-
-function CodeBlock({ code }: { code: string }) {
-  return (
-    <pre dir="ltr" className="overflow-x-auto rounded-xl bg-muted/80 p-4 text-sm font-mono leading-relaxed text-foreground border border-border">
-      <code>{code}</code>
-    </pre>
-  );
-}
 
 function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct: boolean) => void }) {
   const [selected, setSelected] = useState<number | null>(null);
@@ -24,8 +17,8 @@ function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct: boolea
 
   return (
     <div className="space-y-4">
-      <p className="text-lg font-semibold">{q.question}</p>
-      {q.code && <CodeBlock code={q.code} />}
+      <p className="text-lg font-semibold text-card-foreground">{q.question}</p>
+      {q.code && <PythonCodeBlock code={q.code} />}
       <div className="space-y-2">
         {q.options.map((opt, i) => (
           <motion.button
@@ -84,8 +77,8 @@ function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (correct: 
 
   return (
     <div className="space-y-4">
-      <p className="text-lg font-semibold">{q.question}</p>
-      <CodeBlock code={q.code} />
+      <p className="text-lg font-semibold text-card-foreground">{q.question}</p>
+      <PythonCodeBlock code={q.code} />
       <div className="space-y-2">
         <Input
           dir="ltr"
@@ -123,7 +116,7 @@ function CodingView({ q, onAnswer }: { q: CodingQuestion; onAnswer: (correct: bo
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">{q.title}</h3>
+      <h3 className="text-lg font-semibold text-card-foreground">{q.title}</h3>
       <p className="text-sm text-muted-foreground whitespace-pre-wrap">{q.description}</p>
       {q.sampleInput && (
         <div className="rounded-xl bg-muted/80 p-3 text-sm border border-border">
@@ -157,7 +150,7 @@ function CodingView({ q, onAnswer }: { q: CodingQuestion; onAnswer: (correct: bo
           animate={{ opacity: 1, y: 0 }}
           className="space-y-3"
         >
-          <CodeBlock code={q.solution} />
+          <PythonCodeBlock code={q.solution} />
           <div className="rounded-xl bg-primary/5 border border-primary/20 p-4">
             <p className="text-sm font-semibold mb-1">💡 הסבר:</p>
             <p className="text-sm text-muted-foreground">{q.solutionExplanation}</p>
