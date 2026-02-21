@@ -31,16 +31,16 @@ function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct: boolea
             }}
             className={`w-full rounded-xl border p-4 text-right transition-all ${
               !answered
-                ? "border-border bg-card hover:border-primary/50"
+                ? "border-border bg-secondary hover:border-primary/50 text-foreground"
                 : i === q.correctIndex
                 ? "border-success bg-success/10 text-success"
                 : i === selected
                 ? "border-destructive bg-destructive/10 text-destructive"
-                : "border-border bg-card opacity-50"
+                : "border-border bg-secondary opacity-50 text-foreground"
             }`}
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-bold">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-bold text-foreground">
                 {String.fromCharCode(1488 + i)}
               </span>
               <span className="text-sm font-medium">{opt}</span>
@@ -119,11 +119,11 @@ function CodingView({ q, onAnswer }: { q: CodingQuestion; onAnswer: (correct: bo
       <h3 className="text-lg font-semibold text-card-foreground">{q.title}</h3>
       <p className="text-sm text-muted-foreground whitespace-pre-wrap">{q.description}</p>
       {q.sampleInput && (
-        <div className="rounded-xl bg-muted/80 p-3 text-sm border border-border">
+        <div className="rounded-xl bg-secondary p-3 text-sm border border-border text-foreground">
           <span className="font-semibold">דוגמה: </span>
-          <code dir="ltr" className="font-mono">{q.sampleInput}</code>
+          <code dir="ltr" className="font-mono text-accent">{q.sampleInput}</code>
           <span> → </span>
-          <code dir="ltr" className="font-mono">{q.sampleOutput}</code>
+          <code dir="ltr" className="font-mono text-accent">{q.sampleOutput}</code>
         </div>
       )}
       <Textarea
@@ -139,7 +139,7 @@ function CodingView({ q, onAnswer }: { q: CodingQuestion; onAnswer: (correct: bo
           if (!showSolution) onAnswer(true);
         }}
         variant="outline"
-        className="w-full gap-2"
+        className="w-full gap-2 border-primary/30 text-foreground hover:bg-primary/10"
       >
         {showSolution ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         {showSolution ? "הסתר פתרון" : "הצג פתרון מוצע"}
