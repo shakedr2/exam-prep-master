@@ -518,6 +518,613 @@ print(lst[1:4])`,
     explanation: "2**3 = 8. 8+1 = 9.",
     examSource: "מבחן 2",
   },
+
+  // ==========================================
+  // ADDITIONAL QUESTIONS - Batch 2
+  // ==========================================
+
+  // === MORE TRACING ===
+  {
+    id: "t7",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(s):
+    result = ""
+    for c in s:
+        if c.isdigit():
+            result += c
+    return result
+
+print(mystery("a1b2c3"))`,
+    correctAnswer: "123",
+    explanation: "עוברים על כל תו במחרוזת. רק ספרות (isdigit) מתווספות: '1', '2', '3' → \"123\".",
+    examSource: "מבחן 4",
+  },
+  {
+    id: "t8",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(lst):
+    result = lst[0]
+    for i in range(1, len(lst)):
+        if lst[i] < result:
+            result = lst[i]
+    return result
+
+print(mystery([5, 3, 8, 1, 9]))`,
+    correctAnswer: "1",
+    explanation: "הפונקציה מוצאת את המינימום ברשימה. מתחילים מ-5, אז 3<5→3, 8>3, 1<3→1, 9>1. המינימום הוא 1.",
+    examSource: "מבחן 5",
+  },
+  {
+    id: "t9",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(n):
+    s = str(n)
+    return s == s[::-1]
+
+print(mystery(12321))`,
+    correctAnswer: "True",
+    explanation: "ממירים ל-\"12321\". הפיכה: \"12321\". שווים → True. זוהי בדיקת פלינדרום.",
+    examSource: "מבחן 3",
+  },
+  {
+    id: "t10",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "easy",
+    question: "מה ידפיס הקוד הבא?",
+    code: `x = [1, 2, 3]
+y = x
+y.append(4)
+print(x)`,
+    correctAnswer: "[1, 2, 3, 4]",
+    explanation: "y = x לא יוצר עותק, אלא הפניה לאותה רשימה. לכן שינוי ב-y משפיע גם על x.",
+    examSource: "מבחן 6",
+  },
+  {
+    id: "t11",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(a, b):
+    if b == 0:
+        return a
+    return mystery(b, a % b)
+
+print(mystery(12, 8))`,
+    correctAnswer: "4",
+    explanation: "זהו אלגוריתם GCD (מחלק משותף מקסימלי). mystery(12,8)→mystery(8,4)→mystery(4,0)→4.",
+    examSource: "מבחן 7",
+  },
+  {
+    id: "t12",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `s = "Python"
+print(s[1:4])
+print(s[::-1])`,
+    correctAnswer: "yth\nnohtyP",
+    explanation: "s[1:4] = \"yth\" (אינדקסים 1,2,3). s[::-1] = \"nohtyP\" (היפוך המחרוזת).",
+    examSource: "מבחן 2",
+  },
+
+  // === MORE CONDITIONS ===
+  {
+    id: "c6",
+    type: "quiz",
+    topic: "conditions",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def classify(n):
+    if n > 0 and n % 2 == 0:
+        return "חיובי זוגי"
+    elif n > 0:
+        return "חיובי אי-זוגי"
+    elif n < 0:
+        return "שלילי"
+    return "אפס"
+
+print(classify(0))`,
+    options: ["חיובי זוגי", "שלילי", "אפס", "None"],
+    correctIndex: 2,
+    explanation: "0 לא עובר אף תנאי (לא > 0, לא < 0), לכן מגיעים ל-return \"אפס\".",
+    examSource: "מבחן 5",
+  },
+  {
+    id: "c7",
+    type: "quiz",
+    topic: "conditions",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def tax(income):
+    if income <= 5000:
+        return income * 0.1
+    elif income <= 10000:
+        return 500 + (income - 5000) * 0.2
+    else:
+        return 1500 + (income - 10000) * 0.3
+
+print(tax(8000))`,
+    options: ["800", "1100", "1600", "2400"],
+    correctIndex: 1,
+    explanation: "8000 נופל בטווח 5001-10000. מס = 500 + (8000-5000)*0.2 = 500 + 600 = 1100.",
+    examSource: "מבחן 6",
+  },
+  {
+    id: "c8",
+    type: "tracing",
+    topic: "conditions",
+    difficulty: "easy",
+    question: "מה ידפיס הקוד הבא?",
+    code: `a = 10
+b = 20
+c = 15
+print(max(a, b, c) - min(a, b, c))`,
+    correctAnswer: "10",
+    explanation: "max(10,20,15) = 20. min(10,20,15) = 10. 20 - 10 = 10.",
+    examSource: "מבחן 1",
+  },
+  {
+    id: "c9",
+    type: "quiz",
+    topic: "conditions",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `x = 15
+y = 4
+print(x // y, x % y, x / y)`,
+    options: ["3 3 3.75", "3 3 3.0", "4 3 3.75", "3 3 3"],
+    correctIndex: 0,
+    explanation: "15//4 = 3 (חלוקה שלמה). 15%4 = 3 (שארית). 15/4 = 3.75 (חלוקה רגילה).",
+    examSource: "מבחן 3",
+  },
+  {
+    id: "c10",
+    type: "coding",
+    topic: "conditions",
+    difficulty: "medium",
+    title: "חישוב הנחה לפי גיל",
+    description: "כתבו פונקציה age_discount(age, price) שמחזירה את המחיר אחרי הנחה:\n- ילדים (עד 12): 50% הנחה\n- מבוגרים (60+): 30% הנחה\n- כל השאר: ללא הנחה",
+    sampleInput: "age_discount(10, 100)",
+    sampleOutput: "50.0",
+    solution: `def age_discount(age, price):
+    if age <= 12:
+        return price * 0.5
+    elif age >= 60:
+        return price * 0.7
+    return price`,
+    solutionExplanation: "בודקים את הגיל: עד 12 → מחיר * 0.5 (חצי מחיר). מעל 60 → מחיר * 0.7 (30% הנחה). אחרת → מחיר מלא.",
+    examSource: "מבחן 4",
+  },
+
+  // === MORE LOOPS ===
+  {
+    id: "l6",
+    type: "tracing",
+    topic: "loops",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(n):
+    result = 1
+    for i in range(1, n + 1):
+        result *= i
+    return result
+
+print(mystery(5))`,
+    correctAnswer: "120",
+    explanation: "זהו חישוב עצרת (factorial). 1*1=1, 1*2=2, 2*3=6, 6*4=24, 24*5=120.",
+    examSource: "מבחן 3",
+  },
+  {
+    id: "l7",
+    type: "coding",
+    topic: "loops",
+    difficulty: "medium",
+    title: "הדפסת פירמידה הפוכה",
+    description: "כתבו פונקציה reverse_pyramid(n) שמדפיסה פירמידה הפוכה של כוכביות.\nלדוגמה, עבור n=4:\n****\n***\n**\n*",
+    sampleInput: "reverse_pyramid(4)",
+    sampleOutput: "****\n***\n**\n*",
+    solution: `def reverse_pyramid(n):
+    for i in range(n, 0, -1):
+        print("*" * i)`,
+    solutionExplanation: "לולאה מ-n עד 1 (יורד). בכל שורה מדפיסים i כוכביות. 4, 3, 2, 1.",
+    examSource: "מבחן 2",
+  },
+  {
+    id: "l8",
+    type: "quiz",
+    topic: "loops",
+    difficulty: "easy",
+    question: "מה ידפיס הקוד הבא?",
+    code: `s = "hello"
+count = 0
+for c in s:
+    if c in "aeiou":
+        count += 1
+print(count)`,
+    options: ["1", "2", "3", "5"],
+    correctIndex: 1,
+    explanation: "סופרים תנועות ב-\"hello\": 'h'-לא, 'e'-כן, 'l'-לא, 'l'-לא, 'o'-כן. סה\"כ 2.",
+    examSource: "מבחן 4",
+  },
+  {
+    id: "l9",
+    type: "tracing",
+    topic: "loops",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(s):
+    result = ""
+    for i in range(len(s) - 1, -1, -1):
+        result += s[i]
+    return result
+
+print(mystery("abc"))`,
+    correctAnswer: "cba",
+    explanation: "הלולאה רצה מהאינדקס האחרון (2) עד 0. s[2]='c', s[1]='b', s[0]='a' → \"cba\".",
+    examSource: "מבחן 5",
+  },
+  {
+    id: "l10",
+    type: "coding",
+    topic: "loops",
+    difficulty: "hard",
+    title: "משולש פסקל",
+    description: "כתבו פונקציה pascal(n) שמדפיסה את n השורות הראשונות של משולש פסקל.\nכל מספר הוא סכום שני המספרים מעליו.\n\nלדוגמה, עבור n=4:\n1\n1 1\n1 2 1\n1 3 3 1",
+    sampleInput: "pascal(4)",
+    sampleOutput: "1\n1 1\n1 2 1\n1 3 3 1",
+    solution: `def pascal(n):
+    row = [1]
+    for i in range(n):
+        print(" ".join(str(x) for x in row))
+        new_row = [1]
+        for j in range(len(row) - 1):
+            new_row.append(row[j] + row[j + 1])
+        new_row.append(1)
+        row = new_row`,
+    solutionExplanation: "מתחילים מ-[1]. בכל איטרציה בונים שורה חדשה: מוסיפים 1, ואז סכום של כל זוג שכנים, ועוד 1.",
+    examSource: "מבחן 7",
+  },
+  {
+    id: "l11",
+    type: "quiz",
+    topic: "loops",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `result = ""
+for i in range(5):
+    if i % 2 == 0:
+        result += str(i)
+print(result)`,
+    options: ["024", "0123", "1234", "13"],
+    correctIndex: 0,
+    explanation: "i רץ מ-0 עד 4. רק זוגיים מתווספים: 0, 2, 4 → \"024\".",
+    examSource: "מבחן 1",
+  },
+
+  // === MORE LISTS ===
+  {
+    id: "li6",
+    type: "quiz",
+    topic: "lists",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `lst = [1, 2, 3, 4, 5]
+new_lst = [x ** 2 for x in lst if x % 2 != 0]
+print(new_lst)`,
+    options: ["[1, 4, 9, 16, 25]", "[1, 9, 25]", "[4, 16]", "[1, 3, 5]"],
+    correctIndex: 1,
+    explanation: "List comprehension: רק אי-זוגיים (1,3,5) בריבוע: 1²=1, 3²=9, 5²=25 → [1, 9, 25].",
+    examSource: "מבחן 5",
+  },
+  {
+    id: "li7",
+    type: "coding",
+    topic: "lists",
+    difficulty: "medium",
+    title: "מיזוג רשימות ממוינות",
+    description: "כתבו פונקציה merge_sorted(lst1, lst2) שמקבלת שתי רשימות ממוינות ומחזירה רשימה ממוינת אחת שמכילה את כל האיברים משתיהן.",
+    sampleInput: "merge_sorted([1, 3, 5], [2, 4, 6])",
+    sampleOutput: "[1, 2, 3, 4, 5, 6]",
+    solution: `def merge_sorted(lst1, lst2):
+    result = []
+    i, j = 0, 0
+    while i < len(lst1) and j < len(lst2):
+        if lst1[i] <= lst2[j]:
+            result.append(lst1[i])
+            i += 1
+        else:
+            result.append(lst2[j])
+            j += 1
+    result += lst1[i:]
+    result += lst2[j:]
+    return result`,
+    solutionExplanation: "שני מצביעים - אחד לכל רשימה. בכל שלב מוסיפים את הקטן מבין השניים. בסוף מוסיפים את השאריות.",
+    examSource: "מבחן 6",
+  },
+  {
+    id: "li8",
+    type: "tracing",
+    topic: "lists",
+    difficulty: "easy",
+    question: "מה ידפיס הקוד הבא?",
+    code: `lst = [3, 1, 4, 1, 5]
+lst.sort()
+print(lst)`,
+    correctAnswer: "[1, 1, 3, 4, 5]",
+    explanation: "sort() ממיין את הרשימה במקום בסדר עולה: [1, 1, 3, 4, 5].",
+    examSource: "מבחן 1",
+  },
+  {
+    id: "li9",
+    type: "quiz",
+    topic: "lists",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(lst):
+    return [lst[i] for i in range(len(lst)) if lst[i] != lst[i-1] or i == 0]
+
+print(mystery([1, 1, 2, 2, 3, 1, 1]))`,
+    options: ["[1, 2, 3]", "[1, 2, 3, 1]", "[1, 1, 2, 2, 3, 1, 1]", "[2, 3, 1]"],
+    correctIndex: 1,
+    explanation: "הפונקציה מסירה כפילויות עוקבות בלבד. i=0→1(תמיד), 1==1 דלג, 2≠1→2, 2==2 דלג, 3≠2→3, 1≠3→1, 1==1 דלג → [1,2,3,1].",
+    examSource: "מבחן 7",
+  },
+  {
+    id: "li10",
+    type: "coding",
+    topic: "lists",
+    difficulty: "medium",
+    title: "מציאת האיבר השני בגודלו",
+    description: "כתבו פונקציה second_max(lst) שמקבלת רשימת מספרים ומחזירה את המספר השני בגודלו (לא בהכרח שונה מהמקסימום).",
+    sampleInput: "second_max([5, 3, 8, 1, 9, 7])",
+    sampleOutput: "8",
+    solution: `def second_max(lst):
+    sorted_lst = sorted(lst, reverse=True)
+    return sorted_lst[1]`,
+    solutionExplanation: "ממיינים בסדר יורד ומחזירים את האיבר השני. [9,8,7,5,3,1] → 8.",
+    examSource: "מבחן 3",
+  },
+  {
+    id: "li11",
+    type: "tracing",
+    topic: "lists",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `a = [1, 2, 3]
+b = a[:]
+b.append(4)
+print(a, b)`,
+    correctAnswer: "[1, 2, 3] [1, 2, 3, 4]",
+    explanation: "a[:] יוצר עותק חדש של הרשימה. לכן שינוי ב-b לא משפיע על a. שונה מ-b = a!",
+    examSource: "מבחן 4",
+  },
+
+  // === MORE MATH ===
+  {
+    id: "m6",
+    type: "coding",
+    topic: "math",
+    difficulty: "medium",
+    title: "בדיקת מספר משוכלל",
+    description: "כתבו פונקציה is_perfect(n) שבודקת אם n הוא מספר משוכלל. מספר משוכלל הוא מספר שסכום מחלקיו (לא כולל עצמו) שווה לו.\n\nלדוגמה: 6 = 1+2+3, 28 = 1+2+4+7+14",
+    sampleInput: "is_perfect(6)",
+    sampleOutput: "True",
+    solution: `def is_perfect(n):
+    if n < 2:
+        return False
+    total = 0
+    for i in range(1, n):
+        if n % i == 0:
+            total += i
+    return total == n`,
+    solutionExplanation: "מחשבים סכום כל המחלקים מ-1 עד n-1. עבור 6: 1+2+3=6=n → True.",
+    examSource: "מבחן 5",
+  },
+  {
+    id: "m7",
+    type: "tracing",
+    topic: "math",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(n):
+    count = 0
+    while n > 0:
+        count += 1
+        n //= 10
+    return count
+
+print(mystery(9876))`,
+    correctAnswer: "4",
+    explanation: "סופרים ספרות: 9876→987→98→9→0. כל פעם מחלקים ב-10 וסופרים. 4 ספרות.",
+    examSource: "מבחן 2",
+  },
+  {
+    id: "m8",
+    type: "quiz",
+    topic: "math",
+    difficulty: "hard",
+    question: "מה תחזיר הפונקציה עבור הקריאה collatz(6)?",
+    code: `def collatz(n):
+    count = 0
+    while n != 1:
+        if n % 2 == 0:
+            n = n // 2
+        else:
+            n = 3 * n + 1
+        count += 1
+    return count`,
+    options: ["6", "8", "9", "7"],
+    correctIndex: 1,
+    explanation: "6→3→10→5→16→8→4→2→1. סה\"כ 8 צעדים. זוהי השערת קולאץ.",
+    examSource: "מבחן 7",
+  },
+  {
+    id: "m9",
+    type: "coding",
+    topic: "math",
+    difficulty: "easy",
+    title: "חישוב חזקה",
+    description: "כתבו פונקציה power(base, exp) שמחשבת base בחזקת exp בלי להשתמש באופרטור **.",
+    sampleInput: "power(2, 5)",
+    sampleOutput: "32",
+    solution: `def power(base, exp):
+    result = 1
+    for i in range(exp):
+        result *= base
+    return result`,
+    solutionExplanation: "מכפילים את base בעצמו exp פעמים. 2*2=4, 4*2=8, 8*2=16, 16*2=32.",
+    examSource: "מבחן 1",
+  },
+  {
+    id: "m10",
+    type: "tracing",
+    topic: "math",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(n):
+    if n <= 1:
+        return n
+    return mystery(n-1) + mystery(n-2)
+
+print(mystery(7))`,
+    correctAnswer: "13",
+    explanation: "זוהי סדרת פיבונאצ'י רקורסיבית. F(0)=0, F(1)=1, F(2)=1, F(3)=2, F(4)=3, F(5)=5, F(6)=8, F(7)=13.",
+    examSource: "מבחן 6",
+  },
+  {
+    id: "m11",
+    type: "quiz",
+    topic: "math",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def reverse_num(n):
+    result = 0
+    while n > 0:
+        result = result * 10 + n % 10
+        n //= 10
+    return result
+
+print(reverse_num(1234))`,
+    options: ["4321", "1234", "1", "432"],
+    correctIndex: 0,
+    explanation: "בכל שלב: result*10 + ספרה אחרונה. 0*10+4=4, 4*10+3=43, 43*10+2=432, 432*10+1=4321.",
+    examSource: "מבחן 3",
+  },
+
+  // === EXTRA MIXED QUESTIONS ===
+  {
+    id: "t13",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "easy",
+    question: "מה ידפיס הקוד הבא?",
+    code: `a, b = 3, 5
+a, b = b, a
+print(a, b)`,
+    correctAnswer: "5 3",
+    explanation: "swap ב-Python: a,b = b,a מחליף בין הערכים. a הופך ל-5 ו-b הופך ל-3.",
+    examSource: "מבחן 1",
+  },
+  {
+    id: "l12",
+    type: "tracing",
+    topic: "loops",
+    difficulty: "easy",
+    question: "מה ידפיס הקוד הבא?",
+    code: `total = 0
+for i in range(1, 6):
+    total += i
+print(total)`,
+    correctAnswer: "15",
+    explanation: "סכום 1+2+3+4+5 = 15.",
+    examSource: "מבחן 2",
+  },
+  {
+    id: "li12",
+    type: "quiz",
+    topic: "lists",
+    difficulty: "easy",
+    question: "מה ידפיס הקוד הבא?",
+    code: `lst = ["a", "b", "c"]
+print(len(lst), lst[-1])`,
+    options: ["3 c", "3 b", "2 c", "3 a"],
+    correctIndex: 0,
+    explanation: "len(lst) = 3 (שלושה איברים). lst[-1] = \"c\" (האיבר האחרון).",
+    examSource: "מבחן 1",
+  },
+  {
+    id: "c11",
+    type: "tracing",
+    topic: "conditions",
+    difficulty: "easy",
+    question: "מה ידפיס הקוד הבא?",
+    code: `x = True
+y = False
+print(x and y, x or y, not x)`,
+    correctAnswer: "False True False",
+    explanation: "True and False = False. True or False = True. not True = False.",
+    examSource: "מבחן 2",
+  },
+  {
+    id: "m12",
+    type: "coding",
+    topic: "math",
+    difficulty: "medium",
+    title: "סכום ספרות",
+    description: "כתבו פונקציה digit_sum(n) שמקבלת מספר שלם חיובי ומחזירה את סכום ספרותיו. ממשו בלי להמיר למחרוזת.",
+    sampleInput: "digit_sum(1234)",
+    sampleOutput: "10",
+    solution: `def digit_sum(n):
+    total = 0
+    while n > 0:
+        total += n % 10
+        n //= 10
+    return total`,
+    solutionExplanation: "בכל שלב: מוציאים ספרה אחרונה (n%10) ומוסיפים לסכום. 4+3+2+1 = 10.",
+    examSource: "מבחן 4",
+  },
+  {
+    id: "t14",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `d = {"a": 1, "b": 2, "c": 3}
+for key in d:
+    print(key, d[key])`,
+    correctAnswer: "a 1\nb 2\nc 3",
+    explanation: "עוברים על מפתחות המילון ומדפיסים כל מפתח עם הערך שלו.",
+    examSource: "מבחן 5",
+  },
+  {
+    id: "li13",
+    type: "coding",
+    topic: "lists",
+    difficulty: "easy",
+    title: "סכום איברים ברשימה",
+    description: "כתבו פונקציה my_sum(lst) שמקבלת רשימת מספרים ומחזירה את סכומם, בלי להשתמש ב-sum().",
+    sampleInput: "my_sum([1, 2, 3, 4, 5])",
+    sampleOutput: "15",
+    solution: `def my_sum(lst):
+    total = 0
+    for x in lst:
+        total += x
+    return total`,
+    solutionExplanation: "עוברים על כל איבר ברשימה ומצטברים. 0+1+2+3+4+5 = 15.",
+    examSource: "מבחן 1",
+  },
 ];
 
 export function getQuestionsByTopic(topicId: TopicId): Question[] {
