@@ -291,6 +291,20 @@ print(check(-3))`,
     correctIndex: 2,
     explanation: "-3 לא עובר את התנאי n > 0, לכן מגיעים ישירות ל-return \"לא חיובי\".",
     examSource: "מבחן 3",
+    warmupQuestions: [
+      {
+        question: "מה הערך של -3 > 0?",
+        options: ["False", "True", "שגיאה", "-3"],
+        correctIndex: 0,
+        explanation: "-3 הוא שלילי, לכן -3 > 0 הוא False."
+      },
+      {
+        question: "כשתנאי if חיצוני הוא False, מה קורה לבלוק ה-if/else הפנימי?",
+        options: ["הכל מדולג", "נכנסים ל-else הפנימי", "שגיאה", "מחזירים None"],
+        correctIndex: 0,
+        explanation: "כשה-if החיצוני False, כל הבלוק שבתוכו מדולג — כולל ה-else הפנימי."
+      }
+    ],
   },
   {
     id: "c4",
@@ -359,6 +373,20 @@ print(grade(85))`,
     correctAnswer: "0\n01\n012",
     explanation: "שורה 1: i=0, j רץ 0..0 → \"0\". שורה 2: i=1, j רץ 0..1 → \"01\". שורה 3: i=2, j רץ 0..2 → \"012\".",
     examSource: "מבחן 2",
+    warmupQuestions: [
+      {
+        question: "כש-i=0, מה הערך של range(i + 1)?",
+        options: ["range(1) → רק 0", "range(0) → ריק", "range(2) → 0,1", "שגיאה"],
+        correctIndex: 0,
+        explanation: "range(0+1) = range(1) = [0]. הלולאה הפנימית רצה פעם אחת."
+      },
+      {
+        question: "מה עושה end=\"\" בתוך print?",
+        options: ["לא עובר שורה אחרי ההדפסה", "מדפיס רווח", "מסיים את התוכנית", "שגיאה"],
+        correctIndex: 0,
+        explanation: "end=\"\" אומר ל-print לא לרדת שורה, כך שההדפסות הבאות ממשיכות באותה שורה."
+      }
+    ],
   },
   {
     id: "l3",
@@ -375,6 +403,20 @@ print(count)`,
     correctIndex: 1,
     explanation: "i=0: 0 פעמים, i=1: 1, i=2: 2, i=3: 3, i=4: 4. סה\"כ 0+1+2+3+4 = 10.",
     examSource: "מבחן 3",
+    warmupQuestions: [
+      {
+        question: "מה הערך של range(0)?",
+        options: ["ריק (0 איטרציות)", "range(0) → רק 0", "שגיאה", "range(1)"],
+        correctIndex: 0,
+        explanation: "range(0) ריק — הלולאה הפנימית לא רצה כלל כש-i=0."
+      },
+      {
+        question: "כש-i=3, כמה פעמים תרוץ for j in range(i)?",
+        options: ["3 פעמים (j=0,1,2)", "4 פעמים", "2 פעמים", "i פעמים (לא ידוע)"],
+        correctIndex: 0,
+        explanation: "range(3) = 0,1,2 → הלולאה הפנימית רצה 3 פעמים."
+      }
+    ],
   },
   {
     id: "l4",
@@ -394,6 +436,20 @@ print(count)`,
         print(spaces + nums)`,
     solutionExplanation: "עבור כל שורה i: מדפיסים (n-i) רווחים ואז את המספרים 1 עד i. בשורה 1: 3 רווחים + \"1\". בשורה 4: 0 רווחים + \"1234\".",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: 'מה הערך של " " * 3?',
+        options: ['"   " (שלושה רווחים)', '" "', '"3"', "שגיאה"],
+        correctIndex: 0,
+        explanation: "כפל מחרוזת חוזר על התו. \" \" * 3 יוצר מחרוזת של 3 רווחים."
+      },
+      {
+        question: "בפירמידה בגובה 4, כמה רווחים צריך בשורה הראשונה?",
+        options: ["3 (כי n-i = 4-1)", "4", "0", "1"],
+        correctIndex: 0,
+        explanation: "בשורה i=1 (הראשונה), צריך n-i = 4-1 = 3 רווחים לפני המספרים."
+      }
+    ],
   },
 
   // === LISTS ===
@@ -490,6 +546,20 @@ print(mystery([1,2,3,2,1,4]))`,
     correctAnswer: "[1, 2, 3, 4]",
     explanation: "הפונקציה בונה רשימה ללא כפילויות. כל איבר נוסף רק אם הוא לא כבר ברשימה. 1 ✓, 2 ✓, 3 ✓, 2 כבר קיים, 1 כבר קיים, 4 ✓.",
     examSource: "מבחן 5",
+    warmupQuestions: [
+      {
+        question: "מה עושה x not in [1, 2, 3] כש-x=2?",
+        options: ["False (כי 2 נמצא ברשימה)", "True", "שגיאה", "2"],
+        correctIndex: 0,
+        explanation: "not in בודק אם הערך לא נמצא. 2 כן נמצא ב-[1,2,3], לכן התוצאה False."
+      },
+      {
+        question: "מה עושה result.append(4) אם result = [1, 2]?",
+        options: ["result הופך ל-[1, 2, 4]", "result הופך ל-[4, 1, 2]", "שגיאה", "מחזיר [1, 2, 4]"],
+        correctIndex: 0,
+        explanation: "append מוסיף את הערך לסוף הרשימה."
+      }
+    ],
   },
 
   // === MATH ===
@@ -612,6 +682,20 @@ print(sum_digits(456))`,
     correctAnswer: "15",
     explanation: "456%10=6, total=6, n=45. 45%10=5, total=11, n=4. 4%10=4, total=15, n=0. סה\"כ: 4+5+6=15.",
     examSource: "מבחן 3",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 456 % 10?",
+        options: ["6", "45", "4", "456"],
+        correctIndex: 0,
+        explanation: "% 10 מחזיר את הספרה האחרונה. 456 % 10 = 6."
+      },
+      {
+        question: "מה הערך של 456 // 10?",
+        options: ["45", "46", "4", "6"],
+        correctIndex: 0,
+        explanation: "// 10 מסיר את הספרה האחרונה. 456 // 10 = 45."
+      }
+    ],
   },
 
   // More quiz variations
@@ -738,6 +822,20 @@ print(mystery([5, 3, 8, 1, 9]))`,
     correctAnswer: "1",
     explanation: "הפונקציה מוצאת את המינימום ברשימה. מתחילים מ-5, אז 3<5→3, 8>3, 1<3→1, 9>1. המינימום הוא 1.",
     examSource: "מבחן 5",
+    warmupQuestions: [
+      {
+        question: "אם result = 5 ו-lst[i] = 3, מה יקרה בתנאי lst[i] < result?",
+        options: ["result יתעדכן ל-3 (כי 3 < 5)", "result נשאר 5", "שגיאה", "result = 0"],
+        correctIndex: 0,
+        explanation: "3 < 5 → True, לכן result מתעדכן לערך הקטן יותר: 3."
+      },
+      {
+        question: "למה מאתחלים result = lst[0] ולא result = 0?",
+        options: ["כי הרשימה יכולה להכיל רק מספרים שליליים", "כי 0 תמיד הכי קטן", "כי lst[0] הוא המקסימום", "אין סיבה"],
+        correctIndex: 0,
+        explanation: "אם כל המספרים שליליים (למשל [-5,-3,-1]), אתחול ל-0 יתן תוצאה שגויה."
+      }
+    ],
   },
   {
     id: "t9",
@@ -753,6 +851,20 @@ print(mystery(12321))`,
     correctAnswer: "True",
     explanation: "ממירים ל-\"12321\". הפיכה: \"12321\". שווים → True. זוהי בדיקת פלינדרום.",
     examSource: "מבחן 3",
+    warmupQuestions: [
+      {
+        question: "מה הערך של str(12321)?",
+        options: ['"12321" (מחרוזת)', "12321 (מספר)", "שגיאה", "[1,2,3,2,1]"],
+        correctIndex: 0,
+        explanation: "str() ממיר מספר למחרוזת. str(12321) = \"12321\"."
+      },
+      {
+        question: 'מה הערך של "abc"[::-1]?',
+        options: ['"cba"', '"abc"', '"bca"', "שגיאה"],
+        correctIndex: 0,
+        explanation: "[::-1] הופך את המחרוזת. \"abc\"[::-1] = \"cba\"."
+      }
+    ],
   },
   {
     id: "t10",
@@ -816,6 +928,20 @@ print(s[::-1])`,
     correctAnswer: "yth\nnohtyP",
     explanation: "s[1:4] = \"yth\" (אינדקסים 1,2,3). s[::-1] = \"nohtyP\" (היפוך המחרוזת).",
     examSource: "מבחן 2",
+    warmupQuestions: [
+      {
+        question: 'מה הערך של "Python"[1]?',
+        options: ['"y"', '"P"', '"t"', '"Py"'],
+        correctIndex: 0,
+        explanation: "אינדקסים מתחילים מ-0: P=0, y=1. לכן \"Python\"[1] = 'y'."
+      },
+      {
+        question: "מה עושה s[1:4] על מחרוזת?",
+        options: ["מחזיר תווים מאינדקס 1 עד 3 (לא כולל 4)", "מחזיר תווים מאינדקס 1 עד 4", "מחזיר 4 תווים", "שגיאה"],
+        correctIndex: 0,
+        explanation: "slicing מחזיר תווים מהתחלה (כולל) עד סוף (לא כולל). s[1:4] = תווים 1,2,3."
+      }
+    ],
   },
 
   // === MORE CONDITIONS ===
@@ -839,6 +965,20 @@ print(classify(0))`,
     correctIndex: 2,
     explanation: "0 לא עובר אף תנאי (לא > 0, לא < 0), לכן מגיעים ל-return \"אפס\".",
     examSource: "מבחן 5",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 0 > 0?",
+        options: ["False", "True", "0", "שגיאה"],
+        correctIndex: 0,
+        explanation: "0 לא גדול מ-0, לכן התוצאה False."
+      },
+      {
+        question: "מה הערך של 0 < 0?",
+        options: ["False", "True", "0", "שגיאה"],
+        correctIndex: 0,
+        explanation: "0 לא קטן מ-0, לכן גם תנאי זה False."
+      }
+    ],
   },
   {
     id: "c7",
@@ -901,6 +1041,14 @@ print(x // y, x % y, x / y)`,
     correctIndex: 0,
     explanation: "15//4 = 3 (חלוקה שלמה). 15%4 = 3 (שארית). 15/4 = 3.75 (חלוקה רגילה).",
     examSource: "מבחן 3",
+    warmupQuestions: [
+      {
+        question: "מה ההבדל בין / לבין //?",
+        options: ["/ מחזיר עשרוני, // מחזיר שלם", "/ מחזיר שלם, // מחזיר עשרוני", "אין הבדל", "// זה חלוקה ואז כפל"],
+        correctIndex: 0,
+        explanation: "/ = חלוקה רגילה (15/4=3.75). // = חלוקה שלמה (15//4=3)."
+      }
+    ],
   },
   {
     id: "c10",
@@ -919,6 +1067,20 @@ print(x // y, x % y, x / y)`,
     return price`,
     solutionExplanation: "בודקים את הגיל: עד 12 → מחיר * 0.5 (חצי מחיר). מעל 60 → מחיר * 0.7 (30% הנחה). אחרת → מחיר מלא.",
     examSource: "מבחן 4",
+    warmupQuestions: [
+      {
+        question: "ילד בן 10 — באיזה קטגוריה הוא נופל (עד 12, 60+, או אחר)?",
+        options: ["עד 12 (ילד)", "60+ (מבוגר)", "אחר (ללא הנחה)", "לא ידוע"],
+        correctIndex: 0,
+        explanation: "10 <= 12, לכן הוא בקטגוריית ילדים ומקבל 50% הנחה."
+      },
+      {
+        question: "אם price = 100 והנחה היא 50%, מה הערך של price * 0.5?",
+        options: ["50.0", "100", "150", "0.5"],
+        correctIndex: 0,
+        explanation: "100 * 0.5 = 50.0. זה המחיר אחרי 50% הנחה."
+      }
+    ],
   },
 
   // === MORE LOOPS ===
@@ -938,6 +1100,26 @@ print(mystery(5))`,
     correctAnswer: "120",
     explanation: "זהו חישוב עצרת (factorial). 1*1=1, 1*2=2, 2*3=6, 6*4=24, 24*5=120.",
     examSource: "מבחן 3",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 1 * 2 * 3?",
+        options: ["6", "5", "9", "3"],
+        correctIndex: 0,
+        explanation: "1 × 2 = 2, 2 × 3 = 6. זהו 3! (עצרת של 3)."
+      },
+      {
+        question: "מה עושה result *= i כשresult=6 ו-i=4?",
+        options: ["result = 24", "result = 10", "result = 4", "result = 6"],
+        correctIndex: 0,
+        explanation: "result *= i זהה ל-result = result * i = 6 * 4 = 24."
+      },
+      {
+        question: "מה הערך של range(1, 6)?",
+        options: ["1, 2, 3, 4, 5", "0, 1, 2, 3, 4, 5", "1, 2, 3, 4, 5, 6", "0, 1, 2, 3, 4"],
+        correctIndex: 0,
+        explanation: "range(1, 6) מתחיל מ-1 ונגמר לפני 6: 1,2,3,4,5."
+      }
+    ],
   },
   {
     id: "l7",
@@ -953,6 +1135,14 @@ print(mystery(5))`,
         print("*" * i)`,
     solutionExplanation: "לולאה מ-n עד 1 (יורד). בכל שורה מדפיסים i כוכביות. 4, 3, 2, 1.",
     examSource: "מבחן 2",
+    warmupQuestions: [
+      {
+        question: "מה עושה range(n, 0, -1)?",
+        options: ["יורד מ-n עד 1", "עולה מ-0 עד n", "יורד מ-n עד 0 (כולל)", "שגיאה"],
+        correctIndex: 0,
+        explanation: "range(n, 0, -1) מייצר n, n-1, ..., 1. נעצר לפני 0."
+      }
+    ],
   },
   {
     id: "l8",
@@ -987,6 +1177,20 @@ print(mystery("abc"))`,
     correctAnswer: "cba",
     explanation: "הלולאה רצה מהאינדקס האחרון (2) עד 0. s[2]='c', s[1]='b', s[0]='a' → \"cba\".",
     examSource: "מבחן 5",
+    warmupQuestions: [
+      {
+        question: "עבור s = \"abc\", מה הערך של len(s) - 1?",
+        options: ["2", "3", "1", "0"],
+        correctIndex: 0,
+        explanation: "len(\"abc\") = 3. 3 - 1 = 2, שהוא האינדקס האחרון."
+      },
+      {
+        question: "מה הערך של range(2, -1, -1)?",
+        options: ["2, 1, 0", "2, 1", "2, 1, 0, -1", "0, 1, 2"],
+        correctIndex: 0,
+        explanation: "range(2, -1, -1) יורד מ-2 ונעצר לפני -1: 2, 1, 0."
+      }
+    ],
   },
   {
     id: "l10",
@@ -1008,6 +1212,26 @@ print(mystery("abc"))`,
         row = new_row`,
     solutionExplanation: "מתחילים מ-[1]. בכל איטרציה בונים שורה חדשה: מוסיפים 1, ואז סכום של כל זוג שכנים, ועוד 1.",
     examSource: "מבחן 7",
+    warmupQuestions: [
+      {
+        question: "בשורה [1, 2, 1] של משולש פסקל, איך מחשבים את המספר 2?",
+        options: ["1 + 1 (סכום שני שכנים מהשורה הקודמת)", "2 * 1", "1 + 0 + 1", "מספר השורה"],
+        correctIndex: 0,
+        explanation: "כל מספר במשולש פסקל הוא סכום שני המספרים מעליו בשורה הקודמת."
+      },
+      {
+        question: "אם row = [1, 3, 3, 1], מה הערך של row[1] + row[2]?",
+        options: ["6", "4", "3", "7"],
+        correctIndex: 0,
+        explanation: "row[1] = 3, row[2] = 3. 3 + 3 = 6. זה יהיה ערך בשורה הבאה."
+      },
+      {
+        question: "למה כל שורה במשולש פסקל מתחילה ונגמרת ב-1?",
+        options: ["כי אין שני שכנים מעל הקצוות", "כי 1 הוא ראשוני", "כי זה חוק מתמטי שרירותי", "כי הרשימה ריקה"],
+        correctIndex: 0,
+        explanation: "בקצוות אין שני שכנים לחבר, לכן שמים 1 כברירת מחדל."
+      }
+    ],
   },
   {
     id: "l11",
@@ -1024,6 +1248,20 @@ print(result)`,
     correctIndex: 0,
     explanation: "i רץ מ-0 עד 4. רק זוגיים מתווספים: 0, 2, 4 → \"024\".",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 0 % 2?",
+        options: ["0 (זוגי)", "1 (אי-זוגי)", "2", "שגיאה"],
+        correctIndex: 0,
+        explanation: "0 % 2 = 0, לכן 0 הוא מספר זוגי."
+      },
+      {
+        question: "מה עושה str(4)?",
+        options: ['"4" (מחרוזת)', "4 (מספר)", "שגיאה", "None"],
+        correctIndex: 0,
+        explanation: "str() ממיר מספר למחרוזת. str(4) = \"4\"."
+      }
+    ],
   },
 
   // === MORE LISTS ===
@@ -1040,6 +1278,20 @@ print(new_lst)`,
     correctIndex: 1,
     explanation: "List comprehension: רק אי-זוגיים (1,3,5) בריבוע: 1²=1, 3²=9, 5²=25 → [1, 9, 25].",
     examSource: "מבחן 5",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 3 ** 2?",
+        options: ["9", "6", "8", "3"],
+        correctIndex: 0,
+        explanation: "** הוא אופרטור חזקה. 3 ** 2 = 3² = 9."
+      },
+      {
+        question: "מה עושה [x for x in [1,2,3] if x > 1]?",
+        options: ["[2, 3]", "[1, 2, 3]", "[1]", "שגיאה"],
+        correctIndex: 0,
+        explanation: "list comprehension עם תנאי: רק איברים שעומדים בתנאי x > 1 נכללים."
+      }
+    ],
   },
   {
     id: "li7",
@@ -1065,6 +1317,20 @@ print(new_lst)`,
     return result`,
     solutionExplanation: "שני מצביעים - אחד לכל רשימה. בכל שלב מוסיפים את הקטן מבין השניים. בסוף מוסיפים את השאריות.",
     examSource: "מבחן 6",
+    warmupQuestions: [
+      {
+        question: "אם lst1 = [1, 3] ו-lst2 = [2, 4], מי הקטן: lst1[0] או lst2[0]?",
+        options: ["lst1[0] = 1 (הקטן)", "lst2[0] = 2 (הקטן)", "שניהם שווים", "לא ניתן לדעת"],
+        correctIndex: 0,
+        explanation: "1 < 2, לכן lst1[0] קטן יותר ויוכנס ראשון לתוצאה."
+      },
+      {
+        question: "מה עושה lst1[i:] כש-i=2 ו-lst1 = [1, 3, 5]?",
+        options: ["[5]", "[3, 5]", "[1, 3]", "[]"],
+        correctIndex: 0,
+        explanation: "lst1[2:] מחזיר את כל האיברים מאינדקס 2 ואילך: [5]."
+      }
+    ],
   },
   {
     id: "li8",
@@ -1093,6 +1359,20 @@ print(mystery([1, 1, 2, 2, 3, 1, 1]))`,
     correctIndex: 1,
     explanation: "הפונקציה מסירה כפילויות עוקבות בלבד. i=0→1(תמיד), 1==1 דלג, 2≠1→2, 2==2 דלג, 3≠2→3, 1≠3→1, 1==1 דלג → [1,2,3,1].",
     examSource: "מבחן 7",
+    warmupQuestions: [
+      {
+        question: "ברשימה [1,1,2,2,3], מה הערך של lst[-1] כשנמצאים באינדקס i=0?",
+        options: ["3 (האיבר האחרון ברשימה)", "1", "0", "שגיאה"],
+        correctIndex: 0,
+        explanation: "lst[-1] מחזיר את האיבר האחרון. עבור [1,1,2,2,3] זה 3."
+      },
+      {
+        question: 'מה ההבדל בין "הסרת כפילויות" לבין "הסרת כפילויות עוקבות"?',
+        options: ["עוקבות: רק כשאותו ערך חוזר ברצף", "אין הבדל", "כפילויות: רק ברצף", "עוקבות: מסיר הכל"],
+        correctIndex: 0,
+        explanation: "הסרת כפילויות עוקבות שומרת על ערכים שחוזרים במקומות שונים, כמו [1,2,1] → [1,2,1]."
+      }
+    ],
   },
   {
     id: "li10",
@@ -1108,6 +1388,20 @@ print(mystery([1, 1, 2, 2, 3, 1, 1]))`,
     return sorted_lst[1]`,
     solutionExplanation: "ממיינים בסדר יורד ומחזירים את האיבר השני. [9,8,7,5,3,1] → 8.",
     examSource: "מבחן 3",
+    warmupQuestions: [
+      {
+        question: "מה עושה sorted([5,3,8], reverse=True)?",
+        options: ["[8, 5, 3]", "[3, 5, 8]", "[5, 3, 8]", "שגיאה"],
+        correctIndex: 0,
+        explanation: "sorted עם reverse=True ממיין בסדר יורד: 8, 5, 3."
+      },
+      {
+        question: "ברשימה ממוינת בסדר יורד, באיזה אינדקס נמצא האיבר השני בגודלו?",
+        options: ["אינדקס 1", "אינדקס 0", "אינדקס 2", "האחרון"],
+        correctIndex: 0,
+        explanation: "אינדקס 0 = הגדול ביותר, אינדקס 1 = השני בגודלו."
+      }
+    ],
   },
   {
     id: "li11",
@@ -1122,6 +1416,14 @@ print(a, b)`,
     correctAnswer: "[1, 2, 3] [1, 2, 3, 4]",
     explanation: "a[:] יוצר עותק חדש של הרשימה. לכן שינוי ב-b לא משפיע על a. שונה מ-b = a!",
     examSource: "מבחן 4",
+    warmupQuestions: [
+      {
+        question: "מה ההבדל בין b = a לבין b = a[:] כשa הוא רשימה?",
+        options: ["a[:] יוצר עותק חדש, a רק מפנה", "אין הבדל", "a[:] מוחק את a", "a מייצר עותק, a[:] מפנה"],
+        correctIndex: 0,
+        explanation: "b = a → שניהם מצביעים לאותה רשימה. b = a[:] → b הוא עותק עצמאי."
+      }
+    ],
   },
 
   // === MORE MATH ===
@@ -1144,6 +1446,20 @@ print(a, b)`,
     return total == n`,
     solutionExplanation: "מחשבים סכום כל המחלקים מ-1 עד n-1. עבור 6: 1+2+3=6=n → True.",
     examSource: "מבחן 5",
+    warmupQuestions: [
+      {
+        question: "מה זה מחלק של מספר?",
+        options: ["מספר שמחלק אותו ללא שארית", "מספר גדול ממנו", "מספר ראשוני", "מספר זוגי"],
+        correctIndex: 0,
+        explanation: "מחלק של n הוא מספר i כך ש-n % i == 0. למשל, 3 הוא מחלק של 6."
+      },
+      {
+        question: "מהם כל המחלקים של 6 (לא כולל 6 עצמו)?",
+        options: ["1, 2, 3", "2, 3", "1, 6", "1, 2, 3, 6"],
+        correctIndex: 0,
+        explanation: "6 % 1 = 0, 6 % 2 = 0, 6 % 3 = 0. המחלקים (בלי 6) הם 1, 2, 3."
+      }
+    ],
   },
   {
     id: "m7",
@@ -1162,6 +1478,20 @@ print(mystery(9876))`,
     correctAnswer: "4",
     explanation: "סופרים ספרות: 9876→987→98→9→0. כל פעם מחלקים ב-10 וסופרים. 4 ספרות.",
     examSource: "מבחן 2",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 9876 // 10?",
+        options: ["987", "988", "9876", "98"],
+        correctIndex: 0,
+        explanation: "// 10 מסיר את הספרה האחרונה. 9876 // 10 = 987."
+      },
+      {
+        question: "כמה פעמים אפשר לחלק 100 ב-10 עד שמגיעים ל-0?",
+        options: ["3 פעמים (100→10→1→0)", "2 פעמים", "4 פעמים", "אינסוף"],
+        correctIndex: 0,
+        explanation: "100//10=10, 10//10=1, 1//10=0. סה\"כ 3 חלוקות = 3 ספרות."
+      }
+    ],
   },
   {
     id: "m8",
@@ -1182,6 +1512,26 @@ print(mystery(9876))`,
     correctIndex: 1,
     explanation: "6→3→10→5→16→8→4→2→1. סה\"כ 8 צעדים. זוהי השערת קולאץ.",
     examSource: "מבחן 7",
+    warmupQuestions: [
+      {
+        question: "אם n = 6 ו-n % 2 == 0, מה נעשה לפי הכלל?",
+        options: ["n = 6 // 2 = 3", "n = 3 * 6 + 1 = 19", "n = 6 - 1 = 5", "עוצרים"],
+        correctIndex: 0,
+        explanation: "6 זוגי (6%2==0), לכן n = 6 // 2 = 3."
+      },
+      {
+        question: "אם n = 3 ו-n % 2 != 0, מה נעשה?",
+        options: ["n = 3 * 3 + 1 = 10", "n = 3 // 2 = 1", "n = 3 - 1 = 2", "עוצרים"],
+        correctIndex: 0,
+        explanation: "3 אי-זוגי, לכן n = 3 * 3 + 1 = 10."
+      },
+      {
+        question: "מתי הלולאה while n != 1 נעצרת?",
+        options: ["כש-n מגיע ל-1", "כש-n מגיע ל-0", "אחרי 10 איטרציות", "כש-n זוגי"],
+        correctIndex: 0,
+        explanation: "הלולאה נעצרת כש-n == 1. זה תנאי העצירה."
+      }
+    ],
   },
   {
     id: "m9",
@@ -1215,6 +1565,26 @@ print(mystery(7))`,
     correctAnswer: "13",
     explanation: "זוהי סדרת פיבונאצ'י רקורסיבית. F(0)=0, F(1)=1, F(2)=1, F(3)=2, F(4)=3, F(5)=5, F(6)=8, F(7)=13.",
     examSource: "מבחן 6",
+    warmupQuestions: [
+      {
+        question: "מה הערך של mystery(0) אם mystery(n) מחזיר n כש-n <= 1?",
+        options: ["0", "1", "שגיאה", "None"],
+        correctIndex: 0,
+        explanation: "n=0 <= 1, לכן מחזירים n = 0. זה תנאי הבסיס."
+      },
+      {
+        question: "מה הערך של mystery(2) = mystery(1) + mystery(0)?",
+        options: ["1 (כי 1 + 0)", "2", "0", "3"],
+        correctIndex: 0,
+        explanation: "mystery(1) = 1, mystery(0) = 0. 1 + 0 = 1."
+      },
+      {
+        question: "מה הערך של mystery(4) = mystery(3) + mystery(2)?",
+        options: ["3 (כי 2 + 1)", "4", "5", "2"],
+        correctIndex: 0,
+        explanation: "mystery(3)=2, mystery(2)=1. 2+1=3. סדרת פיבונאצ'י: 0,1,1,2,3,5,8,13..."
+      }
+    ],
   },
   {
     id: "m11",
@@ -1234,6 +1604,20 @@ print(reverse_num(1234))`,
     correctIndex: 0,
     explanation: "בכל שלב: result*10 + ספרה אחרונה. 0*10+4=4, 4*10+3=43, 43*10+2=432, 432*10+1=4321.",
     examSource: "מבחן 3",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 1234 % 10?",
+        options: ["4", "123", "1", "1234"],
+        correctIndex: 0,
+        explanation: "% 10 מחזיר את הספרה האחרונה. 1234 % 10 = 4."
+      },
+      {
+        question: "אם result = 4 ונרצה להוסיף 3 כספרה חדשה, מה הנוסחה?",
+        options: ["result * 10 + 3 = 43", "result + 3 = 7", "result + 30 = 34", "3 * 10 + result = 34"],
+        correctIndex: 0,
+        explanation: "כפל ב-10 מזיז את הספרות שמאלה, ואז מוסיפים את הספרה החדשה: 4*10+3=43."
+      }
+    ],
   },
 
   // === EXTRA MIXED QUESTIONS ===
@@ -1307,6 +1691,20 @@ print(x and y, x or y, not x)`,
     return total`,
     solutionExplanation: "בכל שלב: מוציאים ספרה אחרונה (n%10) ומוסיפים לסכום. 4+3+2+1 = 10.",
     examSource: "מבחן 4",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 1234 % 10?",
+        options: ["4 (הספרה האחרונה)", "123", "1", "0"],
+        correctIndex: 0,
+        explanation: "% 10 מחלץ את הספרה האחרונה. 1234 % 10 = 4."
+      },
+      {
+        question: "אחרי n //= 10 כש-n=1234, מה הערך החדש של n?",
+        options: ["123", "1234", "12", "4"],
+        correctIndex: 0,
+        explanation: "n //= 10 מסיר את הספרה האחרונה. 1234 // 10 = 123."
+      }
+    ],
   },
   {
     id: "t14",
@@ -1320,6 +1718,20 @@ for key in d:
     correctAnswer: "a 1\nb 2\nc 3",
     explanation: "עוברים על מפתחות המילון ומדפיסים כל מפתח עם הערך שלו.",
     examSource: "מבחן 5",
+    warmupQuestions: [
+      {
+        question: 'איך ניגשים לערך של מפתח "b" במילון d = {"a": 1, "b": 2}?',
+        options: ['d["b"] → 2', "d[1] → 2", 'd.get[b]', "d[b]"],
+        correctIndex: 0,
+        explanation: 'ניגשים לערך במילון באמצעות המפתח: d["b"] = 2.'
+      },
+      {
+        question: "כשעוברים על מילון עם for key in d, מה מקבלים?",
+        options: ["את המפתחות", "את הערכים", "זוגות (מפתח, ערך)", "את האינדקסים"],
+        correctIndex: 0,
+        explanation: "for key in d עובר על המפתחות בלבד. כדי לקבל ערכים משתמשים ב-d[key]."
+      }
+    ],
   },
   {
     id: "li13",
