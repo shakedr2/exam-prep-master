@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { getRandomQuestions, type Question, type QuizQuestion, type TracingQuestion } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { AiTutor } from "@/components/AiTutor";
+import { PythonCodeBlock } from "@/components/PythonCodeBlock";
 
 const EXAM_DURATION = 3 * 60 * 60; // 3 hours in seconds
 const EXAM_QUESTIONS = 5;
@@ -133,12 +134,8 @@ const ExamMode = () => {
 
         {/* Question */}
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-4">
-          <p className="font-semibold">{q.type === "coding" ? (q as any).title : (q as any).question}</p>
-          {(q as any).code && (
-            <pre dir="ltr" className="overflow-x-auto rounded-xl bg-muted/80 p-4 text-sm font-mono border border-border">
-              <code>{(q as any).code}</code>
-            </pre>
-          )}
+          <p className="font-semibold text-card-foreground">{q.type === "coding" ? (q as any).title : (q as any).question}</p>
+          {(q as any).code && <PythonCodeBlock code={(q as any).code} />}
           {q.type === "coding" && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{(q as any).description}</p>}
 
           {q.type === "quiz" && (
