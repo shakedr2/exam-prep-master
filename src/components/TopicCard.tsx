@@ -2,6 +2,9 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import type { Topic } from "@/data/questions";
+import { questions } from "@/data/questions";
+import { useProgress } from "@/hooks/useProgress";
+import { getTopicAccuracy, PROFICIENCY_CONFIG } from "@/hooks/useAdaptive";
 
 interface TopicCardProps {
   topic: Topic;
@@ -12,6 +15,13 @@ interface TopicCardProps {
 
 export function TopicCard({ topic, completion, questionCount, index }: TopicCardProps) {
   const navigate = useNavigate();
+  const { progress } = useProgress();
+  const accuracy = getTopicAccuracy(topic.id, questions, progress.answeredQuestions);
+  const proficiency = accuracy < 50 ? "beginner" : accuracy < 80 ? "intermediate" : "advanced";
+  const config = PROFICIENCY_CONFIG[proficiency];
+  const hasAnswered = Object.keys(progress.answeredQuestions).some(id =>
+    questions.find(q => q.id === id && q.topic === topic.id)
+  );
 
   return (
     <motion.div
@@ -31,7 +41,14 @@ export function TopicCard({ topic, completion, questionCount, index }: TopicCard
           <h3 className="font-bold text-foreground">{topic.name}</h3>
           <p className="text-xs text-muted-foreground truncate">{topic.description}</p>
         </div>
-        <span className="text-xs font-medium text-muted-foreground">{questionCount} שאלות</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-muted-foreground">{questionCount} שאלות</span>
+          {hasAnswered && (
+            <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${config.color}`}>
+              {config.icon}
+            </span>
+          )}
+        </div>
       </div>
       <div className="space-y-1">
         <div className="flex justify-between text-xs">

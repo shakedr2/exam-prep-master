@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronLeft } from "lucide-react";
+import { ArrowRight, ChevronLeft, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { QuizView } from "@/components/QuizView";
@@ -9,19 +9,35 @@ import { TracingView } from "@/components/TracingView";
 import { CodingView } from "@/components/CodingView";
 import { FillBlankView } from "@/components/FillBlankView";
 import { WarmupView } from "@/components/WarmupView";
-import { topics, getQuestionsByTopic, type Question } from "@/data/questions";
+import { topics, questions as allQuestions, type Question } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { AiTutor } from "@/components/AiTutor";
+import { useAdaptive, PROFICIENCY_CONFIG } from "@/hooks/useAdaptive";
 
 const TopicPractice = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
-  const { answerQuestion } = useProgress();
+  const { answerQuestion, progress } = useProgress();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [warmupDone, setWarmupDone] = useState(false);
+  const [showLevelUp, setShowLevelUp] = useState(false);
 
   const topic = topics.find(t => t.id === topicId);
-  const topicQuestions = useMemo(() => getQuestionsByTopic(topicId as any), [topicId]);
+  const { sortedQuestions: topicQuestions, proficiency, accuracy } = useAdaptive(
+    topicId as any,
+    allQuestions,
+    progress.answeredQuestions
+  );
+
+  const prevProficiency = useRef(proficiency);
+  useEffect(() => {
+    if (prevProficiency.current !== proficiency && proficiency !== "beginner") {
+      setShowLevelUp(true);
+      const timer = setTimeout(() => setShowLevelUp(false), 3000);
+      return () => clearTimeout(timer);
+    }
+    prevProficiency.current = proficiency;
+  }, [proficiency]);
 
   if (!topic || topicQuestions.length === 0) {
     return (
@@ -58,7 +74,12 @@ const TopicPractice = () => {
             <ArrowRight className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <p className="text-xs text-muted-foreground">{topic.name}</p>
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-xs text-muted-foreground">{topic.name}</p>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${PROFICIENCY_CONFIG[proficiency].color}`}>
+                {PROFICIENCY_CONFIG[proficiency].icon} {PROFICIENCY_CONFIG[proficiency].label}
+              </span>
+            </div>
             <div className="flex items-center gap-2">
               <Progress value={progressPct} className="h-2 flex-1" />
               <span className="text-xs font-medium text-muted-foreground">
@@ -67,6 +88,23 @@ const TopicPractice = () => {
             </div>
           </div>
         </div>
+
+        {/* Level Up Animation */}
+        <AnimatePresence>
+          {showLevelUp && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: -10 }}
+              className="mb-4 rounded-xl bg-gradient-to-r from-amber-500/20 to-emerald-500/20 border border-amber-500/30 p-3 text-center"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <TrendingUp className="h-5 w-5 text-amber-500" />
+                <p className="text-sm font-bold text-foreground">🎉 עלית רמה! עכשיו אתה {PROFICIENCY_CONFIG[proficiency].label}</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Warmup or Question */}
         <AnimatePresence mode="wait">
