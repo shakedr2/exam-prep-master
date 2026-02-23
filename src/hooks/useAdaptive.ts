@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import type { Question, TopicId, Difficulty } from "@/data/questions";
 import type { UserProgress } from "@/hooks/useProgress";
 
@@ -39,19 +39,29 @@ export function useAdaptive(
   allQuestions: Question[],
   answeredQuestions: UserProgress["answeredQuestions"]
 ): AdaptiveResult {
-  return useMemo(() => {
+  // Capture initial answered state to lock question order for the session
+  const initialAnsweredRef = useRef(answeredQuestions);
+  const initialTopicRef = useRef(topicId);
+
+  // Reset if topic changes
+  if (initialTopicRef.current !== topicId) {
+    initialAnsweredRef.current = answeredQuestions;
+    initialTopicRef.current = topicId;
+  }
+
+  const sortedQuestions = useMemo(() => {
     const topicQuestions = allQuestions.filter(q => q.topic === topicId);
-    const accuracy = getTopicAccuracy(topicId, allQuestions, answeredQuestions);
+    const initialAnswered = initialAnsweredRef.current;
+    const accuracy = getTopicAccuracy(topicId, allQuestions, initialAnswered);
     const proficiency = getProficiency(accuracy);
     const order = DIFFICULTY_ORDER[proficiency];
 
-    // Categorize questions
     const incorrect: Question[] = [];
     const unanswered: Question[] = [];
     const correct: Question[] = [];
 
     for (const q of topicQuestions) {
-      const a = answeredQuestions[q.id];
+      const a = initialAnswered[q.id];
       if (a && !a.correct) incorrect.push(q);
       else if (!a) unanswered.push(q);
       else correct.push(q);
@@ -60,14 +70,20 @@ export function useAdaptive(
     const sortByDifficulty = (arr: Question[]) =>
       [...arr].sort((a, b) => order.indexOf(a.difficulty) - order.indexOf(b.difficulty));
 
-    const sortedQuestions = [
+    return [
       ...sortByDifficulty(incorrect),
       ...sortByDifficulty(unanswered),
       ...sortByDifficulty(correct),
     ];
+  }, [topicId, allQuestions]);
 
-    return { sortedQuestions, proficiency, accuracy };
+  // Live proficiency (updates as user answers)
+  const { proficiency, accuracy } = useMemo(() => {
+    const acc = getTopicAccuracy(topicId, allQuestions, answeredQuestions);
+    return { proficiency: getProficiency(acc), accuracy: acc };
   }, [topicId, allQuestions, answeredQuestions]);
+
+  return { sortedQuestions, proficiency, accuracy };
 }
 
 export const PROFICIENCY_CONFIG = {
