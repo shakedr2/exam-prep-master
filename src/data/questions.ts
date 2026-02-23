@@ -1750,6 +1750,819 @@ for key in d:
     solutionExplanation: "עוברים על כל איבר ברשימה ומצטברים. 0+1+2+3+4+5 = 15.",
     examSource: "מבחן 1",
   },
+
+  // ==========================================
+  // EXAM QUESTIONS - Batch 3 (24 שאלות מבחן מדויקות)
+  // ==========================================
+
+  // --- TRACING EXAM ---
+  {
+    id: "t15",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(lst):
+    for i in range(len(lst) // 2):
+        lst[i], lst[len(lst)-1-i] = lst[len(lst)-1-i], lst[i]
+    return lst
+
+print(mystery([1, 2, 3, 4, 5]))`,
+    correctAnswer: "[5, 4, 3, 2, 1]",
+    explanation: "הפונקציה הופכת רשימה. מחליפה i=0↔4: [5,2,3,4,1], i=1↔3: [5,4,3,2,1]. len//2=2 איטרציות.",
+    examSource: "מבחן א' 2024",
+    warmupQuestions: [
+      {
+        question: "מה הערך של len([1,2,3,4,5]) // 2?",
+        options: ["2", "3", "2.5", "5"],
+        correctIndex: 0,
+        explanation: "len = 5. 5 // 2 = 2 (חלוקה שלמה). הלולאה תרוץ פעמיים (i=0, i=1)."
+      },
+      {
+        question: "ברשימה בגודל 5, מה הערך של len(lst)-1-i כש-i=0?",
+        options: ["4 (האינדקס האחרון)", "5", "3", "0"],
+        correctIndex: 0,
+        explanation: "5-1-0 = 4. זה האינדקס של האיבר האחרון ברשימה."
+      },
+      {
+        question: "מה עושה a, b = b, a?",
+        options: ["מחליף בין a ל-b", "מעתיק a ל-b", "מוחק את שניהם", "שגיאה"],
+        correctIndex: 0,
+        explanation: "Python מאפשרת החלפת ערכים בשורה אחת: a מקבל את b ולהיפך."
+      }
+    ],
+  },
+  {
+    id: "t16",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(s):
+    count = {}
+    for c in s:
+        if c in count:
+            count[c] += 1
+        else:
+            count[c] = 1
+    return count
+
+print(mystery("abba"))`,
+    correctAnswer: "{'a': 2, 'b': 2}",
+    explanation: "בונים מילון ספירה: a→1, b→1, b→2, a→2. התוצאה: {'a': 2, 'b': 2}.",
+    examSource: "מבחן א' 2024",
+    warmupQuestions: [
+      {
+        question: "מה עושה count[c] = 1?",
+        options: ["יוצר מפתח חדש c עם ערך 1", "משנה את c ל-1", "שגיאה אם c לא קיים", "מוחק את c"],
+        correctIndex: 0,
+        explanation: "אם המפתח לא קיים, שורה זו יוצרת אותו עם ערך התחלתי 1."
+      },
+      {
+        question: "מה הערך של 'b' in {'a': 1, 'b': 2}?",
+        options: ["True", "False", "2", "שגיאה"],
+        correctIndex: 0,
+        explanation: "in בודק אם המפתח קיים במילון. 'b' קיים → True."
+      }
+    ],
+  },
+  {
+    id: "t17",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(n):
+    if n < 10:
+        return n
+    return n % 10 + mystery(n // 10)
+
+print(mystery(4567))`,
+    correctAnswer: "22",
+    explanation: "רקורסיה לסכום ספרות: mystery(4567) = 7 + mystery(456) = 7 + 6 + mystery(45) = 7+6+5+mystery(4) = 7+6+5+4 = 22.",
+    examSource: "מבחן ב' 2024",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 4567 % 10?",
+        options: ["7", "456", "4", "67"],
+        correctIndex: 0,
+        explanation: "% 10 מחלץ את הספרה האחרונה: 4567 % 10 = 7."
+      },
+      {
+        question: "מה הערך של 4567 // 10?",
+        options: ["456", "457", "7", "4567"],
+        correctIndex: 0,
+        explanation: "// 10 מסיר את הספרה האחרונה: 4567 // 10 = 456."
+      },
+      {
+        question: "מתי הרקורסיה נעצרת בפונקציה הזו?",
+        options: ["כש-n < 10 (ספרה בודדת)", "כש-n == 0", "כש-n == 1", "אף פעם"],
+        correctIndex: 0,
+        explanation: "תנאי העצירה: n < 10, כלומר כשנשארה ספרה אחת בלבד."
+      }
+    ],
+  },
+  {
+    id: "t18",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(s):
+    result = ""
+    for i in range(len(s)):
+        if s[i] != s[len(s)-1-i]:
+            result += s[i]
+    return result
+
+print(mystery("abcba"))`,
+    correctAnswer: "",
+    explanation: "בודקים כל תו מול המראה שלו: a==a, b==b, c==c, b==b, a==a. אף תו לא שונה מהמראה → מחרוזת ריקה.",
+    examSource: "מבחן ב' 2024",
+    warmupQuestions: [
+      {
+        question: 'עבור s = "abcba", מה הערך של s[0] ו-s[4]?',
+        options: ['שניהם "a"', '"a" ו-"b"', '"b" ו-"a"', '"a" ו-"c"'],
+        correctIndex: 0,
+        explanation: 's[0] = "a" ו-s[4] = "a". הם שווים כי המחרוזת היא פלינדרום.'
+      },
+      {
+        question: "מה מחזירה הפונקציה כשהמחרוזת היא פלינדרום (סימטרית)?",
+        options: ['מחרוזת ריקה ""', "את המחרוזת עצמה", "True", "None"],
+        correctIndex: 0,
+        explanation: 'בפלינדרום כל תו שווה למראה שלו, לכן אף תו לא מתווסף → "".'
+      }
+    ],
+  },
+  {
+    id: "t19",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(lst):
+    n = len(lst)
+    for i in range(n):
+        for j in range(0, n-i-1):
+            if lst[j] > lst[j+1]:
+                lst[j], lst[j+1] = lst[j+1], lst[j]
+    return lst
+
+print(mystery([64, 25, 12, 22, 11]))`,
+    correctAnswer: "[11, 12, 22, 25, 64]",
+    explanation: "זהו Bubble Sort. בכל סיבוב האיבר הגדול ביותר 'צף' למקומו. אחרי כל הסיבובים הרשימה ממוינת.",
+    examSource: "מבחן א' 2024",
+    warmupQuestions: [
+      {
+        question: "ב-Bubble Sort, מה קורה כש-lst[j] > lst[j+1]?",
+        options: ["מחליפים ביניהם", "מוחקים את lst[j]", "ממשיכים בלי שינוי", "שגיאה"],
+        correctIndex: 0,
+        explanation: "אם האיבר הנוכחי גדול מהבא, מחליפים ביניהם כדי 'להציף' את הגדול ימינה."
+      },
+      {
+        question: "למה הלולאה הפנימית רצה עד n-i-1?",
+        options: ["כי אחרי כל סיבוב האיבר הגדול כבר במקומו", "כדי למנוע שגיאת אינדקס בלבד", "כי i תמיד 0", "אין סיבה מיוחדת"],
+        correctIndex: 0,
+        explanation: "אחרי סיבוב i, ה-i איברים האחרונים כבר ממוינים ולא צריך לבדוק אותם."
+      },
+      {
+        question: "אחרי סיבוב ראשון (i=0) על [64,25,12,22,11], מה האיבר האחרון?",
+        options: ["64 (הגדול ביותר צף לסוף)", "11", "25", "22"],
+        correctIndex: 0,
+        explanation: "בסיבוב הראשון, 64 מוחלף עם כל אחד שקטן ממנו עד שמגיע לסוף."
+      }
+    ],
+  },
+  {
+    id: "t20",
+    type: "tracing",
+    topic: "tracing",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(lst):
+    even = []
+    odd = []
+    for x in lst:
+        if x % 2 == 0:
+            even.append(x)
+        else:
+            odd.append(x)
+    return even + odd
+
+print(mystery([3, 8, 1, 4, 7, 2]))`,
+    correctAnswer: "[8, 4, 2, 3, 1, 7]",
+    explanation: "מפרידים לזוגיים [8,4,2] ואי-זוגיים [3,1,7], ואז מחברים: [8,4,2,3,1,7].",
+    examSource: "מבחן ב' 2024",
+    warmupQuestions: [
+      {
+        question: "מה עושה even + odd כש-even=[8,4] ו-odd=[3,1]?",
+        options: ["[8, 4, 3, 1]", "[3, 1, 8, 4]", "[11, 5]", "שגיאה"],
+        correctIndex: 0,
+        explanation: "חיבור רשימות (concatenation) שם את הראשונה לפני השנייה."
+      },
+      {
+        question: "מה הערך של 8 % 2?",
+        options: ["0 (זוגי)", "1 (אי-זוגי)", "4", "8"],
+        correctIndex: 0,
+        explanation: "8 מתחלק ב-2 בדיוק, לכן 8 % 2 = 0 — מספר זוגי."
+      }
+    ],
+  },
+
+  // --- CONDITIONS EXAM ---
+  {
+    id: "c12",
+    type: "quiz",
+    topic: "conditions",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def classify_triangle(a, b, c):
+    if a + b <= c or a + c <= b or b + c <= a:
+        return "לא משולש"
+    if a == b == c:
+        return "שווה צלעות"
+    if a == b or b == c or a == c:
+        return "שווה שוקיים"
+    return "שונה צלעות"
+
+print(classify_triangle(5, 5, 8))`,
+    options: ["שווה צלעות", "שווה שוקיים", "שונה צלעות", "לא משולש"],
+    correctIndex: 1,
+    explanation: "5+5>8, 5+8>5, 5+8>5 → משולש. a≠b≠c? לא (5==5). a==b? כן → שווה שוקיים.",
+    examSource: "מבחן א' 2024",
+    warmupQuestions: [
+      {
+        question: "מתי שלושה צלעות לא יכולים ליצור משולש?",
+        options: ["כשצלע אחת גדולה או שווה לסכום השתיים", "כשכולם שווים", "כשיש צלע שלילית", "תמיד אפשר"],
+        correctIndex: 0,
+        explanation: "אי-שוויון המשולש: סכום כל שתי צלעות חייב להיות גדול מהשלישית."
+      },
+      {
+        question: "מה הערך של 5 == 5 == 8?",
+        options: ["False (כי 5 != 8)", "True", "שגיאה", "5"],
+        correctIndex: 0,
+        explanation: "Python בודק 5==5 (True) ואז 5==8 (False). True and False = False."
+      }
+    ],
+  },
+  {
+    id: "c13",
+    type: "tracing",
+    topic: "conditions",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(a, b, c):
+    if a > b:
+        a, b = b, a
+    if b > c:
+        b, c = c, b
+    if a > b:
+        a, b = b, a
+    return a, b, c
+
+print(mystery(3, 1, 2))`,
+    correctAnswer: "(1, 2, 3)",
+    explanation: "מיון 3 מספרים: 3>1→swap→(1,3,2). 3>2→swap→(1,2,3). 1>2? לא. תוצאה: (1,2,3).",
+    examSource: "מבחן ב' 2024",
+    warmupQuestions: [
+      {
+        question: "אם a=3 ו-b=1, מה קורה אחרי a, b = b, a?",
+        options: ["a=1, b=3", "a=3, b=1", "a=1, b=1", "שגיאה"],
+        correctIndex: 0,
+        explanation: "ההחלפה שמה את b (=1) ב-a ואת a (=3) ב-b."
+      },
+      {
+        question: "כמה החלפות מספיקות כדי למיין 3 מספרים?",
+        options: ["לכל היותר 3", "בדיוק 3", "1 בלבד", "תלוי בסדר"],
+        correctIndex: 0,
+        explanation: "עם 3 השוואות-והחלפות (a↔b, b↔c, a↔b שוב) ניתן למיין 3 מספרים."
+      }
+    ],
+  },
+  {
+    id: "c14",
+    type: "quiz",
+    topic: "conditions",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def leap_year(year):
+    if year % 400 == 0:
+        return True
+    if year % 100 == 0:
+        return False
+    if year % 4 == 0:
+        return True
+    return False
+
+print(leap_year(1900))`,
+    options: ["True", "False", "None", "שגיאה"],
+    correctIndex: 1,
+    explanation: "1900 % 400 != 0. 1900 % 100 == 0 → False. שנה שמתחלקת ב-100 אבל לא ב-400 אינה מעוברת.",
+    examSource: "מבחן א' 2024",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 1900 % 400?",
+        options: ["300", "0", "100", "1900"],
+        correctIndex: 0,
+        explanation: "1900 / 400 = 4 שארית 300. לכן 1900 % 400 = 300."
+      },
+      {
+        question: "מה הערך של 1900 % 100?",
+        options: ["0", "19", "100", "1"],
+        correctIndex: 0,
+        explanation: "1900 מתחלק ב-100 בדיוק (19*100), לכן 1900 % 100 = 0."
+      }
+    ],
+  },
+
+  // --- LOOPS EXAM ---
+  {
+    id: "l13",
+    type: "tracing",
+    topic: "loops",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(n):
+    for i in range(1, n+1):
+        line = ""
+        for j in range(1, n+1):
+            line += str(i * j) + "\\t"
+        print(line.strip())
+
+mystery(3)`,
+    correctAnswer: "1\t2\t3\n2\t4\t6\n3\t6\t9",
+    explanation: "זוהי לוח הכפל. שורה i מכילה i*1, i*2, ..., i*n. עבור n=3: 1,2,3 | 2,4,6 | 3,6,9.",
+    examSource: "מבחן א' 2024",
+    warmupQuestions: [
+      {
+        question: "בלוח הכפל, מה הערך בשורה 2, עמודה 3?",
+        options: ["6 (כי 2×3)", "5", "23", "8"],
+        correctIndex: 0,
+        explanation: "בלוח הכפל, הערך בשורה i עמודה j הוא i × j. 2 × 3 = 6."
+      },
+      {
+        question: 'מה עושה "\\t" במחרוזת?',
+        options: ["טאב (רווח גדול בין ערכים)", "ירידת שורה", "מוחק תו", "שגיאה"],
+        correctIndex: 0,
+        explanation: '"\\t" הוא תו טאב שמשמש ליצירת ריווח אחיד בין עמודות.'
+      }
+    ],
+  },
+  {
+    id: "l14",
+    type: "coding",
+    topic: "loops",
+    difficulty: "hard",
+    title: "מספר ארמסטרונג",
+    description: "כתבו פונקציה is_armstrong(n) שבודקת אם n הוא מספר ארמסטרונג.\nמספר ארמסטרונג הוא מספר שסכום ספרותיו בחזקת מספר הספרות שווה למספר עצמו.\n\nלדוגמה: 153 = 1³ + 5³ + 3³ = 1+125+27 = 153",
+    sampleInput: "is_armstrong(153)",
+    sampleOutput: "True",
+    solution: `def is_armstrong(n):
+    digits = str(n)
+    power = len(digits)
+    total = 0
+    for d in digits:
+        total += int(d) ** power
+    return total == n`,
+    solutionExplanation: "153 → 3 ספרות. 1³+5³+3³ = 1+125+27 = 153 = n → True.",
+    examSource: "מבחן ב' 2024",
+    warmupQuestions: [
+      {
+        question: "כמה ספרות יש למספר 153?",
+        options: ["3", "4", "2", "153"],
+        correctIndex: 0,
+        explanation: 'len(str(153)) = len("153") = 3 ספרות.'
+      },
+      {
+        question: "מה הערך של 5 ** 3?",
+        options: ["125", "15", "8", "243"],
+        correctIndex: 0,
+        explanation: "5 ** 3 = 5³ = 5 × 5 × 5 = 125."
+      },
+      {
+        question: 'מה עושה int("5")?',
+        options: ["ממיר את התו למספר 5", "שגיאה", "מחזיר 0", 'מחזיר "5"'],
+        correctIndex: 0,
+        explanation: 'int() ממיר מחרוזת למספר שלם. int("5") = 5.'
+      }
+    ],
+  },
+  {
+    id: "l15",
+    type: "quiz",
+    topic: "loops",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(s):
+    words = s.split()
+    result = ""
+    for w in words:
+        result += w[0]
+    return result
+
+print(mystery("Hello World Python"))`,
+    options: ["HWP", "Hello", "HWp", "hwp"],
+    correctIndex: 0,
+    explanation: 'מפרקים למילים ["Hello","World","Python"], לוקחים אות ראשונה מכל אחת: H+W+P = "HWP".',
+    examSource: "מבחן ב' 2024",
+    warmupQuestions: [
+      {
+        question: 'מה עושה "Hello World".split()?',
+        options: ['["Hello", "World"]', '"Hello World"', '["H","e","l","l","o"," ","W","o","r","l","d"]', "שגיאה"],
+        correctIndex: 0,
+        explanation: "split() מפרק מחרוזת למילים לפי רווחים."
+      },
+      {
+        question: 'מה הערך של "Hello"[0]?',
+        options: ['"H"', '"e"', '"Hello"', "0"],
+        correctIndex: 0,
+        explanation: "[0] מחזיר את התו הראשון. \"Hello\"[0] = 'H'."
+      }
+    ],
+  },
+  {
+    id: "l16",
+    type: "tracing",
+    topic: "loops",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(n):
+    result = []
+    while n > 0:
+        result.append(n % 2)
+        n //= 2
+    result.reverse()
+    return result
+
+print(mystery(13))`,
+    correctAnswer: "[1, 1, 0, 1]",
+    explanation: "המרה לבינארי: 13%2=1, 6%2=0, 3%2=1, 1%2=1. הפיכה: [1,1,0,1]. 13 בבינארי = 1101.",
+    examSource: "מבחן א' 2024",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 13 % 2?",
+        options: ["1 (אי-זוגי)", "0 (זוגי)", "6", "13"],
+        correctIndex: 0,
+        explanation: "13 הוא אי-זוגי, לכן 13 % 2 = 1."
+      },
+      {
+        question: "מה עושה .reverse() על רשימה [1, 0, 1, 1]?",
+        options: ["הופכת ל-[1, 1, 0, 1]", "ממיינת", "מחזירה רשימה חדשה", "מוחקת"],
+        correctIndex: 0,
+        explanation: ".reverse() הופכת את הרשימה במקום: [1,0,1,1] → [1,1,0,1]."
+      }
+    ],
+  },
+
+  // --- LISTS EXAM ---
+  {
+    id: "li14",
+    type: "tracing",
+    topic: "lists",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(lst):
+    result = []
+    for i in range(len(lst)):
+        total = 0
+        for j in range(i + 1):
+            total += lst[j]
+        result.append(total)
+    return result
+
+print(mystery([1, 2, 3, 4]))`,
+    correctAnswer: "[1, 3, 6, 10]",
+    explanation: "סכום מצטבר: [1], [1+2], [1+2+3], [1+2+3+4] = [1, 3, 6, 10].",
+    examSource: "מבחן ב' 2024",
+    warmupQuestions: [
+      {
+        question: "כש-i=2, מה הערך של range(i + 1)?",
+        options: ["range(3) → 0,1,2", "range(2) → 0,1", "range(3) → 1,2,3", "range(2) → 0,1,2"],
+        correctIndex: 0,
+        explanation: "range(2+1) = range(3) = 0,1,2. הלולאה הפנימית סוכמת 3 איברים."
+      },
+      {
+        question: "מה הסכום של lst[0] + lst[1] + lst[2] כש-lst = [1,2,3,4]?",
+        options: ["6", "3", "10", "7"],
+        correctIndex: 0,
+        explanation: "1 + 2 + 3 = 6. זה הסכום המצטבר עד אינדקס 2."
+      }
+    ],
+  },
+  {
+    id: "li15",
+    type: "quiz",
+    topic: "lists",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(lst):
+    return list(zip(lst, lst[1:]))
+
+print(mystery([1, 2, 3, 4]))`,
+    options: ["[(1,2), (2,3), (3,4)]", "[(1,2), (3,4)]", "[(1,1), (2,2), (3,3)]", "[(2,3), (3,4), (4,5)]"],
+    correctIndex: 0,
+    explanation: "zip([1,2,3,4], [2,3,4]) יוצר זוגות עוקבים: (1,2), (2,3), (3,4).",
+    examSource: "מבחן א' 2024",
+    warmupQuestions: [
+      {
+        question: "מה הערך של [1,2,3,4][1:]?",
+        options: ["[2, 3, 4]", "[1, 2, 3]", "[1]", "[2, 3, 4, 5]"],
+        correctIndex: 0,
+        explanation: "[1:] מחזיר את כל האיברים מאינדקס 1 ואילך: [2, 3, 4]."
+      },
+      {
+        question: "מה עושה zip([1,2], [3,4])?",
+        options: ["יוצר זוגות: (1,3), (2,4)", "מחבר: [1,2,3,4]", "כופל: [3,8]", "שגיאה"],
+        correctIndex: 0,
+        explanation: "zip מתאים איברים לפי מיקום: האיבר הראשון מכל רשימה ביחד, וכן הלאה."
+      }
+    ],
+  },
+  {
+    id: "li16",
+    type: "coding",
+    topic: "lists",
+    difficulty: "hard",
+    title: "מיון הכנסה (Insertion Sort)",
+    description: "כתבו פונקציה insertion_sort(lst) שממיינת רשימה באמצעות אלגוריתם מיון הכנסה.\n\nהאלגוריתם: עוברים על כל איבר ומכניסים אותו למיקום הנכון בחלק הממוין.",
+    sampleInput: "insertion_sort([5, 2, 4, 6, 1, 3])",
+    sampleOutput: "[1, 2, 3, 4, 5, 6]",
+    solution: `def insertion_sort(lst):
+    for i in range(1, len(lst)):
+        key = lst[i]
+        j = i - 1
+        while j >= 0 and lst[j] > key:
+            lst[j + 1] = lst[j]
+            j -= 1
+        lst[j + 1] = key
+    return lst`,
+    solutionExplanation: "כל איבר 'נכנס' למקומו הנכון בחלק הממוין. i=1: 2<5 → [2,5,4,6,1,3]. i=2: 4 בין 2 ל-5 → [2,4,5,6,1,3]. וכן הלאה.",
+    examSource: "מבחן ב' 2024",
+    warmupQuestions: [
+      {
+        question: "במיון הכנסה, למה מתחילים מ-i=1 ולא מ-i=0?",
+        options: ["כי איבר בודד כבר ממוין", "כי אינדקס 0 שמור", "כדי לחסוך זמן", "אין סיבה"],
+        correctIndex: 0,
+        explanation: "האיבר הראשון (i=0) נחשב 'ממוין' בפני עצמו. מתחילים מ-i=1 ומכניסים לחלק הממוין."
+      },
+      {
+        question: "ברשימה [2,5,4,...], כדי להכניס 4 למקומו, מה צריך לעשות?",
+        options: ["להזיז את 5 ימינה ולשים 4 במקומו", "למחוק את 5", "להחליף 2 ו-4", "לא לעשות כלום"],
+        correctIndex: 0,
+        explanation: "4 < 5, אז מזיזים 5 ימינה ומכניסים 4 לפניו: [2,4,5,...]."
+      }
+    ],
+  },
+  {
+    id: "li17",
+    type: "tracing",
+    topic: "lists",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(lst):
+    return [x for x in lst if lst.count(x) == 1]
+
+print(mystery([1, 2, 3, 2, 4, 3, 5]))`,
+    correctAnswer: "[1, 4, 5]",
+    explanation: "מחזירה רק איברים שמופיעים פעם אחת בלבד. 1→1 פעם ✓, 2→2 פעמים ✗, 3→2 ✗, 4→1 ✓, 5→1 ✓.",
+    examSource: "מבחן א' 2024",
+    warmupQuestions: [
+      {
+        question: "מה הערך של [1,2,3,2].count(2)?",
+        options: ["2", "1", "3", "0"],
+        correctIndex: 0,
+        explanation: ".count(2) סופר כמה פעמים 2 מופיע ברשימה: פעמיים."
+      },
+      {
+        question: "מה עושה [x for x in lst if condition]?",
+        options: ["יוצר רשימה חדשה רק עם איברים שעומדים בתנאי", "מוחק איברים", "ממיין", "שגיאה"],
+        correctIndex: 0,
+        explanation: "list comprehension עם תנאי — סינון רשימה. רק איברים שהתנאי True עבורם נכללים."
+      }
+    ],
+  },
+  {
+    id: "li18",
+    type: "quiz",
+    topic: "lists",
+    difficulty: "easy",
+    question: "מה ידפיס הקוד הבא?",
+    code: `lst = [10, 20, 30, 40, 50]
+print(lst[::2])`,
+    options: ["[10, 30, 50]", "[20, 40]", "[10, 20, 30]", "[50, 40, 30, 20, 10]"],
+    correctIndex: 0,
+    explanation: "lst[::2] לוקח כל איבר שני: אינדקסים 0, 2, 4 → [10, 30, 50].",
+    examSource: "מבחן ב' 2024",
+  },
+
+  // --- MATH EXAM ---
+  {
+    id: "m13",
+    type: "tracing",
+    topic: "math",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(n):
+    factors = []
+    d = 2
+    while n > 1:
+        while n % d == 0:
+            factors.append(d)
+            n //= d
+        d += 1
+    return factors
+
+print(mystery(60))`,
+    correctAnswer: "[2, 2, 3, 5]",
+    explanation: "פירוק לגורמים ראשוניים: 60÷2=30, 30÷2=15, 15÷3=5, 5÷5=1. גורמים: [2,2,3,5].",
+    examSource: "מבחן א' 2024",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 60 // 2?",
+        options: ["30", "60", "2", "29"],
+        correctIndex: 0,
+        explanation: "60 חלקי 2 = 30. אחרי חילוק, ממשיכים לבדוק אם 30 מתחלק ב-2."
+      },
+      {
+        question: "למה מתחילים מ-d=2 ולא מ-d=1?",
+        options: ["כי 1 לא נחשב גורם ראשוני", "כי 1 גורם שגיאה", "כי 2 קטן מ-n", "אין סיבה"],
+        correctIndex: 0,
+        explanation: "1 אינו ראשוני וכל מספר מתחלק ב-1. לכן מתחילים מ-2, הראשוני הקטן ביותר."
+      },
+      {
+        question: "אחרי ש-60÷2=30 ו-30÷2=15, האם 15 מתחלק ב-2?",
+        options: ["לא, ממשיכים ל-d=3", "כן, 15÷2=7", "כן, 15÷2=7.5", "עוצרים"],
+        correctIndex: 0,
+        explanation: "15 % 2 = 1 ≠ 0, לכן 15 לא מתחלק ב-2. ממשיכים ל-d=3."
+      }
+    ],
+  },
+  {
+    id: "m14",
+    type: "quiz",
+    topic: "math",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+print(mystery(48, 18))`,
+    options: ["6", "2", "3", "18"],
+    correctIndex: 0,
+    explanation: "אלגוריתם אוקלידס: (48,18)→(18,12)→(12,6)→(6,0)→6. GCD(48,18) = 6.",
+    examSource: "מבחן ב' 2024",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 48 % 18?",
+        options: ["12", "30", "2", "6"],
+        correctIndex: 0,
+        explanation: "48 = 2×18 + 12. לכן 48 % 18 = 12."
+      },
+      {
+        question: "כשb מגיע ל-0 באלגוריתם, מה a מייצג?",
+        options: ["המחלק המשותף הגדול ביותר", "המכנה", "0", "הסכום"],
+        correctIndex: 0,
+        explanation: "כש-b=0, a הוא ה-GCD (המחלק המשותף הגדול ביותר) של שני המספרים."
+      }
+    ],
+  },
+  {
+    id: "m15",
+    type: "coding",
+    topic: "math",
+    difficulty: "medium",
+    title: "מציאת כל המחלקים",
+    description: "כתבו פונקציה divisors(n) שמקבלת מספר שלם חיובי ומחזירה רשימה ממוינת של כל המחלקים שלו.",
+    sampleInput: "divisors(12)",
+    sampleOutput: "[1, 2, 3, 4, 6, 12]",
+    solution: `def divisors(n):
+    result = []
+    for i in range(1, n + 1):
+        if n % i == 0:
+            result.append(i)
+    return result`,
+    solutionExplanation: "עוברים מ-1 עד n ובודקים אם n מתחלק ב-i. 12%1=0✓, 12%2=0✓, 12%3=0✓, 12%4=0✓, 12%5≠0, 12%6=0✓, ..., 12%12=0✓.",
+    examSource: "מבחן א' 2024",
+    warmupQuestions: [
+      {
+        question: "מה זה מחלק של מספר?",
+        options: ["מספר שמתחלק בו ללא שארית", "מספר גדול ממנו", "מספר ראשוני", "מספר קטן ממנו"],
+        correctIndex: 0,
+        explanation: "i הוא מחלק של n אם n % i == 0, כלומר n מתחלק ב-i בדיוק."
+      },
+      {
+        question: "מה הערך של 12 % 4?",
+        options: ["0 (מתחלק)", "3", "4", "2"],
+        correctIndex: 0,
+        explanation: "12 = 3×4, לכן 12 % 4 = 0. 4 הוא מחלק של 12."
+      }
+    ],
+  },
+  {
+    id: "m16",
+    type: "tracing",
+    topic: "math",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(n):
+    count = 0
+    while n > 0:
+        count += n & 1
+        n >>= 1
+    return count
+
+print(mystery(13))`,
+    correctAnswer: "3",
+    explanation: "סופר ביטים דלוקים (1) בייצוג בינארי. 13 = 1101₂. ביטים דלוקים: 3.",
+    examSource: "מבחן ב' 2024",
+    warmupQuestions: [
+      {
+        question: "מה עושה n & 1?",
+        options: ["בודק אם הביט האחרון הוא 1 (אי-זוגי)", "כופל ב-1", "מחלק ב-1", "שגיאה"],
+        correctIndex: 0,
+        explanation: "& 1 (AND בינארי) בודק את הביט האחרון: 1 אם אי-זוגי, 0 אם זוגי."
+      },
+      {
+        question: "מה עושה n >>= 1?",
+        options: ["מזיז ביטים ימינה (חלוקה ב-2)", "כופל ב-2", "מזיז שמאלה", "מוחק את n"],
+        correctIndex: 0,
+        explanation: ">>= 1 הזחה ימינה של ביט אחד, שקול לחלוקה שלמה ב-2."
+      }
+    ],
+  },
+  {
+    id: "m17",
+    type: "quiz",
+    topic: "math",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def mystery(n):
+    if n == 0:
+        return ""
+    return mystery(n // 10) + str(n % 10) + " "
+
+print(mystery(4321).strip())`,
+    options: ["4 3 2 1", "1 2 3 4", "4321", "1234"],
+    correctIndex: 0,
+    explanation: "רקורסיה שמפרקת מספר לספרות: mystery(432)+\"1 \", mystery(43)+\"2 1 \", mystery(4)+\"3 2 1 \", mystery(0)+\"4 3 2 1 \" = \"4 3 2 1\".",
+    examSource: "מבחן א' 2024",
+    warmupQuestions: [
+      {
+        question: 'ברקורסיה, מה מחזיר mystery(0)?',
+        options: ['מחרוזת ריקה ""', "0", '"0"', "None"],
+        correctIndex: 0,
+        explanation: 'כש-n==0, מחזירים "" — זה תנאי העצירה של הרקורסיה.'
+      },
+      {
+        question: "הפונקציה מחברת mystery(n//10) + str(n%10). באיזה סדר יופיעו הספרות?",
+        options: ["מהספרה הראשונה לאחרונה (4,3,2,1)", "מהאחרונה לראשונה", "אקראי", "ממוין"],
+        correctIndex: 0,
+        explanation: "הרקורסיה מטפלת קודם בספרות השמאליות (n//10) ואז מוסיפה את הימנית. לכן הסדר שמאל→ימין."
+      }
+    ],
+  },
+  {
+    id: "m18",
+    type: "coding",
+    topic: "math",
+    difficulty: "hard",
+    title: "המרה בסיסים (עשרוני לבסיס כלשהו)",
+    description: "כתבו פונקציה to_base(n, base) שמקבלת מספר עשרוני n ובסיס base (2-9) ומחזירה מחרוזת שמייצגת את n בבסיס הנתון.",
+    sampleInput: "to_base(42, 2)",
+    sampleOutput: "101010",
+    solution: `def to_base(n, base):
+    if n == 0:
+        return "0"
+    result = ""
+    while n > 0:
+        result = str(n % base) + result
+        n //= base
+    return result`,
+    solutionExplanation: "42÷2: שאריות 0,1,0,1,0,1. מלמטה למעלה: 101010. בכל שלב לוקחים n%base ומוסיפים בהתחלה.",
+    examSource: "מבחן ב' 2024",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 42 % 2?",
+        options: ["0 (42 זוגי)", "1", "21", "42"],
+        correctIndex: 0,
+        explanation: "42 הוא זוגי, לכן 42 % 2 = 0. הספרה הימנית ביותר בבינארי."
+      },
+      {
+        question: "למה מוסיפים את הספרה בתחילת result ולא בסוף?",
+        options: ["כי הספרות מחולצות מימין לשמאל", "כי Python דורש", "כדי למיין", "אין הבדל"],
+        correctIndex: 0,
+        explanation: "% מחלץ את הספרה הכי ימנית. כדי לבנות את המספר בסדר הנכון, מוסיפים בהתחלה."
+      },
+      {
+        question: "מה הערך של 42 // 2?",
+        options: ["21", "20", "42", "2"],
+        correctIndex: 0,
+        explanation: "42 // 2 = 21. אחרי חילוק ממשיכים עם 21."
+      }
+    ],
+  },
 ];
 
 export function getQuestionsByTopic(topicId: TopicId): Question[] {
