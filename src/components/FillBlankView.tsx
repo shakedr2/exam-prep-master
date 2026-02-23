@@ -116,10 +116,15 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
       {!submitted && (
         <Button 
           onClick={handleSubmit} 
-          className="w-full gradient-primary text-primary-foreground" 
+          className="w-full gradient-primary text-primary-foreground gap-2" 
           disabled={answers.some(a => !a.trim())}
         >
           {hasPartial && attempts < 2 ? "נסה שוב" : "בדוק תשובה"}
+          {hasPartial && attempts > 0 && attempts < 2 && (
+            <span className="rounded-full bg-primary-foreground/20 px-2 py-0.5 text-[10px] font-bold">
+              {2 - attempts} ניסיונות נותרו
+            </span>
+          )}
         </Button>
       )}
 

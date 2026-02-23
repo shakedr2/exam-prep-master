@@ -56,8 +56,13 @@ export function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (co
           onKeyDown={e => e.key === "Enter" && handleSubmit()}
         />
         {!submitted && (
-          <Button onClick={handleSubmit} className="w-full gradient-primary text-primary-foreground" disabled={!answerTrimmed}>
+          <Button onClick={handleSubmit} className="w-full gradient-primary text-primary-foreground gap-2" disabled={!answerTrimmed}>
             {isPartial && attempts < 2 ? "נסה שוב" : "בדוק תשובה"}
+            {isPartial && attempts > 0 && attempts < 2 && (
+              <span className="rounded-full bg-primary-foreground/20 px-2 py-0.5 text-[10px] font-bold">
+                {2 - attempts} ניסיונות נותרו
+              </span>
+            )}
           </Button>
         )}
       </div>
