@@ -131,6 +131,9 @@
   .gradient-success {
     background: linear-gradient(135deg, hsl(142 71% 45%), hsl(160 72% 50%));
   }
+  .gradient-streak {
+    background: linear-gradient(135deg, hsl(38 92% 50%), hsl(45 93% 55%), hsl(142 71% 45%));
+  }
   .text-gradient-primary {
     background: linear-gradient(135deg, hsl(262 83% 58%), hsl(290 80% 55%));
     -webkit-background-clip: text;
