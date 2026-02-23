@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { QuizView } from "@/components/QuizView";
 import { TracingView } from "@/components/TracingView";
 import { CodingView } from "@/components/CodingView";
+import { FillBlankView } from "@/components/FillBlankView";
 import { WarmupView } from "@/components/WarmupView";
 import { topics, getQuestionsByTopic, type Question } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
@@ -104,9 +105,10 @@ const TopicPractice = () => {
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                   q.type === "quiz" ? "bg-primary/10 text-primary" :
                   q.type === "tracing" ? "bg-accent/10 text-accent" :
+                  q.type === "fill-blank" ? "bg-primary/10 text-primary" :
                   "bg-warning/10 text-warning"
                 }`}>
-                  {q.type === "quiz" ? "🔘 רב-ברירה" : q.type === "tracing" ? "🔍 מעקב קוד" : "✍️ כתיבת קוד"}
+                  {q.type === "quiz" ? "🔘 רב-ברירה" : q.type === "tracing" ? "🔍 מעקב קוד" : q.type === "fill-blank" ? "✏️ השלם קוד" : "✍️ כתיבת קוד"}
                 </span>
                 <span className={`rounded-full px-2 py-0.5 text-xs ${
                   q.difficulty === "easy" ? "bg-success/10 text-success" :
@@ -120,6 +122,7 @@ const TopicPractice = () => {
               {q.type === "quiz" && <QuizView q={q} onAnswer={handleAnswer} />}
               {q.type === "tracing" && <TracingView q={q} onAnswer={handleAnswer} />}
               {q.type === "coding" && <CodingView q={q} onAnswer={handleAnswer} />}
+              {q.type === "fill-blank" && <FillBlankView q={q} onAnswer={handleAnswer} />}
             </motion.div>
           )}
         </AnimatePresence>

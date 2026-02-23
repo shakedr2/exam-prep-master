@@ -1,4 +1,4 @@
-export type QuestionType = "quiz" | "tracing" | "coding";
+export type QuestionType = "quiz" | "tracing" | "coding" | "fill-blank";
 export type TopicId = "tracing" | "conditions" | "loops" | "lists" | "math";
 export type Difficulty = "easy" | "medium" | "hard";
 
@@ -8,6 +8,11 @@ export interface WarmupQuestion {
   options: string[];
   correctIndex: number;
   explanation: string;
+}
+
+export interface TraceStep {
+  headers: string[];
+  rows: string[][];
 }
 
 export interface QuizQuestion {
@@ -33,6 +38,7 @@ export interface TracingQuestion {
   code: string;
   correctAnswer: string;
   explanation: string;
+  traceTable?: TraceStep;
   examSource?: string;
   warmupQuestions?: WarmupQuestion[];
 }
@@ -52,7 +58,21 @@ export interface CodingQuestion {
   warmupQuestions?: WarmupQuestion[];
 }
 
-export type Question = QuizQuestion | TracingQuestion | CodingQuestion;
+export interface FillBlankQuestion {
+  id: string;
+  type: "fill-blank";
+  topic: TopicId;
+  difficulty: Difficulty;
+  title: string;
+  description: string;
+  code: string;
+  blanks: { answer: string; hint: string }[];
+  solutionExplanation: string;
+  examSource?: string;
+  warmupQuestions?: WarmupQuestion[];
+}
+
+export type Question = QuizQuestion | TracingQuestion | CodingQuestion | FillBlankQuestion;
 
 export interface Topic {
   id: TopicId;
@@ -88,6 +108,22 @@ mystery(3)`,
     correctAnswer: "0 2 4 ",
     explanation: "הלולאה רצה מ-0 עד 2. כל i מוכפל ב-2: 0*2=0, 1*2=2, 2*2=4. מודפס עם רווח אחרי כל מספר.",
     examSource: "מבחן 1",
+    traceTable: {
+      headers: ["i", "i * 2", "result"],
+      rows: [
+        ["0", "0", '"0 "'],
+        ["1", "2", '"0 2 "'],
+        ["2", "4", '"0 2 4 "'],
+      ]
+    },
+    warmupQuestions: [
+      {
+        question: "מה הערך של range(3)?",
+        options: ["0, 1, 2", "1, 2, 3", "0, 1, 2, 3", "3"],
+        correctIndex: 0,
+        explanation: "range(3) מייצר את הרצף 0, 1, 2 — שלושה מספרים החל מ-0."
+      }
+    ],
   },
   {
     id: "t2",
@@ -138,6 +174,16 @@ mystery(4, 2)`,
 mystery("hello")`,
     correctAnswer: "HeLlO",
     explanation: "אינדקסים זוגיים (0,2,4) הופכים לאותיות גדולות: H, L, O. אינדקסים אי-זוגיים (1,3) נשארים: e, l.",
+    traceTable: {
+      headers: ["i", "s[i]", "i % 2", "פעולה", "result"],
+      rows: [
+        ["0", "h", "0 (זוגי)", "upper→H", '"H"'],
+        ["1", "e", "1 (אי-זוגי)", "שומר", '"He"'],
+        ["2", "l", "0 (זוגי)", "upper→L", '"HeL"'],
+        ["3", "l", "1 (אי-זוגי)", "שומר", '"HeLl"'],
+        ["4", "o", "0 (זוגי)", "upper→O", '"HeLlO"'],
+      ]
+    },
     examSource: "מבחן 3",
     warmupQuestions: [
       {
@@ -170,6 +216,15 @@ mystery("hello")`,
 mystery([3,1,4,1,5])`,
     correctAnswer: "2",
     explanation: "סופרים כמה פעמים איבר גדול מהאיבר הבא: 3>1 ✓, 1>4 ✗, 4>1 ✓, 1>5 ✗. סה\"כ 2.",
+    traceTable: {
+      headers: ["i", "lst[i]", "lst[i+1]", "lst[i]>lst[i+1]", "count"],
+      rows: [
+        ["0", "3", "1", "True ✓", "1"],
+        ["1", "1", "4", "False", "1"],
+        ["2", "4", "1", "True ✓", "2"],
+        ["3", "1", "5", "False", "2"],
+      ]
+    },
     examSource: "מבחן 1",
     warmupQuestions: [
       {
@@ -359,6 +414,22 @@ print(grade(85))`,
     correctAnswer: "*\n**\n***",
     explanation: "הלולאה רצה מ-1 עד 3. בכל שורה מודפסים i כוכביות: 1, 2, 3.",
     examSource: "מבחן 1",
+    traceTable: {
+      headers: ["i", '"*" * i', "פלט"],
+      rows: [
+        ["1", '"*"', "*"],
+        ["2", '"**"', "**"],
+        ["3", '"***"', "***"],
+      ]
+    },
+    warmupQuestions: [
+      {
+        question: 'מה הערך של "*" * 3?',
+        options: ['"***"', '"*3"', '"* * *"', "שגיאה"],
+        correctIndex: 0,
+        explanation: 'כפל מחרוזת חוזר על התו. "*" * 3 = "***".'
+      }
+    ],
   },
   {
     id: "l2",
@@ -469,6 +540,14 @@ print(count)`,
     correctIndex: 0,
     explanation: "הפונקציה מחזירה רשימה של כל האיברים שמתחלקים ב-n (=10). 10%10=0 ✓, 15%10≠0, 20%10=0 ✓, 25%10≠0, 30%10=0 ✓.",
     examSource: "מבחן 2",
+    warmupQuestions: [
+      {
+        question: "מה עושה result.append(x)?",
+        options: ["מוסיף את x לסוף הרשימה", "מוחק את x מהרשימה", "מחליף את האיבר האחרון", "שגיאה"],
+        correctIndex: 0,
+        explanation: "append מוסיף איבר חדש לסוף הרשימה."
+      }
+    ],
   },
   {
     id: "li2",
@@ -716,6 +795,14 @@ else:
     correctIndex: 1,
     explanation: "x=7: 7 > 10? לא. 7 > 5? כן! מדפיסים \"בינוני\".",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "מה הערך של 7 > 10?",
+        options: ["False", "True", "7", "שגיאה"],
+        correctIndex: 0,
+        explanation: "7 לא גדול מ-10, לכן 7 > 10 הוא False."
+      }
+    ],
   },
   {
     id: "l5",
@@ -734,6 +821,14 @@ else:
     return count`,
     solutionExplanation: "עוברים על כל תו במחרוזת. כל פעם שהתו שווה ל-c, מגדילים את המונה. ב-\"banana\" יש 3 פעמים 'a'.",
     examSource: "מבחן 2",
+    warmupQuestions: [
+      {
+        question: "מה עושה for char in s?",
+        options: ["עובר על כל תו במחרוזת s", "סופר תווים", "מוחק תווים", "שגיאה"],
+        correctIndex: 0,
+        explanation: "for char in s עובר על כל תו במחרוזת, אחד אחרי השני."
+      }
+    ],
   },
   {
     id: "t6",
@@ -747,6 +842,14 @@ print(x // y, x % y)`,
     correctAnswer: "3 1",
     explanation: "חלוקה שלמה: 10//3 = 3. שארית: 10%3 = 1. מודפס: \"3 1\".",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "מה ההבדל בין / לבין //?",
+        options: ["/ עשרוני, // שלם", "אין הבדל", "// עשרוני, / שלם", "שגיאה"],
+        correctIndex: 0,
+        explanation: "/ מחזיר תוצאה עשרונית (3.33), // מחזיר רק את החלק השלם (3)."
+      }
+    ],
   },
   {
     id: "li5",
@@ -2560,6 +2663,157 @@ print(mystery(4321).strip())`,
         options: ["21", "20", "42", "2"],
         correctIndex: 0,
         explanation: "42 // 2 = 21. אחרי חילוק ממשיכים עם 21."
+      }
+    ],
+  },
+
+  // ==========================================
+  // FILL-IN-THE-BLANK QUESTIONS (השלמת קוד)
+  // ==========================================
+  {
+    id: "fb1",
+    type: "fill-blank",
+    topic: "math",
+    difficulty: "easy",
+    title: "השלם: בדיקת מספר ראשוני",
+    description: "השלם את החלקים החסרים בפונקציה שבודקת אם מספר הוא ראשוני.",
+    code: `def is_prime(n):
+    if n < ___:
+        return False
+    for i in range(2, ___):
+        if n % i == ___:
+            return False
+    return ___`,
+    blanks: [
+      { answer: "2", hint: "מספרים קטנים מ-? אינם ראשוניים" },
+      { answer: "n", hint: "בודקים חלוקה עד..." },
+      { answer: "0", hint: "מתחלק ללא שארית" },
+      { answer: "True", hint: "אם לא מצאנו מחלק..." },
+    ],
+    solutionExplanation: "מספר ראשוני >= 2. בודקים חלוקה ב-2 עד n-1. אם n%i==0 → לא ראשוני. אם עברנו את כל הלולאה → ראשוני.",
+    examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "מה זה מספר ראשוני?",
+        options: ["מספר שמתחלק רק ב-1 ובעצמו", "מספר זוגי", "מספר חיובי", "מספר גדול"],
+        correctIndex: 0,
+        explanation: "מספר ראשוני מתחלק בדיוק ב-1 ובעצמו בלבד."
+      }
+    ],
+  },
+  {
+    id: "fb2",
+    type: "fill-blank",
+    topic: "lists",
+    difficulty: "medium",
+    title: "השלם: מציאת מינימום ברשימה",
+    description: "השלם את הפונקציה שמוצאת את האיבר הקטן ביותר ברשימה.",
+    code: `def find_min(lst):
+    result = ___
+    for i in range(1, ___):
+        if lst[i] ___ result:
+            result = ___
+    return result`,
+    blanks: [
+      { answer: "lst[0]", hint: "מאתחלים עם האיבר הראשון" },
+      { answer: "len(lst)", hint: "עד סוף הרשימה" },
+      { answer: "<", hint: "מחפשים ערך קטן יותר" },
+      { answer: "lst[i]", hint: "מעדכנים לערך החדש" },
+    ],
+    solutionExplanation: "מתחילים מהאיבר הראשון. עוברים על השאר ומעדכנים אם מוצאים ערך קטן יותר.",
+    examSource: "מבחן 5",
+    warmupQuestions: [
+      {
+        question: "למה מאתחלים result = lst[0] ולא result = 0?",
+        options: ["כי הרשימה יכולה להכיל רק שליליים", "כי 0 תמיד הכי קטן", "אין סיבה", "כי lst[0] הוא האחרון"],
+        correctIndex: 0,
+        explanation: "אם כל המספרים שליליים, אתחול ל-0 ייתן תוצאה שגויה."
+      }
+    ],
+  },
+  {
+    id: "fb3",
+    type: "fill-blank",
+    topic: "loops",
+    difficulty: "medium",
+    title: "השלם: היפוך מחרוזת",
+    description: "השלם את הפונקציה שמחזירה מחרוזת הפוכה.",
+    code: `def reverse_string(s):
+    result = ___
+    for i in range(len(s) - 1, ___, ___):
+        result += ___
+    return result`,
+    blanks: [
+      { answer: '""', hint: "מחרוזת ריקה בהתחלה" },
+      { answer: "-1", hint: "נעצרים לפני אינדקס..." },
+      { answer: "-1", hint: "צעד הלולאה (כיוון)" },
+      { answer: "s[i]", hint: "מוסיפים את התו הנוכחי" },
+    ],
+    solutionExplanation: 'מתחילים ממחרוזת ריקה. הלולאה רצה מהאינדקס האחרון עד 0, צעד -1. בכל שלב מוסיפים s[i].',
+    examSource: "מבחן 5",
+  },
+  {
+    id: "fb4",
+    type: "fill-blank",
+    topic: "math",
+    difficulty: "medium",
+    title: "השלם: סכום ספרות",
+    description: "השלם את הפונקציה שמחשבת סכום ספרות של מספר.",
+    code: `def digit_sum(n):
+    total = ___
+    while n ___ 0:
+        total += n ___ 10
+        n ___= 10
+    return total`,
+    blanks: [
+      { answer: "0", hint: "ערך התחלתי של הסכום" },
+      { answer: ">", hint: "ממשיכים כל עוד יש ספרות" },
+      { answer: "%", hint: "מחלצים ספרה אחרונה" },
+      { answer: "//", hint: "מסירים ספרה אחרונה" },
+    ],
+    solutionExplanation: "מתחילים מ-0. כל עוד n>0: מוסיפים את הספרה האחרונה (n%10), מסירים אותה (n//=10).",
+    examSource: "מבחן 4",
+    warmupQuestions: [
+      {
+        question: "מה עושה n % 10?",
+        options: ["מחזיר את הספרה האחרונה", "מחלק ב-10", "מכפיל ב-10", "מחזיר 10"],
+        correctIndex: 0,
+        explanation: "% 10 נותן את השארית מחלוקה ב-10, שהיא הספרה האחרונה."
+      }
+    ],
+  },
+  {
+    id: "fb5",
+    type: "fill-blank",
+    topic: "tracing",
+    difficulty: "hard",
+    title: "השלם: סדרת פיבונאצ'י",
+    description: "השלם את הפונקציה שמחשבת את האיבר ה-n בסדרת פיבונאצ'י.",
+    code: `def fib(n):
+    a, b = ___, ___
+    for i in range(___):
+        a, b = ___, a + b
+    return a`,
+    blanks: [
+      { answer: "0", hint: "F(0) = ?" },
+      { answer: "1", hint: "F(1) = ?" },
+      { answer: "n", hint: "כמה איטרציות?" },
+      { answer: "b", hint: "a מקבל את הערך של..." },
+    ],
+    solutionExplanation: "F(0)=0, F(1)=1. בכל איטרציה: a מקבל את b, ו-b מקבל את a+b. אחרי n איטרציות, a = F(n).",
+    examSource: "מבחן 6",
+    warmupQuestions: [
+      {
+        question: "בסדרת פיבונאצ'י, מה F(0) ו-F(1)?",
+        options: ["F(0)=0, F(1)=1", "F(0)=1, F(1)=1", "F(0)=1, F(1)=2", "F(0)=0, F(1)=0"],
+        correctIndex: 0,
+        explanation: "ערכי הבסיס של פיבונאצ'י: F(0)=0 ו-F(1)=1."
+      },
+      {
+        question: "מה עושה a, b = b, a + b?",
+        options: ["מעדכן a ו-b בו-זמנית", "רק a מתעדכן", "שגיאה", "רק b מתעדכן"],
+        correctIndex: 0,
+        explanation: "Python מחשבת את הצד הימני קודם ואז מציבה — שני המשתנים מתעדכנים בו-זמנית."
       }
     ],
   },

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { questions } from "@/data/questions";
 
 export interface UserProgress {
   username: string;
@@ -108,8 +109,11 @@ export function useProgress() {
   }, []);
 
   const getTopicCompletion = useCallback((topicId: string, totalQuestions: number) => {
+    const topicQuestionIds = new Set(
+      questions.filter(q => q.topic === topicId).map(q => q.id)
+    );
     const answered = Object.entries(progress.answeredQuestions)
-      .filter(([id]) => id.startsWith(topicId.charAt(0)))
+      .filter(([id]) => topicQuestionIds.has(id))
       .filter(([_, v]) => v.correct).length;
     return Math.round((answered / Math.max(totalQuestions, 1)) * 100);
   }, [progress.answeredQuestions]);
