@@ -78,7 +78,7 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
                       setAnswers(newAnswers);
                     }}
                     placeholder={blank.hint || "___"}
-                    className="inline-block w-24 h-7 text-xs font-mono bg-primary/10 border-primary/30 text-center px-1"
+                    className="inline-block w-24 h-7 text-xs font-mono bg-primary/10 border-primary/30 text-center px-1 text-foreground"
                     disabled={submitted}
                   />
                 )}

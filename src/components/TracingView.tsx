@@ -27,7 +27,7 @@ export function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (co
           value={answer}
           onChange={e => setAnswer(e.target.value)}
           placeholder="הקלד את התשובה..."
-          className="font-mono"
+          className="font-mono text-foreground"
           disabled={submitted}
           onKeyDown={e => e.key === "Enter" && handleSubmit()}
         />

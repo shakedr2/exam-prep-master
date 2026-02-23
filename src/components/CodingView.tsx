@@ -27,7 +27,7 @@ export function CodingView({ q, onAnswer }: { q: CodingQuestion; onAnswer: (corr
         value={code}
         onChange={e => setCode(e.target.value)}
         placeholder="כתוב את הפתרון שלך כאן..."
-        className="min-h-[150px] font-mono text-sm"
+        className="min-h-[150px] font-mono text-sm text-foreground"
       />
       <Button
         onClick={() => {
