@@ -8,12 +8,25 @@ import type { FillBlankQuestion } from "@/data/questions";
 export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer: (correct: boolean) => void }) {
   const [answers, setAnswers] = useState<string[]>(new Array(q.blanks.length).fill(""));
   const [submitted, setSubmitted] = useState(false);
+  const [attempts, setAttempts] = useState(0);
 
   const results = answers.map((a, i) => a.trim() === q.blanks[i].answer.trim());
   const allCorrect = results.every(Boolean);
+  const hasPartial = !allCorrect && results.some(Boolean);
+
+  const getHintForBlank = (i: number): string => {
+    const correct = q.blanks[i].answer.trim();
+    if (correct.length <= 2) return `אורך: ${correct.length} תווים`;
+    const revealCount = Math.max(1, Math.ceil(correct.length * 0.3));
+    return `מתחיל ב: ${correct.slice(0, revealCount)}… (${correct.length} תווים)`;
+  };
 
   const handleSubmit = () => {
     if (answers.some(a => !a.trim())) return;
+    if (hasPartial && attempts < 2) {
+      setAttempts(a => a + 1);
+      return;
+    }
     setSubmitted(true);
     onAnswer(allCorrect);
   };
@@ -106,8 +119,27 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
           className="w-full gradient-primary text-primary-foreground" 
           disabled={answers.some(a => !a.trim())}
         >
-          בדוק תשובה
+          {hasPartial && attempts < 2 ? "נסה שוב" : "בדוק תשובה"}
         </Button>
+      )}
+
+      {/* Partial answer hints */}
+      {!submitted && hasPartial && attempts > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl p-3 bg-warning/10 border border-warning/30 space-y-1"
+        >
+          <p className="text-sm font-semibold mb-1">🤏 חלק מהתשובות נכונות, אבל לא הכל!</p>
+          {results.map((r, i) => !r && (
+            <p key={i} className="text-sm text-muted-foreground">
+              חור {i + 1}: {getHintForBlank(i)}
+            </p>
+          ))}
+          {attempts >= 2 && (
+            <p className="text-xs text-muted-foreground mt-1">לחץ "בדוק תשובה" כדי לראות את התשובות המלאות</p>
+          )}
+        </motion.div>
       )}
 
       {submitted && (
