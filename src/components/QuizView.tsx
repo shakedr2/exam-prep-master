@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
 import type { QuizQuestion } from "@/data/questions";
 
 export function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct: boolean) => void }) {
   const [selected, setSelected] = useState<number | null>(null);
-  const answered = selected !== null;
+  const [submitted, setSubmitted] = useState(false);
+  const answered = submitted;
 
   return (
     <div className="space-y-4">
@@ -20,16 +22,17 @@ export function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct:
             onClick={() => {
               if (answered) return;
               setSelected(i);
-              onAnswer(i === q.correctIndex);
             }}
             className={`w-full rounded-xl border p-4 text-right transition-all ${
-              !answered
-                ? "border-border bg-secondary hover:border-primary/50 text-foreground"
-                : i === q.correctIndex
-                ? "border-success bg-success/10 text-success"
+              answered
+                ? i === q.correctIndex
+                  ? "border-success bg-success/10 text-success"
+                  : i === selected
+                  ? "border-destructive bg-destructive/10 text-destructive"
+                  : "border-border bg-secondary opacity-50 text-foreground"
                 : i === selected
-                ? "border-destructive bg-destructive/10 text-destructive"
-                : "border-border bg-secondary opacity-50 text-foreground"
+                ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/30"
+                : "border-border bg-secondary hover:border-primary/50 text-foreground"
             }`}
           >
             <div className="flex items-center gap-3">
@@ -43,6 +46,19 @@ export function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct:
           </motion.button>
         ))}
       </div>
+      {selected !== null && !answered && (
+        <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
+          <Button
+            onClick={() => {
+              setSubmitted(true);
+              onAnswer(selected === q.correctIndex);
+            }}
+            className="w-full gradient-primary text-primary-foreground"
+          >
+            בדוק תשובה
+          </Button>
+        </motion.div>
+      )}
       {answered && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}

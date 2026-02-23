@@ -70,10 +70,11 @@ function StreakBadge({ streak }: { streak: number }) {
 export function WarmupView({ warmupQuestions, onComplete }: WarmupViewProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
   const [streak, setStreak] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const answered = selected !== null;
+  const answered = confirmed;
   const wq = warmupQuestions[currentIndex];
   const totalSteps = warmupQuestions.length + 1;
   const progressPct = ((currentIndex + 1) / totalSteps) * 100;
@@ -82,7 +83,12 @@ export function WarmupView({ warmupQuestions, onComplete }: WarmupViewProps) {
   const handleSelect = (i: number) => {
     if (answered) return;
     setSelected(i);
-    if (i === wq.correctIndex) {
+  };
+
+  const handleConfirm = () => {
+    if (selected === null || answered) return;
+    setConfirmed(true);
+    if (selected === wq.correctIndex) {
       const newStreak = streak + 1;
       setStreak(newStreak);
       if (newStreak >= 2) {
@@ -98,6 +104,7 @@ export function WarmupView({ warmupQuestions, onComplete }: WarmupViewProps) {
     if (currentIndex < warmupQuestions.length - 1) {
       setCurrentIndex(i => i + 1);
       setSelected(null);
+      setConfirmed(false);
     } else {
       onComplete();
     }
@@ -164,13 +171,15 @@ export function WarmupView({ warmupQuestions, onComplete }: WarmupViewProps) {
                 }
                 transition={{ duration: 0.3 }}
                 className={`w-full rounded-xl border p-3 text-right transition-all ${
-                  !answered
-                    ? "border-primary/20 bg-secondary hover:border-primary/40 text-foreground"
-                    : i === wq.correctIndex
-                    ? "border-success bg-success/10 text-success"
+                  answered
+                    ? i === wq.correctIndex
+                      ? "border-success bg-success/10 text-success"
+                      : i === selected
+                      ? "border-destructive bg-destructive/10 text-destructive"
+                      : "border-border bg-secondary opacity-40 text-foreground"
                     : i === selected
-                    ? "border-destructive bg-destructive/10 text-destructive"
-                    : "border-border bg-secondary opacity-40 text-foreground"
+                    ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/30"
+                    : "border-primary/20 bg-secondary hover:border-primary/40 text-foreground"
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -184,6 +193,17 @@ export function WarmupView({ warmupQuestions, onComplete }: WarmupViewProps) {
               </motion.button>
             ))}
           </div>
+
+          {selected !== null && !answered && (
+            <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
+              <Button
+                onClick={handleConfirm}
+                className="w-full gradient-primary text-primary-foreground"
+              >
+                בדוק תשובה
+              </Button>
+            </motion.div>
+          )}
 
           {answered && (
             <motion.div
