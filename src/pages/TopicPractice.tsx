@@ -165,7 +165,7 @@ const TopicPractice = () => {
           )}
         </AnimatePresence>
 
-        {!showWarmup && (
+      {!showWarmup && progress.answeredQuestions[q.id] && (
           <Button onClick={handleNext} className="mt-4 w-full gradient-primary text-primary-foreground gap-2">
             {currentIndex < topicQuestions.length - 1 ? "שאלה הבאה" : "סיום נושא"}
             <ChevronLeft className="h-4 w-4" />
