@@ -3033,3 +3033,31 @@ export function getRandomQuestions(count: number): Question[] {
   const shuffled = [...questions].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }
+
+export function getBalancedExamQuestions(count: number): Question[] {
+  const topicIds: TopicId[] = ["tracing", "conditions", "loops", "lists", "math"];
+  const byTopic: Record<string, Question[]> = {};
+  topicIds.forEach(t => {
+    byTopic[t] = [...questions.filter(q => q.topic === t)].sort(() => Math.random() - 0.5);
+  });
+
+  const selected: Question[] = [];
+  const usedIds = new Set<string>();
+
+  // One question per topic first
+  for (const t of topicIds) {
+    if (byTopic[t].length > 0 && selected.length < count) {
+      const q = byTopic[t].shift()!;
+      selected.push(q);
+      usedIds.add(q.id);
+    }
+  }
+
+  // Fill remaining randomly
+  const remaining = questions.filter(q => !usedIds.has(q.id)).sort(() => Math.random() - 0.5);
+  while (selected.length < count && remaining.length > 0) {
+    selected.push(remaining.shift()!);
+  }
+
+  return selected.sort(() => Math.random() - 0.5);
+}

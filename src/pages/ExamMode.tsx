@@ -1,16 +1,17 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Clock, ArrowRight, ChevronLeft, Trophy } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Clock, Trophy, Flag, ChevronLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { getRandomQuestions, type Question, type QuizQuestion, type TracingQuestion } from "@/data/questions";
+import { getBalancedExamQuestions, topics, type Question } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { AiTutor } from "@/components/AiTutor";
-import { PythonCodeBlock } from "@/components/PythonCodeBlock";
+import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
+import { ExamReviewScreen } from "@/components/exam/ExamReviewScreen";
 
-const EXAM_DURATION = 3 * 60 * 60; // 3 hours in seconds
-const EXAM_QUESTIONS = 5;
+const EXAM_DURATION = 3 * 60 * 60;
+const EXAM_QUESTIONS = 6;
 
 function formatTime(seconds: number) {
   const h = Math.floor(seconds / 3600);
@@ -27,8 +28,10 @@ const ExamMode = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, { answer: string; correct: boolean }>>({});
   const [finished, setFinished] = useState(false);
+  const [showReview, setShowReview] = useState(false);
+  const [flagged, setFlagged] = useState<Set<number>>(new Set());
 
-  const examQuestions = useMemo(() => getRandomQuestions(EXAM_QUESTIONS), [started]);
+  const examQuestions = useMemo(() => getBalancedExamQuestions(EXAM_QUESTIONS), [started]);
 
   useEffect(() => {
     if (!started || finished) return;
@@ -46,6 +49,19 @@ const ExamMode = () => {
 
   const score = Object.values(answers).filter(a => a.correct).length;
 
+  const handleAnswer = (index: number, answer: string, correct: boolean) => {
+    setAnswers(a => ({ ...a, [index]: { answer, correct } }));
+  };
+
+  const toggleFlag = (index: number) => {
+    setFlagged(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
   const handleFinish = () => {
     setFinished(true);
     addExamResult(score, EXAM_QUESTIONS);
@@ -54,6 +70,7 @@ const ExamMode = () => {
     });
   };
 
+  // Start screen
   if (!started) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4 pb-24">
@@ -62,19 +79,15 @@ const ExamMode = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-sm text-center space-y-6"
         >
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl gradient-primary text-4xl shadow-lg">
-            📝
-          </div>
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl gradient-primary text-4xl shadow-lg">📝</div>
           <h1 className="text-2xl font-bold">מבחן סימולציה</h1>
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>⏱️ {EXAM_QUESTIONS} שאלות, 3 שעות</p>
-            <p>📊 שאלות אקראיות מכל הנושאים</p>
-            <p>🎯 ציון בסוף המבחן</p>
+            <p>📊 שאלה אחת לפחות מכל נושא</p>
+            <p>🎯 ציון מפורט בסוף המבחן</p>
+            <p>🚩 אפשר לסמן שאלות לחזרה</p>
           </div>
-          <Button
-            onClick={() => setStarted(true)}
-            className="w-full gradient-primary text-primary-foreground text-lg py-6 rounded-xl"
-          >
+          <Button onClick={() => setStarted(true)} className="w-full gradient-primary text-primary-foreground text-lg py-6 rounded-xl">
             התחל מבחן 🚀
           </Button>
           <Button variant="ghost" onClick={() => navigate("/")}>חזרה לדף הבית</Button>
@@ -83,8 +96,26 @@ const ExamMode = () => {
     );
   }
 
+  // Review screen
+  if (finished && showReview) {
+    return (
+      <ExamReviewScreen
+        examQuestions={examQuestions}
+        answers={answers}
+        onBack={() => setShowReview(false)}
+      />
+    );
+  }
+
+  // Results screen
   if (finished) {
     const pct = Math.round((score / EXAM_QUESTIONS) * 100);
+    const topicBreakdown = topics.map(t => {
+      const indices = examQuestions.map((q, i) => q.topic === t.id ? i : -1).filter(i => i >= 0);
+      const correct = indices.filter(i => answers[i]?.correct).length;
+      return { topic: t, total: indices.length, correct };
+    }).filter(tb => tb.total > 0);
+
     return (
       <div className="flex min-h-screen items-center justify-center px-4 pb-24">
         <motion.div
@@ -100,91 +131,108 @@ const ExamMode = () => {
             <p className="text-5xl font-extrabold text-gradient-primary">{pct}%</p>
             <p className="text-muted-foreground">{score} מתוך {EXAM_QUESTIONS} נכונות</p>
             <Progress value={pct} className="h-3" />
+
+            {/* Topic breakdown */}
+            <div className="space-y-2 text-right">
+              <p className="text-sm font-semibold text-foreground">פירוט לפי נושא:</p>
+              {topicBreakdown.map(tb => (
+                <div key={tb.topic.id} className="flex items-center justify-between text-sm">
+                  <span className={`rounded-full px-2 py-0.5 text-xs ${tb.correct === tb.total ? "bg-success/10 text-success" : tb.correct > 0 ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive"}`}>
+                    {tb.correct}/{tb.total}
+                  </span>
+                  <span className="text-muted-foreground">{tb.topic.icon} {tb.topic.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-3">
-            <Button onClick={() => navigate("/")} variant="outline" className="flex-1">
-              דף הבית
+          <div className="flex flex-col gap-3">
+            <Button onClick={() => setShowReview(true)} variant="outline" className="w-full gap-2">
+              📋 סקירת שאלות ותשובות
             </Button>
-            <Button
-              onClick={() => { setStarted(false); setFinished(false); setCurrentIndex(0); setAnswers({}); setTimeLeft(EXAM_DURATION); }}
-              className="flex-1 gradient-primary text-primary-foreground"
-            >
-              מבחן חדש
-            </Button>
+            <div className="flex gap-3">
+              <Button onClick={() => navigate("/")} variant="outline" className="flex-1">דף הבית</Button>
+              <Button
+                onClick={() => { setStarted(false); setFinished(false); setCurrentIndex(0); setAnswers({}); setTimeLeft(EXAM_DURATION); setFlagged(new Set()); setShowReview(false); }}
+                className="flex-1 gradient-primary text-primary-foreground"
+              >
+                מבחן חדש
+              </Button>
+            </div>
           </div>
         </motion.div>
       </div>
     );
   }
 
+  // Exam question screen
   const q = examQuestions[currentIndex];
+  const isFlagged = flagged.has(currentIndex);
+  const flaggedList = Array.from(flagged).sort((a, b) => a - b);
 
   return (
     <div className="min-h-screen pb-24 pt-4">
       <div className="mx-auto max-w-lg px-4">
-        {/* Timer */}
-        <div className="flex items-center justify-between mb-4">
+        {/* Timer & progress */}
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-sm">
             <Clock className="h-4 w-4 text-warning" />
             <span className="font-mono font-bold text-warning">{formatTime(timeLeft)}</span>
           </div>
           <span className="text-sm text-muted-foreground">שאלה {currentIndex + 1}/{EXAM_QUESTIONS}</span>
         </div>
-        <Progress value={((currentIndex + 1) / EXAM_QUESTIONS) * 100} className="h-2 mb-4" />
+        <Progress value={((currentIndex + 1) / EXAM_QUESTIONS) * 100} className="h-2 mb-2" />
 
-        {/* Question */}
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-4">
-          <p className="font-semibold text-card-foreground">{(q.type === "coding" || q.type === "fill-blank") ? (q as any).title : (q as any).question}</p>
-          {(q as any).code && <PythonCodeBlock code={(q as any).code} />}
-          {(q.type === "coding" || q.type === "fill-blank") && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{(q as any).description}</p>}
+        {/* Question navigator pills */}
+        <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
+          {examQuestions.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentIndex(i)}
+              className={`flex-shrink-0 h-8 w-8 rounded-lg text-xs font-bold transition-all ${
+                i === currentIndex ? "bg-primary text-primary-foreground ring-2 ring-primary/50" :
+                answers[i] ? "bg-success/20 text-success border border-success/30" :
+                "bg-muted text-muted-foreground border border-border"
+              } ${flagged.has(i) ? "ring-2 ring-warning/60" : ""}`}
+            >
+              {flagged.has(i) ? "🚩" : i + 1}
+            </button>
+          ))}
+        </div>
 
-          {q.type === "quiz" && (
-            <div className="space-y-2">
-              {(q as QuizQuestion).options.map((opt, i) => (
-                <button
-                  key={i}
-                  onClick={() => setAnswers(a => ({ ...a, [currentIndex]: { answer: opt, correct: i === (q as QuizQuestion).correctIndex } }))}
-                  className={`w-full rounded-xl border p-3 text-right text-sm transition-all ${
-                    answers[currentIndex]?.answer === opt ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50"
-                  }`}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {q.type === "tracing" && (
-            <input
-              dir="ltr"
-              className="w-full rounded-xl border border-border bg-background p-3 font-mono text-sm"
-              placeholder="הקלד את הפלט..."
-              value={answers[currentIndex]?.answer || ""}
-              onChange={e => {
-                const val = e.target.value;
-                const correct = val.trim() === (q as TracingQuestion).correctAnswer.trim();
-                setAnswers(a => ({ ...a, [currentIndex]: { answer: val, correct } }));
-              }}
-            />
-          )}
-
-          {q.type === "coding" && (
-            <div className="space-y-2">
-              <textarea
-                dir="ltr"
-                className="w-full rounded-xl border border-border bg-background p-3 font-mono text-sm min-h-[120px]"
-                placeholder="כתוב את הפתרון שלך כאן..."
-                value={answers[currentIndex]?.answer || ""}
-                onChange={e => {
-                  const val = e.target.value;
-                  setAnswers(a => ({ ...a, [currentIndex]: { answer: val, correct: false } }));
-                }}
-              />
-              <p className="text-xs text-muted-foreground">💡 שאלות כתיבת קוד נבדקות ידנית ולא נספרות בציון האוטומטי.</p>
-            </div>
+        {/* Flag button */}
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={() => toggleFlag(currentIndex)}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+              isFlagged ? "bg-warning/20 text-warning border border-warning/30" : "bg-muted text-muted-foreground border border-border hover:border-warning/50"
+            }`}
+          >
+            <Flag className="h-3.5 w-3.5" />
+            {isFlagged ? "מסומנת לחזרה" : "סמן לחזרה"}
+          </button>
+          {flaggedList.length > 0 && (
+            <span className="text-xs text-muted-foreground">🚩 {flaggedList.length} מסומנות</span>
           )}
         </div>
 
+        {/* Question content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="rounded-2xl border border-border bg-card p-5 shadow-sm"
+          >
+            <ExamQuestionRenderer
+              question={q}
+              currentAnswer={answers[currentIndex]}
+              onAnswer={(answer, correct) => handleAnswer(currentIndex, answer, correct)}
+            />
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Navigation */}
         <div className="flex gap-3 mt-4">
           {currentIndex > 0 && (
             <Button variant="outline" onClick={() => setCurrentIndex(i => i - 1)} className="flex-1 gap-2">
