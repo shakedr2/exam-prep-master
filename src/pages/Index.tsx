@@ -38,7 +38,7 @@ const Index = () => {
               placeholder="מה השם שלך?"
               value={nameInput}
               onChange={e => setNameInput(e.target.value)}
-              className="text-center text-lg"
+              className="text-center text-lg text-foreground"
               onKeyDown={e => e.key === "Enter" && nameInput.trim() && setUsername(nameInput.trim())}
             />
             <Button
