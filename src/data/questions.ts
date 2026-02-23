@@ -297,6 +297,20 @@ mystery(5)`,
     correctIndex: 1,
     explanation: "150 > 100 אבל לא > 200, לכן נכנסים ל-elif ומקבלים 150 * 0.1 = 15 ש\"ח הנחה.",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "בשרשרת if/elif, האם Python ממשיכה לבדוק תנאים אחרי שמצאה תנאי שמתקיים?",
+        options: ["לא, עוצרת בתנאי הראשון שמתקיים", "כן, בודקת את כולם", "תלוי בערך", "שגיאה"],
+        correctIndex: 0,
+        explanation: "בשרשרת if/elif, Python נכנסת לבלוק הראשון שהתנאי שלו True ומדלגת על כל השאר."
+      },
+      {
+        question: "האם 150 > 200?",
+        options: ["False", "True", "150", "שגיאה"],
+        correctIndex: 0,
+        explanation: "150 לא גדול מ-200, לכן התנאי הראשון (price > 200) לא מתקיים ועוברים ל-elif."
+      }
+    ],
   },
   {
     id: "c2",
@@ -863,6 +877,20 @@ print(lst[1:4])`,
     correctIndex: 1,
     explanation: "lst[1:4] מחזיר את האיברים מאינדקס 1 (כולל) עד 4 (לא כולל): [2, 3, 4].",
     examSource: "מבחן 4",
+    warmupQuestions: [
+      {
+        question: "מה אומר lst[1:4] — האם 4 כלול?",
+        options: ["לא, מאינדקס 1 עד 3 (לא כולל 4)", "כן, מאינדקס 1 עד 4 כולל", "מאינדקס 0 עד 4", "שגיאה"],
+        correctIndex: 0,
+        explanation: "ב-slicing, הגבול העליון לא כלול. lst[1:4] מחזיר אינדקסים 1, 2, 3."
+      },
+      {
+        question: "ברשימה [1,2,3,4,5], מה האיבר באינדקס 1?",
+        options: ["2", "1", "3", "0"],
+        correctIndex: 0,
+        explanation: "אינדקסים מתחילים מ-0. אינדקס 0=1, אינדקס 1=2."
+      }
+    ],
   },
   {
     id: "m5",
@@ -875,6 +903,20 @@ print(lst[1:4])`,
     correctIndex: 1,
     explanation: "2**3 = 8. 8+1 = 9.",
     examSource: "מבחן 2",
+    warmupQuestions: [
+      {
+        question: "מה עושה ** ב-Python?",
+        options: ["חזקה (2**3 = 8)", "כפל (2*3 = 6)", "חלוקה", "שגיאה"],
+        correctIndex: 0,
+        explanation: "** הוא אופרטור חזקה. 2**3 = 2³ = 2×2×2 = 8."
+      },
+      {
+        question: "מה קודם: ** או +?",
+        options: ["** קודם (חזקה לפני חיבור)", "+ קודם", "שווים", "תלוי בסוגריים"],
+        correctIndex: 0,
+        explanation: "סדר הפעולות: חזקה (**) לפני חיבור (+). לכן 2**3+1 = 8+1 = 9."
+      }
+    ],
   },
 
   // ==========================================
@@ -905,6 +947,12 @@ print(mystery("a1b2c3"))`,
         options: ["True", "False", "3", "שגיאה"],
         correctIndex: 0,
         explanation: "'3'.isdigit() מחזיר True כי '3' הוא תו ספרה."
+      },
+      {
+        question: "אם עוברים על \"a1b2\" ושומרים רק ספרות, מה יצטבר ב-result?",
+        options: ['"12"', '"ab"', '"a1b2"', '""'],
+        correctIndex: 0,
+        explanation: "מסננים רק תווים שהם ספרות: '1' ו-'2' → \"12\"."
       }
     ],
   },
@@ -1130,6 +1178,20 @@ print(max(a, b, c) - min(a, b, c))`,
     correctAnswer: "10",
     explanation: "max(10,20,15) = 20. min(10,20,15) = 10. 20 - 10 = 10.",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "מה עושה max(10, 20, 15)?",
+        options: ["20", "10", "15", "45"],
+        correctIndex: 0,
+        explanation: "max מחזיר את הערך הגדול ביותר מבין הנתונים. 20 הוא הגדול."
+      },
+      {
+        question: "מה עושה min(10, 20, 15)?",
+        options: ["10", "15", "20", "0"],
+        correctIndex: 0,
+        explanation: "min מחזיר את הערך הקטן ביותר. 10 הוא הקטן."
+      }
+    ],
   },
   {
     id: "c9",
@@ -1263,6 +1325,20 @@ print(count)`,
     correctIndex: 1,
     explanation: "סופרים תנועות ב-\"hello\": 'h'-לא, 'e'-כן, 'l'-לא, 'l'-לא, 'o'-כן. סה\"כ 2.",
     examSource: "מבחן 4",
+    warmupQuestions: [
+      {
+        question: 'מה עושה c in "aeiou" כש-c = "e"?',
+        options: ["True (כי e היא תנועה)", "False", '"e"', "שגיאה"],
+        correctIndex: 0,
+        explanation: "in בודק אם התו קיים במחרוזת. 'e' נמצא ב-\"aeiou\" → True."
+      },
+      {
+        question: 'כמה תנועות יש במילה "hello"?',
+        options: ["2 (e ו-o)", "1", "3", "0"],
+        correctIndex: 0,
+        explanation: "התנועות ב-\"hello\" הן 'e' (אינדקס 1) ו-'o' (אינדקס 4) — סה\"כ 2."
+      }
+    ],
   },
   {
     id: "l9",
@@ -1447,6 +1523,20 @@ print(lst)`,
     correctAnswer: "[1, 1, 3, 4, 5]",
     explanation: "sort() ממיין את הרשימה במקום בסדר עולה: [1, 1, 3, 4, 5].",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "מה ההבדל בין sort() ל-sorted()?",
+        options: ["sort() משנה במקום, sorted() מחזירה רשימה חדשה", "אין הבדל", "sorted() משנה במקום", "sort() מחזירה רשימה חדשה"],
+        correctIndex: 0,
+        explanation: "sort() ממיינת את הרשימה המקורית (במקום). sorted() מחזירה עותק ממוין בלי לשנות את המקור."
+      },
+      {
+        question: "מה הסדר של [3,1,4,1,5] אחרי מיון עולה?",
+        options: ["[1, 1, 3, 4, 5]", "[5, 4, 3, 1, 1]", "[1, 3, 4, 5]", "[3, 1, 4, 1, 5]"],
+        correctIndex: 0,
+        explanation: "מיון עולה מסדר מקטן לגדול. שימו לב ש-1 מופיע פעמיים."
+      }
+    ],
   },
   {
     id: "li9",
@@ -1652,6 +1742,20 @@ print(mystery(9876))`,
     return result`,
     solutionExplanation: "מכפילים את base בעצמו exp פעמים. 2*2=4, 4*2=8, 8*2=16, 16*2=32.",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "מה עושה result *= base כש-result=4 ו-base=2?",
+        options: ["result = 8 (כי 4×2)", "result = 6", "result = 2", "שגיאה"],
+        correctIndex: 0,
+        explanation: "result *= base זהה ל-result = result * base = 4 * 2 = 8."
+      },
+      {
+        question: "למה מאתחלים result = 1 ולא result = 0?",
+        options: ["כי כפל ב-0 תמיד נותן 0", "כי 1 הוא בסיס", "אין סיבה", "כי 0 גורם שגיאה"],
+        correctIndex: 0,
+        explanation: "1 הוא 'איבר ניטרלי' בכפל. אם נתחיל מ-0, כל כפל ייתן 0."
+      }
+    ],
   },
   {
     id: "m10",
@@ -1736,6 +1840,20 @@ print(a, b)`,
     correctAnswer: "5 3",
     explanation: "swap ב-Python: a,b = b,a מחליף בין הערכים. a הופך ל-5 ו-b הופך ל-3.",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "מה עושה a, b = b, a ב-Python?",
+        options: ["מחליף בין הערכים של a ו-b", "מציב a בשניהם", "שגיאה", "מוחק את שניהם"],
+        correctIndex: 0,
+        explanation: "Python מחשבת את הצד הימני קודם (b, a) ואז מציבה — כך a ו-b מתחלפים."
+      },
+      {
+        question: "אם a=3 ו-b=5, מה יהיו הערכים אחרי a, b = b, a?",
+        options: ["a=5, b=3", "a=3, b=5", "a=5, b=5", "a=3, b=3"],
+        correctIndex: 0,
+        explanation: "a מקבל את הערך של b (5), ו-b מקבל את הערך הישן של a (3)."
+      }
+    ],
   },
   {
     id: "l12",
@@ -1750,6 +1868,20 @@ print(total)`,
     correctAnswer: "15",
     explanation: "סכום 1+2+3+4+5 = 15.",
     examSource: "מבחן 2",
+    warmupQuestions: [
+      {
+        question: "מה הערך של range(1, 6)?",
+        options: ["1, 2, 3, 4, 5", "0, 1, 2, 3, 4, 5", "1, 2, 3, 4, 5, 6", "0, 1, 2, 3, 4"],
+        correctIndex: 0,
+        explanation: "range(1, 6) מתחיל מ-1 ונגמר לפני 6: 1,2,3,4,5."
+      },
+      {
+        question: "מה עושה total += i כש-total=3 ו-i=4?",
+        options: ["total = 7", "total = 4", "total = 12", "total = 3"],
+        correctIndex: 0,
+        explanation: "total += i זהה ל-total = total + i = 3 + 4 = 7."
+      }
+    ],
   },
   {
     id: "li12",
@@ -1763,6 +1895,20 @@ print(len(lst), lst[-1])`,
     correctIndex: 0,
     explanation: "len(lst) = 3 (שלושה איברים). lst[-1] = \"c\" (האיבר האחרון).",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "מה עושה lst[-1]?",
+        options: ["מחזיר את האיבר האחרון ברשימה", "מחזיר -1", "שגיאה", "מוחק את האחרון"],
+        correctIndex: 0,
+        explanation: "אינדקס שלילי סופר מהסוף. lst[-1] = האיבר האחרון."
+      },
+      {
+        question: 'מה הערך של len(["a", "b", "c"])?',
+        options: ["3", "2", "abc", "1"],
+        correctIndex: 0,
+        explanation: "len מחזיר את מספר האיברים ברשימה. 3 איברים → 3."
+      }
+    ],
   },
   {
     id: "c11",
@@ -1776,6 +1922,20 @@ print(x and y, x or y, not x)`,
     correctAnswer: "False True False",
     explanation: "True and False = False. True or False = True. not True = False.",
     examSource: "מבחן 2",
+    warmupQuestions: [
+      {
+        question: "מה עושה and?",
+        options: ["מחזיר True רק אם שני הצדדים True", "מחזיר True אם צד אחד True", "הופך True ל-False", "שגיאה"],
+        correctIndex: 0,
+        explanation: "and דורש ששני הצדדים יהיו True. True and False = False."
+      },
+      {
+        question: "מה עושה not True?",
+        options: ["False", "True", "None", "שגיאה"],
+        correctIndex: 0,
+        explanation: "not הופך את הערך הלוגי. not True = False."
+      }
+    ],
   },
   {
     id: "m12",
@@ -1852,6 +2012,20 @@ for key in d:
     return total`,
     solutionExplanation: "עוברים על כל איבר ברשימה ומצטברים. 0+1+2+3+4+5 = 15.",
     examSource: "מבחן 1",
+    warmupQuestions: [
+      {
+        question: "מה עושה total += x כש-total=6 ו-x=4?",
+        options: ["total = 10", "total = 4", "total = 6", "total = 24"],
+        correctIndex: 0,
+        explanation: "total += x מוסיף את x ל-total. 6 + 4 = 10."
+      },
+      {
+        question: "מה הערך ההתחלתי של total כדי לחשב סכום?",
+        options: ["0", "1", "הערך הראשון ברשימה", "None"],
+        correctIndex: 0,
+        explanation: "סכום מתחיל מ-0 כי 0 הוא איבר ניטרלי בחיבור (לא משפיע)."
+      }
+    ],
   },
 
   // ==========================================
@@ -2456,6 +2630,20 @@ print(lst[::2])`,
     correctIndex: 0,
     explanation: "lst[::2] לוקח כל איבר שני: אינדקסים 0, 2, 4 → [10, 30, 50].",
     examSource: "מבחן ב' 2024",
+    warmupQuestions: [
+      {
+        question: "מה אומר הפרמטר השלישי ב-lst[::2]?",
+        options: ["הצעד — דלג כל 2 איברים", "מספר האיברים", "אינדקס סיום", "שגיאה"],
+        correctIndex: 0,
+        explanation: "הפרמטר השלישי (step) קובע את גודל הדילוג. [::2] = כל איבר שני."
+      },
+      {
+        question: "ברשימה [10,20,30,40,50], מה האינדקסים שנלקחים ב-[::2]?",
+        options: ["0, 2, 4", "1, 3", "0, 1, 2", "2, 4"],
+        correctIndex: 0,
+        explanation: "מתחילים מ-0 ומדלגים ב-2: אינדקסים 0, 2, 4 → [10, 30, 50]."
+      }
+    ],
   },
 
   // --- MATH EXAM ---
@@ -2751,6 +2939,20 @@ print(mystery(4321).strip())`,
     ],
     solutionExplanation: 'מתחילים ממחרוזת ריקה. הלולאה רצה מהאינדקס האחרון עד 0, צעד -1. בכל שלב מוסיפים s[i].',
     examSource: "מבחן 5",
+    warmupQuestions: [
+      {
+        question: 'מה האינדקס האחרון של המחרוזת "abc"?',
+        options: ["2 (כי len-1 = 3-1)", "3", "1", "0"],
+        correctIndex: 0,
+        explanation: 'len("abc") = 3, אז האינדקס האחרון הוא 3-1 = 2.'
+      },
+      {
+        question: "מה עושה range(2, -1, -1)?",
+        options: ["יורד: 2, 1, 0", "עולה: -1, 0, 1, 2", "ריק", "2, 1, 0, -1"],
+        correctIndex: 0,
+        explanation: "range(2, -1, -1) יורד מ-2 ונעצר לפני -1: מייצר 2, 1, 0."
+      }
+    ],
   },
   {
     id: "fb4",
