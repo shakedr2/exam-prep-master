@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
+import { TraceTable } from "@/components/TraceTable";
 import type { TracingQuestion } from "@/data/questions";
 
 export function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (correct: boolean) => void }) {
@@ -40,11 +41,17 @@ export function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (co
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`rounded-xl p-4 ${isCorrect ? "bg-success/10 border border-success/30" : "bg-destructive/10 border border-destructive/30"}`}
+          className={`rounded-xl p-4 space-y-3 ${isCorrect ? "bg-success/10 border border-success/30" : "bg-destructive/10 border border-destructive/30"}`}
         >
           <p className="text-sm font-semibold mb-1">{isCorrect ? "✅ מצוין!" : "❌ לא מדויק"}</p>
           {!isCorrect && <p className="text-sm font-mono mb-2">תשובה נכונה: {q.correctAnswer}</p>}
           <p className="text-sm text-muted-foreground">{q.explanation}</p>
+          {q.traceTable && (
+            <div className="mt-3">
+              <p className="text-xs font-semibold text-muted-foreground mb-2">📊 טבלת מעקב שלב-אחר-שלב:</p>
+              <TraceTable headers={q.traceTable.headers} rows={q.traceTable.rows} />
+            </div>
+          )}
         </motion.div>
       )}
     </div>

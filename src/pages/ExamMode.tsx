@@ -134,9 +134,9 @@ const ExamMode = () => {
 
         {/* Question */}
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-4">
-          <p className="font-semibold text-card-foreground">{q.type === "coding" ? (q as any).title : (q as any).question}</p>
+          <p className="font-semibold text-card-foreground">{(q.type === "coding" || q.type === "fill-blank") ? (q as any).title : (q as any).question}</p>
           {(q as any).code && <PythonCodeBlock code={(q as any).code} />}
-          {q.type === "coding" && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{(q as any).description}</p>}
+          {(q.type === "coding" || q.type === "fill-blank") && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{(q as any).description}</p>}
 
           {q.type === "quiz" && (
             <div className="space-y-2">
@@ -154,18 +154,34 @@ const ExamMode = () => {
             </div>
           )}
 
-          {(q.type === "tracing" || q.type === "coding") && (
+          {q.type === "tracing" && (
             <input
               dir="ltr"
               className="w-full rounded-xl border border-border bg-background p-3 font-mono text-sm"
-              placeholder={q.type === "tracing" ? "הקלד את הפלט..." : "כתוב תשובה מקוצרת..."}
+              placeholder="הקלד את הפלט..."
               value={answers[currentIndex]?.answer || ""}
               onChange={e => {
                 const val = e.target.value;
-                const correct = q.type === "tracing" ? val.trim() === (q as TracingQuestion).correctAnswer.trim() : val.trim().length > 0;
+                const correct = val.trim() === (q as TracingQuestion).correctAnswer.trim();
                 setAnswers(a => ({ ...a, [currentIndex]: { answer: val, correct } }));
               }}
             />
+          )}
+
+          {q.type === "coding" && (
+            <div className="space-y-2">
+              <textarea
+                dir="ltr"
+                className="w-full rounded-xl border border-border bg-background p-3 font-mono text-sm min-h-[120px]"
+                placeholder="כתוב את הפתרון שלך כאן..."
+                value={answers[currentIndex]?.answer || ""}
+                onChange={e => {
+                  const val = e.target.value;
+                  setAnswers(a => ({ ...a, [currentIndex]: { answer: val, correct: false } }));
+                }}
+              />
+              <p className="text-xs text-muted-foreground">💡 שאלות כתיבת קוד נבדקות ידנית ולא נספרות בציון האוטומטי.</p>
+            </div>
           )}
         </div>
 
