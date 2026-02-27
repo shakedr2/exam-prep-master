@@ -87,6 +87,13 @@ export function TheoryCard({ theoryIntro, approachTip, example, onContinue }: Th
         הבנתי, בוא נתחיל!
         <ArrowLeft className="h-4 w-4" />
       </Button>
+      <Button
+        variant="ghost"
+        onClick={onContinue}
+        className="w-full text-muted-foreground text-xs gap-1 hover:text-foreground"
+      >
+        אני מכיר את זה, דלג ←
+      </Button>
     </motion.div>
   );
 }

@@ -1,14 +1,26 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Flame, Target, BookOpen, GraduationCap, Zap } from "lucide-react";
+import { Flame, Target, BookOpen, GraduationCap, Zap, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { TopicCard } from "@/components/TopicCard";
 import { XpBadge } from "@/components/XpBadge";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { PomodoroTimer } from "@/components/PomodoroTimer";
 import { topics, getQuestionsByTopic, questions } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
+
+function getDailySummary(answeredQuestions: Record<string, { correct: boolean; attempts: number }>) {
+  const today = new Date().toDateString();
+  const storageKey = `examprep_daily_${today}`;
+  try {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) return JSON.parse(saved) as { count: number; correct: number };
+  } catch {}
+  return { count: 0, correct: 0 };
+}
 
 const Index = () => {
   const { progress, setUsername, totalCorrect, totalAnswered, getTopicCompletion } = useProgress();
@@ -16,6 +28,8 @@ const Index = () => {
   const navigate = useNavigate();
 
   const overallCompletion = Math.round((totalCorrect / Math.max(questions.length, 1)) * 100);
+  const daily = getDailySummary(progress.answeredQuestions);
+  const dailyAccuracy = daily.count > 0 ? Math.round((daily.correct / daily.count) * 100) : 0;
 
   if (!progress.username) {
     return (
@@ -64,7 +78,10 @@ const Index = () => {
               <p className="text-sm opacity-80">שלום 👋</p>
               <h1 className="text-2xl font-bold">{progress.username}</h1>
             </div>
-            <XpBadge xp={progress.xp} level={progress.level} />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <XpBadge xp={progress.xp} level={progress.level} />
+            </div>
           </div>
 
           {/* Stats Row */}
@@ -89,6 +106,20 @@ const Index = () => {
       </div>
 
       <div className="mx-auto max-w-lg px-4 -mt-4 space-y-4">
+        {/* Daily Summary */}
+        {daily.count > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-center gap-3"
+          >
+            <TrendingUp className="h-5 w-5 text-primary shrink-0" />
+            <p className="text-sm text-foreground">
+              היום תרגלת <strong>{daily.count}</strong> שאלות בדיוק של <strong>{dailyAccuracy}%</strong> 💪
+            </p>
+          </motion.div>
+        )}
+
         {/* Quick Actions */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -103,14 +134,7 @@ const Index = () => {
             <GraduationCap className="h-6 w-6 text-primary" />
             <span className="text-sm font-semibold">מבחן סימולציה</span>
           </Button>
-          <Button
-            onClick={() => navigate("/topics")}
-            className="h-auto flex-col gap-2 rounded-xl border border-border bg-card py-4 text-foreground shadow-sm hover:bg-accent"
-            variant="ghost"
-          >
-            <BookOpen className="h-6 w-6 text-accent" />
-            <span className="text-sm font-semibold">תרגול לפי נושא</span>
-          </Button>
+          <PomodoroTimer />
         </motion.div>
 
         {/* Topics */}
