@@ -1,18 +1,20 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, X } from "lucide-react";
+import { Check, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { gradeBlankAnswer, type GradeResult } from "@/lib/grading";
 import type { FillBlankQuestion } from "@/data/questions";
 
 export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer: (correct: boolean) => void }) {
   const [answers, setAnswers] = useState<string[]>(new Array(q.blanks.length).fill(""));
   const [submitted, setSubmitted] = useState(false);
   const [attempts, setAttempts] = useState(0);
+  const [grades, setGrades] = useState<GradeResult[]>([]);
 
-  const results = answers.map((a, i) => a.trim() === q.blanks[i].answer.trim());
-  const allCorrect = results.every(Boolean);
-  const hasPartial = !allCorrect && results.some(Boolean);
+  const preGrades = answers.map((a, i) => gradeBlankAnswer(a.trim(), q.blanks[i].answer.trim()));
+  const allCorrectPre = preGrades.every(g => g.score === "correct");
+  const hasPartialPre = !allCorrectPre && preGrades.some(g => g.score === "correct" || g.score === "partial");
 
   const getHintForBlank = (i: number): string => {
     const correct = q.blanks[i].answer.trim();
@@ -23,21 +25,28 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
 
   const handleSubmit = () => {
     if (answers.some(a => !a.trim())) return;
-    if (hasPartial && attempts < 2) {
+    const results = answers.map((a, i) => gradeBlankAnswer(a.trim(), q.blanks[i].answer.trim()));
+    const allCorrect = results.every(g => g.score === "correct");
+    const hasPartial = results.some(g => g.score === "partial");
+
+    if (!allCorrect && attempts < 2) {
       setAttempts(a => a + 1);
       return;
     }
+
+    setGrades(results);
     setSubmitted(true);
-    onAnswer(allCorrect);
+    // Partial credit: if most blanks are correct/partial, count as correct for progress
+    const correctCount = results.filter(g => g.score === "correct").length;
+    const partialCount = results.filter(g => g.score === "partial").length;
+    const score = (correctCount + partialCount * 0.5) / results.length;
+    onAnswer(score >= 0.5);
   };
 
-  // Build code display with blanks
-  const renderCode = () => {
-    let codeStr = q.code;
+  const codeParts = (() => {
     const parts: (string | { blankIndex: number })[] = [];
-    let remaining = codeStr;
+    let remaining = q.code;
     let blankIdx = 0;
-
     while (remaining.includes("___")) {
       const pos = remaining.indexOf("___");
       if (pos > 0) parts.push(remaining.slice(0, pos));
@@ -46,11 +55,24 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
       blankIdx++;
     }
     if (remaining) parts.push(remaining);
-
     return parts;
+  })();
+
+  const getBlankIcon = (i: number) => {
+    if (!submitted) return null;
+    const g = grades[i];
+    if (g.score === "correct") return <Check className="h-3 w-3" />;
+    if (g.score === "partial") return <AlertCircle className="h-3 w-3" />;
+    return <X className="h-3 w-3" />;
   };
 
-  const codeParts = renderCode();
+  const getBlankColor = (i: number) => {
+    if (!submitted) return "";
+    const g = grades[i];
+    if (g.score === "correct") return "bg-success/20 text-success";
+    if (g.score === "partial") return "bg-warning/20 text-warning";
+    return "bg-destructive/20 text-destructive";
+  };
 
   return (
     <div className="space-y-4">
@@ -75,11 +97,9 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
             return (
               <span key={i} className="inline-flex items-center mx-1">
                 {submitted ? (
-                  <span className={`inline-flex items-center gap-1 rounded px-2 py-0.5 font-bold ${
-                    results[bi] ? "bg-success/20 text-success" : "bg-destructive/20 text-destructive"
-                  }`}>
+                  <span className={`inline-flex items-center gap-1 rounded px-2 py-0.5 font-bold ${getBlankColor(bi)}`}>
                     {answers[bi] || "___"}
-                    {results[bi] ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                    {getBlankIcon(bi)}
                   </span>
                 ) : (
                   <Input
@@ -114,13 +134,13 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
       )}
 
       {!submitted && (
-        <Button 
-          onClick={handleSubmit} 
-          className="w-full gradient-primary text-primary-foreground gap-2" 
+        <Button
+          onClick={handleSubmit}
+          className="w-full gradient-primary text-primary-foreground gap-2"
           disabled={answers.some(a => !a.trim())}
         >
-          {hasPartial && attempts < 2 ? "נסה שוב" : "בדוק תשובה"}
-          {hasPartial && attempts > 0 && attempts < 2 && (
+          {hasPartialPre && attempts > 0 && attempts < 2 ? "נסה שוב" : "בדוק תשובה"}
+          {hasPartialPre && attempts > 0 && attempts < 2 && (
             <span className="rounded-full bg-primary-foreground/20 px-2 py-0.5 text-[10px] font-bold">
               {2 - attempts} ניסיונות נותרו
             </span>
@@ -128,43 +148,61 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
         </Button>
       )}
 
-      {/* Partial answer hints */}
-      {!submitted && hasPartial && attempts > 0 && (
+      {/* Retry hints */}
+      {!submitted && !allCorrectPre && attempts > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           className="rounded-xl p-3 bg-warning/10 border border-warning/30 space-y-1"
         >
           <p className="text-sm font-semibold mb-1">🤏 חלק מהתשובות נכונות, אבל לא הכל!</p>
-          {results.map((r, i) => !r && (
+          {preGrades.map((g, i) => g.score !== "correct" && (
             <p key={i} className="text-sm text-muted-foreground">
-              חור {i + 1}: {getHintForBlank(i)}
+              חור {i + 1}: {g.score === "partial" ? "קרוב מאוד! " : ""}{getHintForBlank(i)}
             </p>
           ))}
-          {attempts >= 2 && (
-            <p className="text-xs text-muted-foreground mt-1">לחץ "בדוק תשובה" כדי לראות את התשובות המלאות</p>
-          )}
         </motion.div>
       )}
 
-      {submitted && (
+      {submitted && grades.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`rounded-xl p-4 ${allCorrect ? "bg-success/10 border border-success/30" : "bg-destructive/10 border border-destructive/30"}`}
+          className={`rounded-xl p-4 ${
+            grades.every(g => g.score === "correct")
+              ? "bg-success/10 border border-success/30"
+              : grades.some(g => g.score === "partial")
+              ? "bg-warning/10 border border-warning/30"
+              : "bg-destructive/10 border border-destructive/30"
+          }`}
         >
-          <p className="text-sm font-semibold mb-2">{allCorrect ? "✅ מצוין! כל החורים מולאו נכון!" : "❌ יש טעויות"}</p>
-          {!allCorrect && (
-            <div className="space-y-1 mb-2">
-              {q.blanks.map((blank, i) => (
-                !results[i] && (
-                  <p key={i} className="text-sm font-mono">
-                    חור {i + 1}: <span className="text-destructive line-through">{answers[i]}</span> → <span className="text-success font-bold">{blank.answer}</span>
-                  </p>
-                )
-              ))}
-            </div>
+          {grades.every(g => g.score === "correct") ? (
+            <p className="text-sm font-semibold mb-2">✅ מצוין! כל החורים מולאו נכון!</p>
+          ) : grades.every(g => g.score === "incorrect") ? (
+            <p className="text-sm font-semibold mb-2">❌ יש טעויות</p>
+          ) : (
+            <p className="text-sm font-semibold mb-2">🟡 ציון חלקי — ההבנה הכללית טובה</p>
           )}
+
+          <div className="space-y-1 mb-2">
+            {q.blanks.map((blank, i) => {
+              const g = grades[i];
+              if (g.score === "correct") return null;
+              return (
+                <p key={i} className="text-sm font-mono">
+                  חור {i + 1}:{" "}
+                  <span className={g.score === "partial" ? "text-warning" : "text-destructive"}>
+                    {g.score === "partial" ? "≈" : "✗"} {answers[i]}
+                  </span>
+                  {" → "}
+                  <span className="text-success font-bold">{blank.answer}</span>
+                  {g.score === "partial" && g.message && (
+                    <span className="text-xs text-muted-foreground ml-2">({g.message})</span>
+                  )}
+                </p>
+              );
+            })}
+          </div>
           <p className="text-sm text-muted-foreground">{q.solutionExplanation}</p>
         </motion.div>
       )}

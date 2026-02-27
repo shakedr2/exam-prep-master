@@ -4,28 +4,27 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
 import { TraceTable } from "@/components/TraceTable";
+import { gradeTracingAnswer, type GradeResult } from "@/lib/grading";
 import type { TracingQuestion } from "@/data/questions";
 
 export function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (correct: boolean) => void }) {
   const [answer, setAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [attempts, setAttempts] = useState(0);
+  const [grade, setGrade] = useState<GradeResult | null>(null);
+
   const correctTrimmed = q.correctAnswer.trim();
   const answerTrimmed = answer.trim();
-  const isCorrect = answerTrimmed === correctTrimmed;
 
-  const isPartial = !isCorrect && answerTrimmed.length > 0 && (
-    correctTrimmed.includes(answerTrimmed) ||
-    answerTrimmed.includes(correctTrimmed.slice(0, Math.max(1, Math.floor(correctTrimmed.length / 2)))) ||
-    answerTrimmed.split("").filter(c => correctTrimmed.includes(c)).length >= correctTrimmed.length * 0.4
-  );
+  // Pre-check for partial hint (before submit)
+  const preGrade = answerTrimmed ? gradeTracingAnswer(answerTrimmed, correctTrimmed) : null;
+  const isPartialPreview = preGrade?.score === "partial" || preGrade?.score === "incorrect";
 
   const getHint = (): string => {
     const correct = correctTrimmed;
     if (correct.length <= 2) {
       return `התשובה מכילה ${correct.length} תווים`;
     }
-    // Show first character(s) as hint
     const revealCount = Math.max(1, Math.ceil(correct.length * 0.3));
     const revealed = correct.slice(0, revealCount);
     return `התשובה מתחילה ב: ${revealed}...  (אורך: ${correct.length} תווים)`;
@@ -33,12 +32,30 @@ export function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (co
 
   const handleSubmit = () => {
     if (!answerTrimmed) return;
-    if (isPartial && attempts < 2) {
+    const result = gradeTracingAnswer(answerTrimmed, correctTrimmed);
+    
+    // Allow retry for partial answers
+    if (result.score === "partial" && attempts < 2) {
       setAttempts(a => a + 1);
       return;
     }
+
+    // For incorrect but close, also allow retry
+    if (result.score === "incorrect" && isPartialPreview && attempts < 2) {
+      setAttempts(a => a + 1);
+      return;
+    }
+
+    setGrade(result);
     setSubmitted(true);
-    onAnswer(isCorrect);
+    // Partial credit counts as correct for progress
+    onAnswer(result.score === "correct" || result.score === "partial");
+  };
+
+  const gradeColors = {
+    correct: "bg-success/10 border border-success/30",
+    partial: "bg-warning/10 border border-warning/30",
+    incorrect: "bg-destructive/10 border border-destructive/30",
   };
 
   return (
@@ -57,8 +74,8 @@ export function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (co
         />
         {!submitted && (
           <Button onClick={handleSubmit} className="w-full gradient-primary text-primary-foreground gap-2" disabled={!answerTrimmed}>
-            {isPartial && attempts < 2 ? "נסה שוב" : "בדוק תשובה"}
-            {isPartial && attempts > 0 && attempts < 2 && (
+            {isPartialPreview && attempts > 0 && attempts < 2 ? "נסה שוב" : "בדוק תשובה"}
+            {isPartialPreview && attempts > 0 && attempts < 2 && (
               <span className="rounded-full bg-primary-foreground/20 px-2 py-0.5 text-[10px] font-bold">
                 {2 - attempts} ניסיונות נותרו
               </span>
@@ -68,7 +85,7 @@ export function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (co
       </div>
 
       {/* Partial answer hint */}
-      {!submitted && isPartial && attempts > 0 && (
+      {!submitted && isPartialPreview && attempts > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
@@ -82,14 +99,21 @@ export function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (co
         </motion.div>
       )}
 
-      {submitted && (
+      {submitted && grade && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`rounded-xl p-4 space-y-3 ${isCorrect ? "bg-success/10 border border-success/30" : "bg-destructive/10 border border-destructive/30"}`}
+          className={`rounded-xl p-4 space-y-3 ${gradeColors[grade.score]}`}
         >
-          <p className="text-sm font-semibold mb-1">{isCorrect ? "✅ מצוין!" : "❌ לא מדויק"}</p>
-          {!isCorrect && <p className="text-sm font-mono mb-2">תשובה נכונה: {q.correctAnswer}</p>}
+          <p className="text-sm font-semibold mb-1">{grade.message}</p>
+          {grade.score === "partial" && (
+            <div className="space-y-1">
+              <p className="text-sm font-mono">התשובה שלך: {answer}</p>
+              <p className="text-sm font-mono">תשובה מדויקת: {q.correctAnswer}</p>
+              <p className="text-xs text-muted-foreground">💡 קיבלת ציון חלקי — ההבנה הכללית נכונה</p>
+            </div>
+          )}
+          {grade.score === "incorrect" && <p className="text-sm font-mono mb-2">תשובה נכונה: {q.correctAnswer}</p>}
           <p className="text-sm text-muted-foreground">{q.explanation}</p>
           {q.traceTable && (
             <div className="mt-3">
