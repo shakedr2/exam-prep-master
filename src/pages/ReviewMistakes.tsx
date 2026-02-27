@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, CheckCircle, Filter, RotateCcw, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -91,6 +92,23 @@ const ReviewMistakes = () => {
     setAnswered(false);
   };
 
+  // Confetti effect (must be before early returns)
+  const summaryTotal = practiceQuestions.length;
+  const summaryFixed = correctedIds.size;
+  const allFixed = summaryFixed === summaryTotal && summaryTotal > 0;
+
+  useEffect(() => {
+    if (mode === "summary" && allFixed) {
+      const end = Date.now() + 2000;
+      const frame = () => {
+        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 } });
+        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 } });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      };
+      frame();
+    }
+  }, [mode, allFixed]);
+
   // === Empty state ===
   if (allMistakes.length === 0) {
     return (
@@ -107,20 +125,18 @@ const ReviewMistakes = () => {
 
   // === Summary screen ===
   if (mode === "summary") {
-    const total = practiceQuestions.length;
-    const fixed = correctedIds.size;
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center gap-6">
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
           <Trophy className="h-20 w-20 text-primary mx-auto mb-2" />
         </motion.div>
-        <h1 className="text-2xl font-bold">סיום חזרה על טעויות</h1>
+        <h1 className="text-2xl font-bold">{allFixed ? "תיקנת הכל! 🎊" : "סיום חזרה על טעויות"}</h1>
         <p className="text-lg text-muted-foreground">
-          תיקנת <span className="text-primary font-bold">{fixed}</span> מתוך <span className="font-bold">{total}</span> שאלות
+          תיקנת <span className="text-primary font-bold">{summaryFixed}</span> מתוך <span className="font-bold">{summaryTotal}</span> שאלות
         </p>
-        <Progress value={Math.round((fixed / Math.max(total, 1)) * 100)} className="h-3 max-w-xs mx-auto" />
+        <Progress value={Math.round((summaryFixed / Math.max(summaryTotal, 1)) * 100)} className="h-3 max-w-xs mx-auto" />
         <div className="flex gap-3">
-          {fixed < total && (
+          {summaryFixed < summaryTotal && (
             <Button variant="outline" onClick={() => { setMode("review"); setSelectedIds(new Set()); }} className="gap-2">
               <RotateCcw className="h-4 w-4" /> נסה שוב
             </Button>
