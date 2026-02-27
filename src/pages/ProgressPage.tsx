@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
-import { Trophy, Zap, Flame, Target, Award, Star } from "lucide-react";
+import { Trophy, Zap, Flame, Target, Award, Star, RotateCcw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { topics, getQuestionsByTopic, questions } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
+import { useNavigate } from "react-router-dom";
 
 const BADGE_INFO: Record<string, { icon: string; name: string; description: string }> = {
   first_10: { icon: "🎯", name: "מתחיל מבטיח", description: "10 תשובות נכונות" },
@@ -11,8 +13,10 @@ const BADGE_INFO: Record<string, { icon: string; name: string; description: stri
 };
 
 const ProgressPage = () => {
-  const { progress, totalCorrect, totalAnswered, getTopicCompletion } = useProgress();
+  const { progress, totalCorrect, totalAnswered, getTopicCompletion, getIncorrectQuestions } = useProgress();
+  const navigate = useNavigate();
   const overallCompletion = Math.round((totalCorrect / Math.max(questions.length, 1)) * 100);
+  const incorrectQuestions = getIncorrectQuestions();
 
   return (
     <div className="min-h-screen pb-24 pt-6">
@@ -40,6 +44,19 @@ const ProgressPage = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Review Mistakes */}
+        {incorrectQuestions.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Button
+              onClick={() => navigate("/review-mistakes")}
+              className="w-full h-14 text-base gap-3 gradient-primary text-primary-foreground rounded-xl"
+            >
+              <RotateCcw className="h-5 w-5" />
+              🔄 חזרה על {incorrectQuestions.length} טעויות
+            </Button>
+          </motion.div>
+        )}
 
         {/* Overall */}
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">

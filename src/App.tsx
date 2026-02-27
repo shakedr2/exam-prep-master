@@ -9,6 +9,7 @@ import Topics from "./pages/Topics";
 import TopicPractice from "./pages/TopicPractice";
 import ExamMode from "./pages/ExamMode";
 import ProgressPage from "./pages/ProgressPage";
+import ReviewMistakes from "./pages/ReviewMistakes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/topic/:topicId" element={<TopicPractice />} />
             <Route path="/exam" element={<ExamMode />} />
             <Route path="/progress" element={<ProgressPage />} />
+            <Route path="/review-mistakes" element={<ReviewMistakes />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <BottomNav />
