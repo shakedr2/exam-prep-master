@@ -90,13 +90,25 @@ function ExamCodingView({ q, currentAnswer, onAnswer }: { q: CodingQuestion; cur
 }
 
 export function ExamQuestionRenderer({ question, currentAnswer, onAnswer }: Props) {
+  const isAnswered = !!currentAnswer;
+
   const handleAnswer = (correct: boolean) => {
+    if (isAnswered) return; // prevent re-answering
     const answerText = correct ? "correct" : "incorrect";
     onAnswer(answerText, correct);
   };
 
   return (
     <div>
+      {/* Already answered indicator */}
+      {isAnswered && (
+        <div className={`mb-3 rounded-lg p-2 text-center text-xs font-semibold ${
+          currentAnswer.correct ? "bg-success/10 text-success border border-success/30" : "bg-destructive/10 text-destructive border border-destructive/30"
+        }`}>
+          {currentAnswer.correct ? "✅ ענית נכון" : "❌ ענית לא נכון"}
+        </div>
+      )}
+
       <div className="flex items-center gap-2 mb-4">
         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
           question.type === "quiz" ? "bg-primary/10 text-primary" :
