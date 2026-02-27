@@ -3036,6 +3036,8 @@ export function getRandomQuestions(count: number): Question[] {
 
 export function getBalancedExamQuestions(count: number): Question[] {
   const topicIds: TopicId[] = ["tracing", "conditions", "loops", "lists", "math"];
+  const typeIds: QuestionType[] = ["quiz", "tracing", "coding", "fill-blank"];
+  
   const byTopic: Record<string, Question[]> = {};
   topicIds.forEach(t => {
     byTopic[t] = [...questions.filter(q => q.topic === t)].sort(() => Math.random() - 0.5);
@@ -3043,20 +3045,51 @@ export function getBalancedExamQuestions(count: number): Question[] {
 
   const selected: Question[] = [];
   const usedIds = new Set<string>();
+  const usedTypes = new Set<string>();
 
-  // One question per topic first
+  // Phase 1: One question per topic, trying to cover different types
   for (const t of topicIds) {
-    if (byTopic[t].length > 0 && selected.length < count) {
-      const q = byTopic[t].shift()!;
+    if (selected.length >= count) break;
+    // Try to pick a type we haven't used yet
+    const preferredQ = byTopic[t].find(q => !usedTypes.has(q.type));
+    const q = preferredQ || byTopic[t][0];
+    if (q) {
       selected.push(q);
       usedIds.add(q.id);
+      usedTypes.add(q.type);
+      byTopic[t] = byTopic[t].filter(x => x.id !== q.id);
     }
   }
 
-  // Fill remaining randomly
+  // Phase 2: Fill remaining, prioritizing uncovered types and difficulty variety
+  const difficulties: Difficulty[] = ["easy", "medium", "hard"];
+  const usedDifficulties = new Set(selected.map(q => q.difficulty));
+  
   const remaining = questions.filter(q => !usedIds.has(q.id)).sort(() => Math.random() - 0.5);
+  
+  // Try to cover missing types first
+  const missingTypes = typeIds.filter(t => !usedTypes.has(t));
+  for (const type of missingTypes) {
+    if (selected.length >= count) break;
+    const q = remaining.find(q => q.type === type && !usedIds.has(q.id));
+    if (q) {
+      selected.push(q);
+      usedIds.add(q.id);
+      usedTypes.add(q.type);
+    }
+  }
+
+  // Fill rest with difficulty variety
   while (selected.length < count && remaining.length > 0) {
-    selected.push(remaining.shift()!);
+    // Prefer a difficulty we haven't covered
+    const missingDiff = difficulties.find(d => !usedDifficulties.has(d));
+    const q = missingDiff 
+      ? remaining.find(q => q.difficulty === missingDiff && !usedIds.has(q.id)) || remaining.find(q => !usedIds.has(q.id))
+      : remaining.find(q => !usedIds.has(q.id));
+    if (!q) break;
+    selected.push(q);
+    usedIds.add(q.id);
+    usedDifficulties.add(q.difficulty);
   }
 
   return selected.sort(() => Math.random() - 0.5);
