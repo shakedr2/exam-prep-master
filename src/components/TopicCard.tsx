@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { BookOpen } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import type { Topic } from "@/data/questions";
 import { questions } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
@@ -56,6 +58,30 @@ export function TopicCard({ topic, completion, questionCount, index }: TopicCard
           <span className="font-semibold text-primary">{completion}%</span>
         </div>
         <Progress value={completion} className="h-2" />
+      </div>
+      <div className="mt-3 flex gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          className="flex-1 gap-1.5 text-xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/topic/${topic.id}/learn`);
+          }}
+        >
+          <BookOpen className="h-3.5 w-3.5" />
+          📖 למידה
+        </Button>
+        <Button
+          size="sm"
+          className="flex-1 text-xs gradient-primary text-primary-foreground"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/topic/${topic.id}`);
+          }}
+        >
+          ✏️ תרגול
+        </Button>
       </div>
     </motion.div>
   );

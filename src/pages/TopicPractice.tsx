@@ -15,6 +15,7 @@ import { useProgress } from "@/hooks/useProgress";
 import { AiTutor } from "@/components/AiTutor";
 import { useAdaptive, PROFICIENCY_CONFIG } from "@/hooks/useAdaptive";
 import { getTheoryForQuestion } from "@/lib/theoryContent";
+import { StepIndicator } from "@/components/StepIndicator";
 
 const TopicPractice = () => {
   const { topicId } = useParams<{ topicId: string }>();
@@ -114,6 +115,13 @@ const TopicPractice = () => {
           )}
         </AnimatePresence>
 
+        {/* Step Indicator */}
+        <StepIndicator
+          currentStep={showTheory ? "theory" : showWarmup ? "warmup" : "question"}
+          hasTheory={hasTheory}
+          hasWarmup={!!hasWarmups}
+        />
+
         {/* Theory → Warmup → Question */}
         <AnimatePresence mode="wait">
           {showTheory && theory ? (
@@ -126,6 +134,7 @@ const TopicPractice = () => {
               <TheoryCard
                 theoryIntro={theory.theoryIntro}
                 approachTip={theory.approachTip}
+                example={theory.example}
                 onContinue={() => setTheoryDone(true)}
               />
             </motion.div>

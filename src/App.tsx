@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/BottomNav";
 import Index from "./pages/Index";
 import Topics from "./pages/Topics";
 import TopicPractice from "./pages/TopicPractice";
+import TopicLearn from "./pages/TopicLearn";
 import ExamMode from "./pages/ExamMode";
 import ProgressPage from "./pages/ProgressPage";
 import ReviewMistakes from "./pages/ReviewMistakes";
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/topics" element={<Topics />} />
             <Route path="/topic/:topicId" element={<TopicPractice />} />
+            <Route path="/topic/:topicId/learn" element={<TopicLearn />} />
             <Route path="/exam" element={<ExamMode />} />
             <Route path="/progress" element={<ProgressPage />} />
             <Route path="/review-mistakes" element={<ReviewMistakes />} />
