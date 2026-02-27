@@ -27,6 +27,8 @@ export interface QuizQuestion {
   explanation: string;
   examSource?: string;
   warmupQuestions?: WarmupQuestion[];
+  theoryIntro?: string;
+  approachTip?: string;
 }
 
 export interface TracingQuestion {
@@ -41,6 +43,8 @@ export interface TracingQuestion {
   traceTable?: TraceStep;
   examSource?: string;
   warmupQuestions?: WarmupQuestion[];
+  theoryIntro?: string;
+  approachTip?: string;
 }
 
 export interface CodingQuestion {
@@ -56,6 +60,8 @@ export interface CodingQuestion {
   solutionExplanation: string;
   examSource?: string;
   warmupQuestions?: WarmupQuestion[];
+  theoryIntro?: string;
+  approachTip?: string;
 }
 
 export interface FillBlankQuestion {
@@ -70,6 +76,8 @@ export interface FillBlankQuestion {
   solutionExplanation: string;
   examSource?: string;
   warmupQuestions?: WarmupQuestion[];
+  theoryIntro?: string;
+  approachTip?: string;
 }
 
 export type Question = QuizQuestion | TracingQuestion | CodingQuestion | FillBlankQuestion;
@@ -97,6 +105,8 @@ export const questions: Question[] = [
     type: "tracing",
     topic: "tracing",
     difficulty: "easy",
+    theoryIntro: "range(n) מייצר רצף מספרים מ-0 עד n-1.\nstr(x) ממיר מספר למחרוזת.\nשרשור מחרוזות עם += מחבר טקסט לטקסט קיים.",
+    approachTip: "עקוב אחרי הלולאה צעד-צעד: רשום את i בכל איטרציה, חשב i*2, ובנה את result בהדרגה.",
     question: "מה תדפיס הפונקציה הבאה עבור הקריאה mystery(3)?",
     code: `def mystery(n):
     result = ""
@@ -130,6 +140,8 @@ mystery(3)`,
     type: "tracing",
     topic: "tracing",
     difficulty: "medium",
+    theoryIntro: "אופרטור % (מודולו) מחזיר את השארית מחלוקה.\nלולאת while ממשיכה כל עוד התנאי True.\na -= 1 מקטין את a ב-1 בכל פעם.",
+    approachTip: "בנה טבלה: בכל שורה רשום את ערך a, האם a%b==0, ואם כן — מה מודפס.",
     question: "מה תדפיס הפונקציה הבאה עבור הקריאה mystery(4, 2)?",
     code: `def mystery(a, b):
     while a > 0:
@@ -161,6 +173,8 @@ mystery(4, 2)`,
     type: "tracing",
     topic: "tracing",
     difficulty: "medium",
+    theoryIntro: "len(s) מחזיר את אורך המחרוזת.\ns[i] ניגש לתו לפי אינדקס (מתחיל מ-0).\n.upper() הופכת אות קטנה לגדולה.",
+    approachTip: "עבור על כל אינדקס, בדוק אם הוא זוגי (i%2==0). רשום מה קורה לתו בכל מקרה.",
     question: "מה תדפיס הפונקציה הבאה עבור mystery(\"hello\")?",
     code: `def mystery(s):
     result = ""
@@ -205,6 +219,8 @@ mystery("hello")`,
     type: "tracing",
     topic: "tracing",
     difficulty: "hard",
+    theoryIntro: "range(len(lst)-1) רץ עד האיבר לפני האחרון כדי שנוכל להשוות lst[i] ל-lst[i+1].\nהשוואת שכנים ברשימה היא דפוס נפוץ למציאת מגמות.",
+    approachTip: "בנה טבלה של i, lst[i], lst[i+1], והאם lst[i]>lst[i+1]. ספור את ה-True.",
     question: "מה תדפיס הפונקציה הבאה עבור mystery([3,1,4,1,5])?",
     code: `def mystery(lst):
     count = 0
@@ -246,6 +262,8 @@ mystery([3,1,4,1,5])`,
     type: "tracing",
     topic: "tracing",
     difficulty: "hard",
+    theoryIntro: "השמה מרובה a, b = b, a+b מעדכנת את שני המשתנים בו-זמנית.\nסדרת פיבונאצ'י: כל מספר הוא סכום שני קודמיו (0, 1, 1, 2, 3, 5, 8...).",
+    approachTip: "רשום טבלה עם עמודות a ו-b. בכל איטרציה חשב את הערכים החדשים לפי הנוסחה.",
     question: "מה תדפיס הפונקציה הבאה עבור mystery(5)?",
     code: `def mystery(n):
     a, b = 0, 1
@@ -285,6 +303,8 @@ mystery(5)`,
     type: "quiz",
     topic: "conditions",
     difficulty: "easy",
+    theoryIntro: "שרשרת if/elif/else בודקת תנאים לפי הסדר.\nPython נכנסת רק לבלוק הראשון שהתנאי שלו True ומדלגת על כל השאר.",
+    approachTip: "בדוק כל תנאי מלמעלה למטה. ברגע שמצאת תנאי שמתקיים — זו התשובה, אין צורך להמשיך.",
     question: "לקוח קנה ב-150 ש\"ח. מה תהיה ההנחה לפי הפונקציה הבאה?",
     code: `def discount(price):
     if price > 200:
@@ -317,6 +337,8 @@ mystery(5)`,
     type: "quiz",
     topic: "conditions",
     difficulty: "medium",
+    theoryIntro: "ביטוי טרנרי: value_if_true if condition else value_if_false.\nאופרטור and מחזיר True רק אם שני הצדדים True.",
+    approachTip: "חשב קודם את כל הביטויים (x*y, x<y), ואז בדוק את התנאי המשולב.",
     question: "מה יחזיר הביטוי הבא?",
     code: `x = 5
 y = 10
@@ -346,6 +368,8 @@ print(result)`,
     type: "quiz",
     topic: "conditions",
     difficulty: "medium",
+    theoryIntro: "תנאים מקוננים (if בתוך if) — הבלוק הפנימי רץ רק אם התנאי החיצוני מתקיים.\nreturn מחוץ ל-if רץ רק אם לא נכנסנו לאף בלוק.",
+    approachTip: "בדוק קודם את התנאי החיצוני. אם הוא False — כל הבלוק הפנימי מדולג.",
     question: "מה ידפיס הקוד הבא?",
     code: `def check(n):
     if n > 0:
@@ -380,6 +404,8 @@ print(check(-3))`,
     type: "quiz",
     topic: "conditions",
     difficulty: "hard",
+    theoryIntro: "שרשרת if/elif/else עם בלוק נוסף אחריה — הבלוק הנוסף רץ תמיד!\nreturn עוצר את הפונקציה ומחזיר ערך. מה שאחרי return לא מתבצע.",
+    approachTip: "עקוב שלב-שלב: מצא את ה-elif שמתקיים, קבע את g, ואז בדוק את התנאי הנוסף (g != \"F\").",
     question: "מה ידפיס הקוד הבא?",
     code: `def grade(score):
     if score >= 90:
@@ -1030,6 +1056,20 @@ print(x)`,
     correctAnswer: "[1, 2, 3, 4]",
     explanation: "y = x לא יוצר עותק, אלא הפניה לאותה רשימה. לכן שינוי ב-y משפיע גם על x.",
     examSource: "מבחן 6",
+    warmupQuestions: [
+      {
+        question: "מה ההבדל בין y = x לבין y = x[:] כש-x הוא רשימה?",
+        options: ["y = x מפנה לאותה רשימה, y = x[:] יוצר עותק", "אין הבדל", "y = x יוצר עותק", "שניהם יוצרים עותק"],
+        correctIndex: 0,
+        explanation: "y = x → שניהם מצביעים לאותה רשימה. y = x[:] → y הוא עותק עצמאי."
+      },
+      {
+        question: "אם x = [1,2,3] ו-y = x, מה יקרה אחרי y.append(4)?",
+        options: ["גם x יהיה [1,2,3,4]", "x נשאר [1,2,3]", "שגיאה", "y יהיה [4]"],
+        correctIndex: 0,
+        explanation: "כיון ש-y מפנה לאותה רשימה כמו x, כל שינוי ב-y משפיע גם על x."
+      }
+    ],
   },
   {
     id: "t11",

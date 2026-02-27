@@ -9,16 +9,19 @@ import { TracingView } from "@/components/TracingView";
 import { CodingView } from "@/components/CodingView";
 import { FillBlankView } from "@/components/FillBlankView";
 import { WarmupView } from "@/components/WarmupView";
+import { TheoryCard } from "@/components/TheoryCard";
 import { topics, questions as allQuestions, type Question } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { AiTutor } from "@/components/AiTutor";
 import { useAdaptive, PROFICIENCY_CONFIG } from "@/hooks/useAdaptive";
+import { getTheoryForQuestion } from "@/lib/theoryContent";
 
 const TopicPractice = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
   const { answerQuestion, progress } = useProgress();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [theoryDone, setTheoryDone] = useState(false);
   const [warmupDone, setWarmupDone] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
 
@@ -48,8 +51,12 @@ const TopicPractice = () => {
   }
 
   const q = topicQuestions[currentIndex];
+  const theory = getTheoryForQuestion(q);
+  const hasTheory = !!theory;
   const hasWarmups = q.warmupQuestions && q.warmupQuestions.length > 0;
-  const showWarmup = hasWarmups && !warmupDone;
+  const showTheory = hasTheory && !theoryDone;
+  const showWarmup = !showTheory && hasWarmups && !warmupDone;
+  const showQuestion = !showTheory && !showWarmup;
   const progressPct = ((currentIndex + 1) / topicQuestions.length) * 100;
 
   const handleAnswer = (correct: boolean) => {
@@ -59,6 +66,7 @@ const TopicPractice = () => {
   const handleNext = () => {
     if (currentIndex < topicQuestions.length - 1) {
       setCurrentIndex(i => i + 1);
+      setTheoryDone(false);
       setWarmupDone(false);
     } else {
       navigate("/topics");
@@ -106,9 +114,22 @@ const TopicPractice = () => {
           )}
         </AnimatePresence>
 
-        {/* Warmup or Question */}
+        {/* Theory → Warmup → Question */}
         <AnimatePresence mode="wait">
-          {showWarmup ? (
+          {showTheory && theory ? (
+            <motion.div
+              key={`theory-${q.id}`}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <TheoryCard
+                theoryIntro={theory.theoryIntro}
+                approachTip={theory.approachTip}
+                onContinue={() => setTheoryDone(true)}
+              />
+            </motion.div>
+          ) : showWarmup ? (
             <motion.div
               key={`warmup-${q.id}`}
               initial={{ opacity: 0, x: -20 }}
@@ -165,7 +186,7 @@ const TopicPractice = () => {
           )}
         </AnimatePresence>
 
-      {!showWarmup && progress.answeredQuestions[q.id] && (
+      {showQuestion && progress.answeredQuestions[q.id] && (
           <Button onClick={handleNext} className="mt-4 w-full gradient-primary text-primary-foreground gap-2">
             {currentIndex < topicQuestions.length - 1 ? "שאלה הבאה" : "סיום נושא"}
             <ChevronLeft className="h-4 w-4" />
