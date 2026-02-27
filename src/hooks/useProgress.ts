@@ -118,6 +118,13 @@ export function useProgress() {
     return Math.round((answered / Math.max(totalQuestions, 1)) * 100);
   }, [progress.answeredQuestions]);
 
+  const getIncorrectQuestions = useCallback(() => {
+    const incorrectIds = Object.entries(progress.answeredQuestions)
+      .filter(([_, v]) => !v.correct)
+      .map(([id]) => id);
+    return questions.filter(q => incorrectIds.includes(q.id));
+  }, [progress.answeredQuestions]);
+
   const totalCorrect = Object.values(progress.answeredQuestions).filter(a => a.correct).length;
   const totalAnswered = Object.keys(progress.answeredQuestions).length;
 
@@ -127,6 +134,7 @@ export function useProgress() {
     answerQuestion,
     addExamResult,
     getTopicCompletion,
+    getIncorrectQuestions,
     totalCorrect,
     totalAnswered,
   };
