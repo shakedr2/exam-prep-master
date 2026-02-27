@@ -1,22 +1,60 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, RotateCcw, X, Timer } from "lucide-react";
+import { motion } from "framer-motion";
+import { Play, Pause, RotateCcw, X, Timer, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-const WORK_DURATION = 25 * 60;
-const BREAK_DURATION = 5 * 60;
+const PRESETS = [
+  { label: "25 / 5", work: 25 * 60, break: 5 * 60 },
+  { label: "15 / 3", work: 15 * 60, break: 3 * 60 },
+  { label: "45 / 10", work: 45 * 60, break: 10 * 60 },
+  { label: "50 / 15", work: 50 * 60, break: 15 * 60 },
+];
 
 type Phase = "work" | "break";
 
+function playBeep(frequency: number, duration: number, count: number = 1) {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    for (let i = 0; i < count; i++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = frequency;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + i * (duration + 0.1));
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * (duration + 0.1) + duration);
+      osc.start(ctx.currentTime + i * (duration + 0.1));
+      osc.stop(ctx.currentTime + i * (duration + 0.1) + duration);
+    }
+    setTimeout(() => ctx.close(), count * (duration + 0.1) * 1000 + 500);
+  } catch {}
+}
+
+function playStartSound() {
+  playBeep(880, 0.15, 1); // single high beep
+}
+
+function playBreakSound() {
+  playBeep(523, 0.3, 2); // two mellow beeps
+}
+
+function playEndSound() {
+  playBeep(1047, 0.2, 3); // three sharp beeps
+}
+
 export function PomodoroTimer() {
   const [isOpen, setIsOpen] = useState(false);
+  const [presetIndex, setPresetIndex] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
   const [phase, setPhase] = useState<Phase>("work");
-  const [timeLeft, setTimeLeft] = useState(WORK_DURATION);
+  const [timeLeft, setTimeLeft] = useState(PRESETS[0].work);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const totalTime = phase === "work" ? WORK_DURATION : BREAK_DURATION;
+  const preset = PRESETS[presetIndex];
+  const totalTime = phase === "work" ? preset.work : preset.break;
   const progress = ((totalTime - timeLeft) / totalTime) * 100;
 
   const clearTimer = useCallback(() => {
@@ -37,13 +75,15 @@ export function PomodoroTimer() {
         if (prev <= 1) {
           setIsRunning(false);
           if (phase === "work") {
-            toast.success("🎉 סיימת 25 דקות! זמן להפסקה קצרה", { duration: 5000 });
+            playBreakSound();
+            toast.success("🎉 סיימת! זמן להפסקה קצרה", { duration: 5000 });
             setPhase("break");
-            return BREAK_DURATION;
+            return preset.break;
           } else {
+            playEndSound();
             toast.info("☕ ההפסקה נגמרה! חזרה ללימודים", { duration: 5000 });
             setPhase("work");
-            return WORK_DURATION;
+            return preset.work;
           }
         }
         return prev - 1;
@@ -51,12 +91,27 @@ export function PomodoroTimer() {
     }, 1000);
 
     return clearTimer;
-  }, [isRunning, phase, clearTimer]);
+  }, [isRunning, phase, clearTimer, preset]);
 
   const reset = () => {
     setIsRunning(false);
     setPhase("work");
-    setTimeLeft(WORK_DURATION);
+    setTimeLeft(preset.work);
+  };
+
+  const selectPreset = (index: number) => {
+    setPresetIndex(index);
+    setIsRunning(false);
+    setPhase("work");
+    setTimeLeft(PRESETS[index].work);
+    setShowSettings(false);
+  };
+
+  const handleStartPause = () => {
+    if (!isRunning) {
+      playStartSound();
+    }
+    setIsRunning(!isRunning);
   };
 
   const formatTime = (seconds: number) => {
@@ -89,10 +144,36 @@ export function PomodoroTimer() {
           <Timer className="h-4 w-4 text-warning" />
           {phase === "work" ? "🎯 זמן לימוד" : "☕ הפסקה"}
         </span>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsOpen(false)}>
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowSettings(!showSettings)}>
+            <Settings className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setIsOpen(false); setIsRunning(false); }}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
+
+      {/* Presets */}
+      {showSettings && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="flex gap-2 flex-wrap"
+        >
+          {PRESETS.map((p, i) => (
+            <Button
+              key={p.label}
+              variant={i === presetIndex ? "default" : "outline"}
+              size="sm"
+              onClick={() => selectPreset(i)}
+              className="text-xs"
+            >
+              {p.label} דק׳
+            </Button>
+          ))}
+        </motion.div>
+      )}
 
       {/* Circular progress */}
       <div className="flex justify-center">
@@ -108,24 +189,22 @@ export function PomodoroTimer() {
               style={{ transition: "stroke-dashoffset 0.5s ease" }}
             />
           </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center flex-col">
             <span className="text-2xl font-bold font-mono text-foreground">{formatTime(timeLeft)}</span>
+            <span className="text-[10px] text-muted-foreground mt-1">
+              {phase === "work" ? `לימוד ${preset.work / 60} דק׳` : `הפסקה ${preset.break / 60} דק׳`}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Controls */}
       <div className="flex justify-center gap-3">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={reset}
-          className="rounded-full"
-        >
+        <Button variant="outline" size="icon" onClick={reset} className="rounded-full">
           <RotateCcw className="h-4 w-4" />
         </Button>
         <Button
-          onClick={() => setIsRunning(!isRunning)}
+          onClick={handleStartPause}
           className="rounded-full gradient-primary text-primary-foreground px-6 gap-2"
         >
           {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
