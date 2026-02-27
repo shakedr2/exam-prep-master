@@ -125,6 +125,14 @@ export function useProgress() {
     return questions.filter(q => incorrectIds.includes(q.id));
   }, [progress.answeredQuestions]);
 
+  const getIncorrectByTopic = useCallback((topicId: string) => {
+    return getIncorrectQuestions().filter(q => q.topic === topicId);
+  }, [getIncorrectQuestions]);
+
+  const getAttempts = useCallback((questionId: string) => {
+    return progress.answeredQuestions[questionId]?.attempts ?? 0;
+  }, [progress.answeredQuestions]);
+
   const totalCorrect = Object.values(progress.answeredQuestions).filter(a => a.correct).length;
   const totalAnswered = Object.keys(progress.answeredQuestions).length;
 
@@ -135,6 +143,8 @@ export function useProgress() {
     addExamResult,
     getTopicCompletion,
     getIncorrectQuestions,
+    getIncorrectByTopic,
+    getAttempts,
     totalCorrect,
     totalAnswered,
   };
