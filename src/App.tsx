@@ -29,6 +29,7 @@ const AppContent = () => {
           <Route path="/" element={<Index />} />
           <Route path="/topics" element={<Topics />} />
           <Route path="/topic/:topicId" element={<TopicPractice />} />
+          <Route path="/concepts" element={<ConceptsPractice />} />
           <Route path="/topic/:topicId/learn" element={<TopicLearn />} />
           <Route path="/exam" element={<ExamMode />} />
           <Route path="/progress" element={<ProgressPage />} />
