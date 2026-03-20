@@ -1,73 +1,54 @@
-# Welcome to your Lovable project
+# Exam Prep Master
 
-## Project info
+A web application for exam preparation, allowing students to practice questions by topic with progress tracking powered by Supabase.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Prerequisites
 
-## How can I edit this code?
+- [Node.js](https://nodejs.org/) (v18 or later)
+- A package manager: [npm](https://www.npmjs.com/), [pnpm](https://pnpm.io/), or [bun](https://bun.sh/)
+- A [Supabase](https://supabase.com/) project with the following environment variables set:
 
-There are several ways of editing your application.
+```
+VITE_SUPABASE_URL=<your-supabase-url>
+VITE_SUPABASE_PUBLISHABLE_KEY=<your-supabase-anon-key>
+```
 
-**Use Lovable**
+Copy `.env.example` (or create a `.env` file in the project root) and fill in the values above.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 1. Clone the repository
+git clone https://github.com/shakedr2/exam-prep-master.git
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Navigate to the project directory
+cd exam-prep-master
 
-# Step 3: Install the necessary dependencies.
-npm i
+# 3. Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 4. Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:5173` by default.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Scripts
 
-**Use GitHub Codespaces**
+| Command | Description |
+|---|---|
+| `npm run dev` | Start the development server with hot reload |
+| `npm run build` | Build the app for production |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run ESLint |
+| `npm test` | Run the test suite (Vitest) |
+| `npm run test:watch` | Run tests in watch mode |
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Tech Stack
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- **[Vite](https://vitejs.dev/)** — fast build tool and dev server
+- **[React](https://react.dev/)** — UI library
+- **[TypeScript](https://www.typescriptlang.org/)** — type-safe JavaScript
+- **[Tailwind CSS](https://tailwindcss.com/)** — utility-first CSS framework
+- **[shadcn/ui](https://ui.shadcn.com/)** — accessible component library built on Radix UI
+- **[Supabase](https://supabase.com/)** — backend-as-a-service (database, auth, storage)
