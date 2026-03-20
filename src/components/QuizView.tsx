@@ -1,14 +1,69 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, X } from "lucide-react";
+import { Check, X, Loader2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
+import { AIExplanationDrawer } from "@/components/AIExplanationDrawer";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+import { toast } from "sonner";
 import type { QuizQuestion } from "@/data/questions";
+import {
+  getQuestionExplanation,
+  generateSimilarQuestion,
+  type AIExplanationResult,
+} from "@/lib/aiClient";
 
 export function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct: boolean) => void }) {
   const [selected, setSelected] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const answered = submitted;
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerLoading, setDrawerLoading] = useState(false);
+  const [drawerContent, setDrawerContent] = useState("");
+
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [similarOpen, setSimilarOpen] = useState(false);
+  const [similarContent, setSimilarContent] = useState("");
+
+  async function handleExplain() {
+    setDrawerContent("");
+    setDrawerLoading(true);
+    setDrawerOpen(true);
+    try {
+      const result: AIExplanationResult = await getQuestionExplanation(
+        q.question,
+        q.options,
+        q.correctIndex,
+        selected ?? undefined,
+      );
+      setDrawerContent(result.tip ? `${result.explanation}\n\n${result.tip}` : result.explanation);
+    } catch {
+      setDrawerOpen(false);
+      toast.error("שגיאה בטעינת ההסבר, נסה שוב");
+    } finally {
+      setDrawerLoading(false);
+    }
+  }
+
+  async function handleSimilar() {
+    setSimilarLoading(true);
+    setSimilarOpen(false);
+    setSimilarContent("");
+    try {
+      const result = await generateSimilarQuestion(q.question, q.topic);
+      setSimilarContent(result);
+      setSimilarOpen(true);
+    } catch {
+      toast.error("שגיאה בטעינת שאלה דומה, נסה שוב");
+    } finally {
+      setSimilarLoading(false);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -69,6 +124,55 @@ export function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct:
           <p className="text-sm text-muted-foreground">{q.explanation}</p>
         </motion.div>
       )}
+      {answered && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex gap-2"
+        >
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={handleExplain}
+          >
+            הסבר עם AI
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1"
+            disabled={similarLoading}
+            onClick={handleSimilar}
+          >
+            {similarLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              "שאלה דומה"
+            )}
+          </Button>
+        </motion.div>
+      )}
+      {similarContent && (
+        <Collapsible open={similarOpen} onOpenChange={setSimilarOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="flex w-full items-center justify-between p-2 text-sm font-semibold">
+              שאלה דומה (AI)
+              <ChevronDown className={`h-4 w-4 transition-transform ${similarOpen ? "rotate-180" : ""}`} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <p className="rounded-xl border bg-muted/50 p-4 text-sm text-card-foreground whitespace-pre-wrap">
+              {similarContent}
+            </p>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+      <AIExplanationDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        content={drawerContent}
+        loading={drawerLoading}
+        title="הסבר עם AI"
+      />
     </div>
   );
 }
