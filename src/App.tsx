@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Topics from "./pages/Topics";
 import TopicPractice from "./pages/TopicPractice";
 import TopicLearn from "./pages/TopicLearn";
+import ConceptsPractice from "./pages/ConceptsPractice";
 import ExamMode from "./pages/ExamMode";
 import ProgressPage from "./pages/ProgressPage";
 import ReviewMistakes from "./pages/ReviewMistakes";
@@ -28,6 +29,7 @@ const AppContent = () => {
           <Route path="/" element={<Index />} />
           <Route path="/topics" element={<Topics />} />
           <Route path="/topic/:topicId" element={<TopicPractice />} />
+          <Route path="/concepts" element={<ConceptsPractice />} />
           <Route path="/topic/:topicId/learn" element={<TopicLearn />} />
           <Route path="/exam" element={<ExamMode />} />
           <Route path="/progress" element={<ProgressPage />} />

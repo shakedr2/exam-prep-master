@@ -3484,3 +3484,22 @@ export function getBalancedExamQuestions(count: number): Question[] {
 
   return selected.sort(() => Math.random() - 0.5);
 }
+
+const CONCEPT_TOPIC_ORDER: TopicId[] = ["tracing", "conditions", "loops", "lists", "math"];
+
+export function getConceptQuestions(): Question[] {
+  const concepts = questions.filter(q => q.id.startsWith("concept_"));
+  return concepts.sort((a, b) => {
+    const ai = CONCEPT_TOPIC_ORDER.indexOf(a.topic);
+    const bi = CONCEPT_TOPIC_ORDER.indexOf(b.topic);
+    return ai - bi;
+  });
+}
+
+export const conceptTopicLabels: Record<TopicId, string> = {
+  tracing: "מעקב קוד",
+  conditions: "תנאים ולוגיקה",
+  loops: "לולאות",
+  lists: "רשימות",
+  math: "מתמטיקה",
+};
