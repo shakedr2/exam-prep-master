@@ -2,8 +2,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, XCircle, RotateCcw } from "lucide-react";
+import { CheckCircle2, XCircle, RotateCcw, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { AIExplanationDrawer } from "@/components/AIExplanationDrawer";
+import { getQuestionExplanation, generateSimilarQuestion } from "@/lib/aiClient";
 
 interface Concept {
   term: string;
@@ -41,6 +44,12 @@ const ConceptsPracticePage = () => {
   const [known, setKnown] = useState<number[]>([]);
   const [unknown, setUnknown] = useState<number[]>([]);
 
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerLoading, setDrawerLoading] = useState(false);
+  const [drawerContent, setDrawerContent] = useState("");
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [similarContent, setSimilarContent] = useState("");
+
   const total = MOCK_CONCEPTS.length;
   const answered = known.length + unknown.length;
   const isComplete = answered >= total || currentIndex >= total;
@@ -48,8 +57,44 @@ const ConceptsPracticePage = () => {
 
   const advance = () => {
     setFlipped(false);
+    setSimilarContent("");
+    setDrawerContent("");
     setCurrentIndex((i) => i + 1);
   };
+
+  async function handleExplain() {
+    if (!concept) return;
+    setDrawerContent("");
+    setDrawerLoading(true);
+    setDrawerOpen(true);
+    try {
+      const result = await getQuestionExplanation(
+        concept.term,
+        [concept.definition],
+        0,
+      );
+      setDrawerContent(result.tip ? `${result.explanation}\n\n${result.tip}` : result.explanation);
+    } catch {
+      setDrawerOpen(false);
+      toast.error("שגיאה בטעינת ההסבר, נסה שוב");
+    } finally {
+      setDrawerLoading(false);
+    }
+  }
+
+  async function handleSimilar() {
+    if (!concept) return;
+    setSimilarLoading(true);
+    setSimilarContent("");
+    try {
+      const result = await generateSimilarQuestion(concept.term, "מושגים");
+      setSimilarContent(result);
+    } catch {
+      toast.error("שגיאה בטעינת שאלה דומה, נסה שוב");
+    } finally {
+      setSimilarLoading(false);
+    }
+  }
 
   const handleKnown = () => {
     setKnown((prev) => [...prev, currentIndex]);
@@ -185,6 +230,52 @@ const ConceptsPracticePage = () => {
         {!flipped && (
           <p className="text-center text-xs text-muted-foreground">לחץ על הכרטיסייה כדי לגלות את ההגדרה</p>
         )}
+
+        {/* AI buttons – shown after flipping */}
+        <AnimatePresence>
+          {flipped && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="flex gap-2"
+            >
+              <Button variant="outline" className="flex-1" onClick={handleExplain}>
+                הסבר עם AI
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={similarLoading}
+                onClick={handleSimilar}
+              >
+                {similarLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "שאלה דומה"
+                )}
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {similarContent && flipped && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border bg-muted/50 p-4 text-sm text-card-foreground whitespace-pre-wrap"
+          >
+            {similarContent}
+          </motion.div>
+        )}
+
+        <AIExplanationDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          content={drawerContent}
+          loading={drawerLoading}
+          title="הסבר עם AI"
+        />
       </div>
     </div>
   );
