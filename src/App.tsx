@@ -14,6 +14,10 @@ import ExamMode from "./pages/ExamMode";
 import ProgressPage from "./pages/ProgressPage";
 import ReviewMistakes from "./pages/ReviewMistakes";
 import NotFound from "./pages/NotFound";
+import DashboardPage from "./pages/Dashboard";
+import QuestionsPracticePage from "./pages/QuestionsPracticePage";
+import ConceptsPracticePage from "./pages/ConceptsPracticePage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 
 const queryClient = new QueryClient();
 
@@ -27,13 +31,17 @@ const AppContent = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/topics" element={<Topics />} />
           <Route path="/topic/:topicId" element={<TopicPractice />} />
           <Route path="/concepts" element={<ConceptsPractice />} />
+          <Route path="/concepts/practice" element={<ConceptsPracticePage />} />
           <Route path="/topic/:topicId/learn" element={<TopicLearn />} />
           <Route path="/exam" element={<ExamMode />} />
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/review-mistakes" element={<ReviewMistakes />} />
+          <Route path="/questions/practice" element={<QuestionsPracticePage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <BottomNav />
