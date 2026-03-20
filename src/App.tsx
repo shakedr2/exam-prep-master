@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Topics from "./pages/Topics";
 import TopicPractice from "./pages/TopicPractice";
 import TopicLearn from "./pages/TopicLearn";
+import ConceptsPractice from "./pages/ConceptsPractice";
 import ExamMode from "./pages/ExamMode";
 import ProgressPage from "./pages/ProgressPage";
 import ReviewMistakes from "./pages/ReviewMistakes";
