@@ -10,6 +10,8 @@ jobs:
   test:
     name: Test & Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -37,6 +39,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
