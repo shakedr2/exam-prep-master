@@ -63,3 +63,29 @@ The app uses a Supabase Edge Function (`ai-explain`) as a proxy to OpenAI. The `
 
 ## Deployment
 Build with `npm run build` and deploy the `dist/` folder to any static hosting (Vercel, Netlify, etc.).
+
+## Deployment (Vercel)
+
+1. Fork or clone this repository
+2. Go to https://vercel.com/new and import the repo
+3. Set the following environment variables in Vercel dashboard:
+   - VITE_SUPABASE_URL
+   - VITE_SUPABASE_PUBLISHABLE_KEY
+   - VITE_ADMIN_EMAIL
+4. Deploy - Vercel auto-detects Vite and builds correctly
+5. For GitHub Actions CI secrets, add the same env vars under repo Settings > Secrets
+
+## Security
+
+Never commit `.env` to version control. Copy `.env.example` to `.env` and fill in your values.
+
+## Tech Stack
+
+- **[Vite](https://vitejs.dev/)** — fast build tool and dev server
+- **[React](https://react.dev/)** — UI library
+- **[TypeScript](https://www.typescriptlang.org/)** — type-safe JavaScript
+- **[Tailwind CSS](https://tailwindcss.com/)** — utility-first CSS framework
+- **[shadcn/ui](https://ui.shadcn.com/)** — accessible component library built on Radix UI
+- **[Supabase](https://supabase.com/)** — backend-as-a-service (database, auth, storage)
+
+<!-- deployed via Vercel -->
