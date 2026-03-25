@@ -33,19 +33,19 @@ export async function getQuestionExplanation(
   correctIndex: number,
   userAnswerIndex?: number,
 ): Promise<AIExplanationResult> {
-  if (!AI_EXPLAIN_ENDPOINT) {
+  if (!AI_EXPLAIN_ENDPOINT || !SUPABASE_KEY) {
     console.warn(
-      "VITE_SUPABASE_URL is not set – falling back to mock AI response.",
+      "VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY is not set – falling back to mock AI response.",
     );
     await new Promise<void>((resolve) => setTimeout(resolve, 800));
     return getMockExplanation(questionText, choices, correctIndex, userAnswerIndex);
   }
-
   const res = await fetch(AI_EXPLAIN_ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${SUPABASE_KEY ?? ""}`,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
+      "apikey": SUPABASE_KEY,
     },
     body: JSON.stringify({
       questionText,
@@ -55,12 +55,10 @@ export async function getQuestionExplanation(
       type: "explain",
     }),
   });
-
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`ai-explain error ${res.status}: ${text}`);
   }
-
   const data = (await res.json()) as { explanation: string; tip?: string };
   return { explanation: data.explanation, tip: data.tip };
 }
@@ -69,19 +67,19 @@ export async function generateSimilarQuestion(
   questionText: string,
   topic: string,
 ): Promise<string> {
-  if (!AI_EXPLAIN_ENDPOINT) {
+  if (!AI_EXPLAIN_ENDPOINT || !SUPABASE_KEY) {
     console.warn(
-      "VITE_SUPABASE_URL is not set – falling back to mock AI response.",
+      "VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY is not set – falling back to mock AI response.",
     );
     await new Promise<void>((resolve) => setTimeout(resolve, 800));
     return getMockSimilarQuestion(questionText, topic);
   }
-
   const res = await fetch(AI_EXPLAIN_ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${SUPABASE_KEY ?? ""}`,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
+      "apikey": SUPABASE_KEY,
     },
     body: JSON.stringify({
       questionText,
@@ -89,12 +87,10 @@ export async function generateSimilarQuestion(
       type: "similar",
     }),
   });
-
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`ai-explain error ${res.status}: ${text}`);
   }
-
   const data = (await res.json()) as { question: string };
   return data.question;
 }
