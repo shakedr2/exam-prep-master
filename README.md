@@ -44,6 +44,10 @@ The app will be available at `http://localhost:5173` by default.
 | `npm test` | Run the test suite (Vitest) |
 | `npm run test:watch` | Run tests in watch mode |
 
+## Security
+
+Never commit `.env` to version control. Copy `.env.example` to `.env` and fill in your values.
+
 ## Tech Stack
 
 - **[Vite](https://vitejs.dev/)** — fast build tool and dev server
