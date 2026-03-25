@@ -1,54 +1,65 @@
-# Exam Prep Master
+# Exam Prep
 
-A web application for exam preparation, allowing students to practice questions by topic with progress tracking powered by Supabase.
+A production-quality exam preparation web app built with React, TypeScript, Vite, Tailwind CSS, shadcn/ui, and Supabase.
 
-## Prerequisites
+## Features
+- Practice questions by topic (multiple choice)
+- Progress tracking per topic
+- AI-powered explanations via Supabase Edge Functions
+- Admin panel for question management
 
-- [Node.js](https://nodejs.org/) (v18 or later)
-- A package manager: [npm](https://www.npmjs.com/), [pnpm](https://pnpm.io/), or [bun](https://bun.sh/)
-- A [Supabase](https://supabase.com/) project with the following environment variables set:
+## Tech Stack
+- **React 18** + **TypeScript** — UI and type safety
+- **Vite** — build tool
+- **Tailwind CSS** + **shadcn/ui** — design system
+- **Supabase** — backend (database, auth, Edge Functions)
+- **React Router v6** — client-side routing
+- **Vitest** — testing
 
+## Environment Variables
+Copy `.env.example` to `.env` and fill in:
 ```
-VITE_SUPABASE_URL=<your-supabase-url>
-VITE_SUPABASE_PUBLISHABLE_KEY=<your-supabase-anon-key>
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
+VITE_ADMIN_EMAIL=your_admin_email
 ```
 
-Copy `.env.example` (or create a `.env` file in the project root) and fill in the values above.
-
-## Installation
-
+## Local Setup
 ```sh
-# 1. Clone the repository
 git clone https://github.com/shakedr2/exam-prep-master.git
-
-# 2. Navigate to the project directory
 cd exam-prep-master
-
-# 3. Install dependencies
 npm install
-
-# 4. Start the development server
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173` by default.
-
 ## Scripts
-
 | Command | Description |
 |---|---|
-| `npm run dev` | Start the development server with hot reload |
-| `npm run build` | Build the app for production |
-| `npm run preview` | Preview the production build locally |
+| `npm run dev` | Start dev server |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
 | `npm run lint` | Run ESLint |
-| `npm test` | Run the test suite (Vitest) |
-| `npm run test:watch` | Run tests in watch mode |
+| `npm test` | Run Vitest tests |
 
-## Tech Stack
+## Architecture
+```
+src/
+  features/          # Feature-based modules
+    auth/            # Authentication
+    questions/       # Question components and hooks
+    topics/          # Topic components and hooks
+    progress/        # Progress tracking
+    ai/              # AI explanation client and hook
+  shared/
+    components/      # Shared UI components (Navbar, Layout)
+    lib/             # Utilities, grading logic
+    integrations/    # Supabase client and types
+  pages/             # Route-level page components
+  data/              # Static question data
+```
 
-- **[Vite](https://vitejs.dev/)** — fast build tool and dev server
-- **[React](https://react.dev/)** — UI library
-- **[TypeScript](https://www.typescriptlang.org/)** — type-safe JavaScript
-- **[Tailwind CSS](https://tailwindcss.com/)** — utility-first CSS framework
-- **[shadcn/ui](https://ui.shadcn.com/)** — accessible component library built on Radix UI
-- **[Supabase](https://supabase.com/)** — backend-as-a-service (database, auth, storage)
+## AI Integration
+The app uses a Supabase Edge Function (`ai-explain`) as a proxy to OpenAI. The `src/features/ai/aiClient.ts` module handles requests and falls back to mock responses when the endpoint is unavailable.
+
+## Deployment
+Build with `npm run build` and deploy the `dist/` folder to any static hosting (Vercel, Netlify, etc.).
