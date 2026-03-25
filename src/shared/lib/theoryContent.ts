@@ -68,13 +68,14 @@ const typeTips: Record<string, string> = {
  * Uses question-specific content if available, otherwise falls back to topic defaults.
  */
 export function getTheoryForQuestion(q: Question): TheoryData {
-  const specific = (q as any).theoryIntro;
+  const qWithExtras = q as Question & { theoryIntro?: string; approachTip?: string };
+  const specific = qWithExtras.theoryIntro;
   const base = topicTheory[q.topic];
 
   if (specific) {
     return {
-      theoryIntro: (q as any).theoryIntro,
-      approachTip: (q as any).approachTip || base.approachTip,
+      theoryIntro: qWithExtras.theoryIntro ?? base.theoryIntro,
+      approachTip: qWithExtras.approachTip ?? base.approachTip,
       example: base.example,
     };
   }
