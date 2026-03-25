@@ -44,6 +44,21 @@ The app will be available at `http://localhost:5173` by default.
 | `npm test` | Run the test suite (Vitest) |
 | `npm run test:watch` | Run tests in watch mode |
 
+## Deployment (Vercel)
+
+1. Fork or clone this repository
+2. Go to https://vercel.com/new and import the repo
+3. Set the following environment variables in Vercel dashboard:
+   - VITE_SUPABASE_URL
+   - VITE_SUPABASE_PUBLISHABLE_KEY
+   - VITE_ADMIN_EMAIL
+4. Deploy - Vercel auto-detects Vite and builds correctly
+5. For GitHub Actions CI secrets, add the same env vars under repo Settings > Secrets
+
+## Security
+
+Never commit `.env` to version control. Copy `.env.example` to `.env` and fill in your values.
+
 ## Tech Stack
 
 - **[Vite](https://vitejs.dev/)** — fast build tool and dev server
