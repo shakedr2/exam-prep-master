@@ -35,7 +35,7 @@ function ReviewItem({ q, answer, index }: { q: Question; answer?: { answer: stri
 
       {expanded && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-2 pt-2 border-t border-border">
-          {(q as any).code && <PythonCodeBlock code={(q as any).code} />}
+          {'code' in q && q.code && <PythonCodeBlock code={q.code} />}
 
           {q.type === "quiz" && (
             <div className="space-y-1">

@@ -18,7 +18,9 @@ function getDailySummary(answeredQuestions: Record<string, { correct: boolean; a
   try {
     const saved = localStorage.getItem(storageKey);
     if (saved) return JSON.parse(saved) as { count: number; correct: number };
-  } catch {}
+  } catch {
+    // ignore storage errors
+  }
   return { count: 0, correct: 0 };
 }
 
