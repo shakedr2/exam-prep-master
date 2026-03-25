@@ -67,3 +67,5 @@ Never commit `.env` to version control. Copy `.env.example` to `.env` and fill i
 - **[Tailwind CSS](https://tailwindcss.com/)** — utility-first CSS framework
 - **[shadcn/ui](https://ui.shadcn.com/)** — accessible component library built on Radix UI
 - **[Supabase](https://supabase.com/)** — backend-as-a-service (database, auth, storage)
+
+<!-- deployed via Vercel -->
