@@ -15,7 +15,9 @@ type Phase = "work" | "break";
 
 function playBeep(frequency: number, duration: number, count: number = 1) {
   try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const w = window as Window & { webkitAudioContext?: typeof AudioContext };
+    const AudioCtx = w.AudioContext || w.webkitAudioContext;
+    const ctx = new AudioCtx();
     for (let i = 0; i < count; i++) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -29,7 +31,9 @@ function playBeep(frequency: number, duration: number, count: number = 1) {
       osc.stop(ctx.currentTime + i * (duration + 0.1) + duration);
     }
     setTimeout(() => ctx.close(), count * (duration + 0.1) * 1000 + 500);
-  } catch {}
+  } catch {
+    // ignore audio errors in environments without AudioContext
+  }
 }
 
 function playStartSound() {

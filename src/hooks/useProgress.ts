@@ -33,7 +33,9 @@ function loadProgress(): UserProgress {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) return { ...DEFAULT_PROGRESS, ...JSON.parse(saved) };
-  } catch {}
+  } catch {
+    // ignore storage errors
+  }
   return { ...DEFAULT_PROGRESS };
 }
 

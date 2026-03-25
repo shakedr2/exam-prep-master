@@ -10,7 +10,7 @@ import { CodingView } from "@/components/CodingView";
 import { FillBlankView } from "@/components/FillBlankView";
 import { WarmupView } from "@/components/WarmupView";
 import { TheoryCard } from "@/components/TheoryCard";
-import { topics, questions as allQuestions, type Question } from "@/data/questions";
+import { topics, questions as allQuestions, type Question, type TopicId, type CodingQuestion } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { AiTutor } from "@/components/AiTutor";
 import { useAdaptive, PROFICIENCY_CONFIG } from "@/hooks/useAdaptive";
@@ -28,7 +28,7 @@ const TopicPractice = () => {
 
   const topic = topics.find(t => t.id === topicId);
   const { sortedQuestions: topicQuestions, proficiency, accuracy } = useAdaptive(
-    topicId as any,
+    topicId as TopicId,
     allQuestions,
     progress.answeredQuestions
   );
@@ -205,8 +205,8 @@ const TopicPractice = () => {
 
       <AiTutor
         questionContext={`סוג: ${q.type}, נושא: ${topic.name}, קושי: ${q.difficulty}\n${
-          q.type === "coding" ? `כותרת: ${(q as any).title}\nתיאור: ${(q as any).description}` :
-          `שאלה: ${(q as any).question}\n${(q as any).code ? `קוד:\n${(q as any).code}` : ""}`
+          q.type === "coding" ? `כותרת: ${(q as CodingQuestion).title}\nתיאור: ${(q as CodingQuestion).description}` :
+          `שאלה: ${(q as Exclude<Question, CodingQuestion>).question}\n${'code' in q && q.code ? `קוד:\n${q.code}` : ""}`
         }`}
       />
     </div>
