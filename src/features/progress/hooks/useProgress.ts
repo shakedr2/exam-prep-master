@@ -11,6 +11,7 @@ export interface UserProgress {
   topicProgress: Record<string, { completed: number; total: number }>;
   examHistory: Array<{ date: string; score: number; total: number }>;
   badges: string[];
+  lastPosition: Record<string, number>;
 }
 
 const DEFAULT_PROGRESS: UserProgress = {
@@ -23,6 +24,7 @@ const DEFAULT_PROGRESS: UserProgress = {
   topicProgress: {},
   examHistory: [],
   badges: [],
+  lastPosition: {},
 };
 
 const STORAGE_KEY = "examprep_progress";
@@ -33,8 +35,8 @@ function loadProgress(): UserProgress {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) return { ...DEFAULT_PROGRESS, ...JSON.parse(saved) };
-  } catch (_e) {
-    // ignore parse errors
+  } catch {
+    // ignore storage errors
   }
   return { ...DEFAULT_PROGRESS };
 }
@@ -69,18 +71,30 @@ export function useProgress() {
     });
   }, []);
 
+  const saveTopicPosition = useCallback((topicId: string, index: number) => {
+    setProgress(p => ({
+      ...p,
+      lastPosition: { ...p.lastPosition, [topicId]: index },
+    }));
+  }, []);
+
+  const getTopicPosition = useCallback(
+    (topicId: string): number => {
+      return progress.lastPosition?.[topicId] ?? 0;
+    },
+    [progress.lastPosition]
+  );
+
   const answerQuestion = useCallback((questionId: string, correct: boolean) => {
     setProgress(p => {
       const prev = p.answeredQuestions[questionId];
       const xpGain = correct && !prev?.correct ? XP_PER_CORRECT : 0;
       const newXp = p.xp + xpGain;
       const newLevel = Math.floor(newXp / XP_PER_LEVEL) + 1;
-
       const newBadges = [...p.badges];
       const correctCount = Object.values(p.answeredQuestions).filter(a => a.correct).length + (correct ? 1 : 0);
       if (correctCount >= 10 && !newBadges.includes("first_10")) newBadges.push("first_10");
       if (correctCount >= 25 && !newBadges.includes("quarter_century")) newBadges.push("quarter_century");
-
       return {
         ...p,
         xp: newXp,
@@ -116,13 +130,13 @@ export function useProgress() {
     );
     const answered = Object.entries(progress.answeredQuestions)
       .filter(([id]) => topicQuestionIds.has(id))
-      .filter(([_, v]) => v.correct).length;
+      .filter(([, v]) => v.correct).length;
     return Math.round((answered / Math.max(totalQuestions, 1)) * 100);
   }, [progress.answeredQuestions]);
 
   const getIncorrectQuestions = useCallback(() => {
     const incorrectIds = Object.entries(progress.answeredQuestions)
-      .filter(([_, v]) => !v.correct)
+      .filter(([, v]) => !v.correct)
       .map(([id]) => id);
     return questions.filter(q => incorrectIds.includes(q.id));
   }, [progress.answeredQuestions]);
@@ -147,6 +161,8 @@ export function useProgress() {
     getIncorrectQuestions,
     getIncorrectByTopic,
     getAttempts,
+    saveTopicPosition,
+    getTopicPosition,
     totalCorrect,
     totalAnswered,
   };

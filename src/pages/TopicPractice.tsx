@@ -17,11 +17,26 @@ import { useAdaptive, PROFICIENCY_CONFIG } from "@/hooks/useAdaptive";
 import { getTheoryForQuestion } from "@/lib/theoryContent";
 import { StepIndicator } from "@/components/StepIndicator";
 
+/**
+ * Returns the index of the first unanswered question in the sorted list.
+ * Falls back to the saved position, then 0.
+ */
+function getStartIndex(
+  sortedQuestions: Question[],
+  answeredQuestions: Record<string, { correct: boolean; attempts: number }>,
+  savedPosition: number
+): number {
+  // First unanswered question
+  const firstUnanswered = sortedQuestions.findIndex(q => !answeredQuestions[q.id]);
+  if (firstUnanswered !== -1) return firstUnanswered;
+  // All answered — resume where we left off (last saved position)
+  return Math.min(savedPosition, Math.max(0, sortedQuestions.length - 1));
+}
+
 const TopicPractice = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
-  const { answerQuestion, progress } = useProgress();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const { answerQuestion, progress, saveTopicPosition, getTopicPosition } = useProgress();
   const [theoryDone, setTheoryDone] = useState(false);
   const [warmupDone, setWarmupDone] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -32,6 +47,32 @@ const TopicPractice = () => {
     allQuestions,
     progress.answeredQuestions
   );
+
+  // Initialise currentIndex once when questions are ready (resume + deduplication)
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    if (!topicId || !topicQuestions.length) return 0;
+    const saved = getTopicPosition(topicId);
+    return getStartIndex(topicQuestions, progress.answeredQuestions, saved);
+  });
+
+  // Re-initialise when the topic changes (e.g. navigating between topics)
+  const prevTopicRef = useRef(topicId);
+  useEffect(() => {
+    if (prevTopicRef.current !== topicId && topicId && topicQuestions.length) {
+      const saved = getTopicPosition(topicId);
+      setCurrentIndex(getStartIndex(topicQuestions, progress.answeredQuestions, saved));
+      setTheoryDone(false);
+      setWarmupDone(false);
+      prevTopicRef.current = topicId;
+    }
+  }, [topicId, topicQuestions, progress.answeredQuestions, getTopicPosition]);
+
+  // Persist position whenever it changes
+  useEffect(() => {
+    if (topicId) {
+      saveTopicPosition(topicId, currentIndex);
+    }
+  }, [topicId, currentIndex, saveTopicPosition]);
 
   const prevProficiency = useRef(proficiency);
   useEffect(() => {
@@ -66,10 +107,20 @@ const TopicPractice = () => {
 
   const handleNext = () => {
     if (currentIndex < topicQuestions.length - 1) {
-      setCurrentIndex(i => i + 1);
+      // Skip already-correctly-answered questions: find next unanswered/incorrect
+      let next = currentIndex + 1;
+      while (
+        next < topicQuestions.length - 1 &&
+        progress.answeredQuestions[topicQuestions[next].id]?.correct === true
+      ) {
+        next++;
+      }
+      setCurrentIndex(next);
       setTheoryDone(false);
       setWarmupDone(false);
     } else {
+      // Clear saved position for this topic so next visit starts fresh
+      if (topicId) saveTopicPosition(topicId, 0);
       navigate("/topics");
     }
   };
@@ -168,7 +219,6 @@ const TopicPractice = () => {
                   <p className="text-sm font-semibold text-success">🎯 עכשיו אתה מוכן! הנה השאלה המלאה:</p>
                 </motion.div>
               )}
-
               <div className="flex items-center gap-2 mb-4">
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                   q.type === "quiz" ? "bg-primary/10 text-primary" :
@@ -186,7 +236,6 @@ const TopicPractice = () => {
                   {q.difficulty === "easy" ? "קל" : q.difficulty === "medium" ? "בינוני" : "קשה"}
                 </span>
               </div>
-
               {q.type === "quiz" && <QuizView q={q} onAnswer={handleAnswer} />}
               {q.type === "tracing" && <TracingView q={q} onAnswer={handleAnswer} />}
               {q.type === "coding" && <CodingView q={q} onAnswer={handleAnswer} />}
@@ -195,14 +244,13 @@ const TopicPractice = () => {
           )}
         </AnimatePresence>
 
-      {showQuestion && progress.answeredQuestions[q.id] && (
+        {showQuestion && progress.answeredQuestions[q.id] && (
           <Button onClick={handleNext} className="mt-4 w-full gradient-primary text-primary-foreground gap-2">
             {currentIndex < topicQuestions.length - 1 ? "שאלה הבאה" : "סיום נושא"}
             <ChevronLeft className="h-4 w-4" />
           </Button>
         )}
       </div>
-
       <AiTutor
         questionContext={`סוג: ${q.type}, נושא: ${topic.name}, קושי: ${q.difficulty}\n${
           q.type === "coding" ? `כותרת: ${(q as CodingQuestion).title}\nתיאור: ${(q as CodingQuestion).description}` :
