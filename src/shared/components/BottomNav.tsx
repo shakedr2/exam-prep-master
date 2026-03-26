@@ -1,12 +1,12 @@
-import { Home, BookOpen, Trophy, GraduationCap } from "lucide-react";
+import { Home, Trophy, GraduationCap, BarChart2 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/", icon: Home, label: "בית" },
-  { to: "/topics", icon: BookOpen, label: "נושאים" },
   { to: "/exam", icon: GraduationCap, label: "מבחן" },
   { to: "/progress", icon: Trophy, label: "התקדמות" },
+  { to: "/analytics", icon: BarChart2, label: "ניתוח" },
 ];
 
 export function BottomNav() {
