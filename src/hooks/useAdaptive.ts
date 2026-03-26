@@ -67,13 +67,34 @@ export function useAdaptive(
       else correct.push(q);
     }
 
-    const sortByDifficulty = (arr: Question[]) =>
-      [...arr].sort((a, b) => order.indexOf(a.difficulty) - order.indexOf(b.difficulty));
+    const shuffle = <T,>(arr: T[]): T[] => {
+      const out = [...arr];
+      for (let i = out.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [out[i], out[j]] = [out[j], out[i]];
+      }
+      return out;
+    };
+
+    // Sort by difficulty within each tier, then shuffle within same-difficulty groups
+    const sortAndShuffle = (arr: Question[]) => {
+      const sorted = [...arr].sort((a, b) => order.indexOf(a.difficulty) - order.indexOf(b.difficulty));
+      // Shuffle within each difficulty bucket to vary order across sessions
+      const result: Question[] = [];
+      let i = 0;
+      while (i < sorted.length) {
+        let j = i;
+        while (j < sorted.length && sorted[j].difficulty === sorted[i].difficulty) j++;
+        result.push(...shuffle(sorted.slice(i, j)));
+        i = j;
+      }
+      return result;
+    };
 
     return [
-      ...sortByDifficulty(incorrect),
-      ...sortByDifficulty(unanswered),
-      ...sortByDifficulty(correct),
+      ...sortAndShuffle(incorrect),
+      ...sortAndShuffle(unanswered),
+      ...sortAndShuffle(correct),
     ];
   }, [topicId, allQuestions]);
 

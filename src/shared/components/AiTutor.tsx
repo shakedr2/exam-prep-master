@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Send, X, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,8 +39,7 @@ export function AiTutor({ questionContext }: AiTutorProps) {
     setMessages([]);
   }, [questionContext]);
 
-  const sendMessage = async () => {
-    const text = input.trim();
+  const sendMessageWithText = useCallback(async (text: string, currentMessages: Message[]) => {
     if (!text || loading) return;
 
     const userMsg: Message = { role: "user", content: text };
@@ -71,7 +70,7 @@ export function AiTutor({ questionContext }: AiTutorProps) {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
-            messages: [...messages, userMsg],
+            messages: [...currentMessages, userMsg],
             questionContext,
           }),
         }
@@ -122,6 +121,16 @@ export function AiTutor({ questionContext }: AiTutorProps) {
     }
 
     setLoading(false);
+  }, [loading, questionContext]);
+
+  const sendMessage = () => {
+    const text = input.trim();
+    sendMessageWithText(text, messages);
+  };
+
+  // Send a message directly without requiring input field interaction (used by quick-question chips)
+  const sendDirectMessage = (text: string) => {
+    sendMessageWithText(text, messages);
   };
 
   const quickQuestions = [
@@ -149,6 +158,20 @@ export function AiTutor({ questionContext }: AiTutorProps) {
         )}
       </AnimatePresence>
 
+      {/* Backdrop – closes panel when tapping outside */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-transparent"
+            onClick={() => setOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Chat Panel */}
       <AnimatePresence>
         {open && (
@@ -158,7 +181,7 @@ export function AiTutor({ questionContext }: AiTutorProps) {
             exit={{ opacity: 0, y: 100, scale: 0.9 }}
             transition={{ type: "spring", damping: 25 }}
             className="fixed bottom-20 left-4 right-4 z-50 mx-auto max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
-            style={{ maxHeight: "70vh" }}
+            style={{ maxHeight: "50vh" }}
           >
             {/* Header */}
             <div className="flex items-center justify-between gradient-primary p-3 text-primary-foreground">
@@ -175,21 +198,21 @@ export function AiTutor({ questionContext }: AiTutorProps) {
             </div>
 
             {/* Messages */}
-            <div ref={scrollRef} className="h-[45vh] overflow-y-auto p-3 space-y-3">
+            <div ref={scrollRef} className="h-[30vh] overflow-y-auto p-3 space-y-3">
               {messages.length === 0 && (
-                <div className="text-center py-6 space-y-4">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-3xl">
+                <div className="text-center py-4 space-y-3">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-2xl">
                     🤔
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">צריך עזרה?</p>
+                    <p className="font-semibold text-foreground text-sm">צריך עזרה?</p>
                     <p className="text-xs text-muted-foreground mt-1">אני כאן כדי ללמד אותך, לא לתת תשובות!</p>
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center">
                     {quickQuestions.map(q => (
                       <button
                         key={q}
-                        onClick={() => { setInput(q); }}
+                        onClick={() => sendDirectMessage(q)}
                         className="rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/10 transition-colors"
                       >
                         {q}

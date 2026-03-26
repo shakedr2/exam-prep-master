@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Trophy, Flag, ChevronLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { getBalancedExamQuestions, topics, type Question, type CodingQuestion } from "@/data/questions";
+import { getBalancedExamQuestions, topics, type Question, type CodingQuestion, type QuizQuestion, type TracingQuestion, type FillBlankQuestion } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { AiTutor } from "@/components/AiTutor";
 import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
@@ -252,10 +252,23 @@ const ExamMode = () => {
       </div>
 
       <AiTutor
-        questionContext={`שאלה במבחן סימולציה\nסוג: ${q.type}\n${
-          q.type === "coding" ? `כותרת: ${(q as CodingQuestion).title}\nתיאור: ${(q as CodingQuestion).description}` :
-          `שאלה: ${(q as Exclude<Question, CodingQuestion>).question}\n${'code' in q && q.code ? `קוד:\n${q.code}` : ""}`
-        }`}
+        questionContext={(() => {
+          const base = `שאלה במבחן סימולציה\nסוג: ${q.type}`;
+          if (q.type === "quiz") {
+            const qz = q as QuizQuestion;
+            return `${base}\nשאלה: ${qz.question}\nאפשרויות: ${qz.options.map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`).join(", ")}\nתשובה נכונה: ${qz.options[qz.correctIndex]}\nהסבר: ${qz.explanation}${'code' in qz && qz.code ? `\nקוד:\n${qz.code}` : ""}`;
+          }
+          if (q.type === "tracing") {
+            const tr = q as TracingQuestion;
+            return `${base}\nשאלה: ${tr.question}\nקוד:\n${tr.code}\nתשובה נכונה: ${tr.correctAnswer}\nהסבר: ${tr.explanation}`;
+          }
+          if (q.type === "fill-blank") {
+            const fb = q as FillBlankQuestion;
+            return `${base}\nכותרת: ${fb.title}\nתיאור: ${fb.description}\nהסבר: ${fb.solutionExplanation}`;
+          }
+          const cd = q as CodingQuestion;
+          return `${base}\nכותרת: ${cd.title}\nתיאור: ${cd.description}\nהסבר: ${cd.solutionExplanation}`;
+        })()}
       />
     </div>
   );
