@@ -172,6 +172,7 @@ export function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct:
         content={drawerContent}
         loading={drawerLoading}
         title="הסבר עם AI"
+        questionContext={`שאלה: ${q.question}\nאפשרויות: ${q.options.map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`).join(", ")}\nתשובה נכונה: ${q.options[q.correctIndex]}\nהסבר: ${q.explanation}`}
       />
     </div>
   );

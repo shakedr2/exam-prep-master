@@ -4,6 +4,9 @@ import { Eye, EyeOff, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
+import { AIExplanationDrawer } from "@/components/AIExplanationDrawer";
+import { getQuestionExplanation, type AIExplanationResult } from "@/lib/aiClient";
+import { toast } from "sonner";
 import type { CodingQuestion } from "@/data/questions";
 
 export function CodingView({ q, onAnswer }: { q: CodingQuestion; onAnswer: (correct: boolean) => void }) {
@@ -11,10 +14,34 @@ export function CodingView({ q, onAnswer }: { q: CodingQuestion; onAnswer: (corr
   const [code, setCode] = useState("");
   const [selfAssessed, setSelfAssessed] = useState<boolean | null>(null);
 
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerLoading, setDrawerLoading] = useState(false);
+  const [drawerContent, setDrawerContent] = useState("");
+
   const handleSelfAssess = (correct: boolean) => {
     setSelfAssessed(correct);
     onAnswer(correct);
   };
+
+  async function handleExplain() {
+    setDrawerContent("");
+    setDrawerLoading(true);
+    setDrawerOpen(true);
+    try {
+      const result: AIExplanationResult = await getQuestionExplanation(
+        `${q.title}: ${q.description}`,
+        [q.solution],
+        0,
+        undefined,
+      );
+      setDrawerContent(result.tip ? `${result.explanation}\n\n${result.tip}` : result.explanation);
+    } catch {
+      setDrawerOpen(false);
+      toast.error("שגיאה בטעינת ההסבר, נסה שוב");
+    } finally {
+      setDrawerLoading(false);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -84,6 +111,25 @@ export function CodingView({ q, onAnswer }: { q: CodingQuestion; onAnswer: (corr
           )}
         </motion.div>
       )}
+      {selfAssessed !== null && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleExplain}
+          >
+            הסבר עם AI
+          </Button>
+        </motion.div>
+      )}
+      <AIExplanationDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        content={drawerContent}
+        loading={drawerLoading}
+        title="הסבר עם AI"
+        questionContext={`כותרת: ${q.title}\nתיאור: ${q.description}\nהסבר: ${q.solutionExplanation}`}
+      />
     </div>
   );
 }

@@ -3,7 +3,10 @@ import { motion } from "framer-motion";
 import { Check, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AIExplanationDrawer } from "@/components/AIExplanationDrawer";
 import { gradeBlankAnswer, type GradeResult } from "@/lib/grading";
+import { getQuestionExplanation, type AIExplanationResult } from "@/lib/aiClient";
+import { toast } from "sonner";
 import type { FillBlankQuestion } from "@/data/questions";
 
 export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer: (correct: boolean) => void }) {
@@ -11,6 +14,30 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
   const [submitted, setSubmitted] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [grades, setGrades] = useState<GradeResult[]>([]);
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerLoading, setDrawerLoading] = useState(false);
+  const [drawerContent, setDrawerContent] = useState("");
+
+  async function handleExplain() {
+    setDrawerContent("");
+    setDrawerLoading(true);
+    setDrawerOpen(true);
+    try {
+      const result: AIExplanationResult = await getQuestionExplanation(
+        `${q.title}: ${q.description}`,
+        q.blanks.map(b => b.answer),
+        0,
+        undefined,
+      );
+      setDrawerContent(result.tip ? `${result.explanation}\n\n${result.tip}` : result.explanation);
+    } catch {
+      setDrawerOpen(false);
+      toast.error("שגיאה בטעינת ההסבר, נסה שוב");
+    } finally {
+      setDrawerLoading(false);
+    }
+  }
 
   const preGrades = answers.map((a, i) => gradeBlankAnswer(a.trim(), q.blanks[i].answer.trim()));
   const allCorrectPre = preGrades.every(g => g.score === "correct");
@@ -206,6 +233,25 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
           <p className="text-sm text-muted-foreground">{q.solutionExplanation}</p>
         </motion.div>
       )}
+      {submitted && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleExplain}
+          >
+            הסבר עם AI
+          </Button>
+        </motion.div>
+      )}
+      <AIExplanationDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        content={drawerContent}
+        loading={drawerLoading}
+        title="הסבר עם AI"
+        questionContext={`כותרת: ${q.title}\nתיאור: ${q.description}\nהסבר: ${q.solutionExplanation}`}
+      />
     </div>
   );
 }

@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate, useBlocker } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronLeft, TrendingUp } from "lucide-react";
+import { ArrowRight, ChevronLeft, TrendingUp, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { QuizView } from "@/components/QuizView";
@@ -10,12 +10,13 @@ import { CodingView } from "@/components/CodingView";
 import { FillBlankView } from "@/components/FillBlankView";
 import { WarmupView } from "@/components/WarmupView";
 import { TheoryCard } from "@/components/TheoryCard";
-import { topics, questions as allQuestions, type Question, type TopicId, type CodingQuestion } from "@/data/questions";
+import { topics, questions as allQuestions, type Question, type TopicId, type CodingQuestion, type QuizQuestion, type TracingQuestion, type FillBlankQuestion } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { AiTutor } from "@/components/AiTutor";
 import { useAdaptive, PROFICIENCY_CONFIG } from "@/hooks/useAdaptive";
 import { getTheoryForQuestion } from "@/lib/theoryContent";
 import { StepIndicator } from "@/components/StepIndicator";
+import confetti from "canvas-confetti";
 
 const TopicPractice = () => {
   const { topicId } = useParams<{ topicId: string }>();
@@ -25,6 +26,7 @@ const TopicPractice = () => {
   const [theoryDone, setTheoryDone] = useState(false);
   const [warmupDone, setWarmupDone] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
+  const [sessionComplete, setSessionComplete] = useState(false);
 
   const topic = topics.find(t => t.id === topicId);
   const { sortedQuestions: topicQuestions, proficiency, accuracy } = useAdaptive(
@@ -42,6 +44,14 @@ const TopicPractice = () => {
     }
     prevProficiency.current = proficiency;
   }, [proficiency]);
+
+  // Navigation blocker – warn user before leaving mid-session
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      !sessionComplete &&
+      currentIndex > 0 &&
+      currentLocation.pathname !== nextLocation.pathname
+  );
 
   if (!topic || topicQuestions.length === 0) {
     return (
@@ -70,12 +80,91 @@ const TopicPractice = () => {
       setTheoryDone(false);
       setWarmupDone(false);
     } else {
-      navigate("/topics");
+      // All questions answered — show completion screen with confetti
+      setSessionComplete(true);
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.5 },
+      });
     }
   };
 
+  // Completion screen
+  if (sessionComplete) {
+    const answeredInTopic = topicQuestions.filter(tq => progress.answeredQuestions[tq.id]);
+    const correctInTopic = answeredInTopic.filter(tq => progress.answeredQuestions[tq.id]?.correct);
+    const score = answeredInTopic.length > 0
+      ? Math.round((correctInTopic.length / answeredInTopic.length) * 100)
+      : 0;
+
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 pb-24">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-sm text-center space-y-6"
+        >
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl gradient-success text-4xl shadow-lg">
+            <Trophy className="h-10 w-10 text-success-foreground" />
+          </div>
+          <h1 className="text-2xl font-bold">🎉 סיימת את כל השאלות!</h1>
+          <div className="rounded-2xl border border-border bg-card p-6 space-y-3">
+            <p className="text-4xl font-extrabold">{score}%</p>
+            <p className="text-muted-foreground text-sm">
+              {correctInTopic.length} נכונות מתוך {answeredInTopic.length} שאלות
+            </p>
+            <Progress value={score} className="h-3" />
+            <p className="text-sm font-semibold text-foreground mt-2">
+              {PROFICIENCY_CONFIG[proficiency].icon} רמה: {PROFICIENCY_CONFIG[proficiency].label}
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Button
+              onClick={() => navigate("/topics")}
+              variant="outline"
+              className="w-full"
+            >
+              חזרה לנושאים
+            </Button>
+            <Button
+              onClick={() => navigate("/exam")}
+              className="w-full gradient-primary text-primary-foreground"
+            >
+              התחל מבחן סימולציה 🚀
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pb-24 pt-4">
+      {/* Navigation blocker dialog */}
+      {blocker.state === "blocked" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-sm rounded-2xl bg-card border border-border p-6 space-y-4 shadow-2xl"
+          >
+            <h2 className="text-lg font-bold text-center">⚠️ לצאת מהתרגול?</h2>
+            <p className="text-sm text-muted-foreground text-center">
+              אם תצא עכשיו, ההתקדמות בסשן הזה תישמר — אבל תצטרך להתחיל מהשאלה הבאה.
+            </p>
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => blocker.reset()}>
+                המשך תרגול
+              </Button>
+              <Button className="flex-1 gradient-primary text-primary-foreground" onClick={() => blocker.proceed()}>
+                צא
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       <div className="mx-auto max-w-lg px-4">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
@@ -204,10 +293,23 @@ const TopicPractice = () => {
       </div>
 
       <AiTutor
-        questionContext={`סוג: ${q.type}, נושא: ${topic.name}, קושי: ${q.difficulty}\n${
-          q.type === "coding" ? `כותרת: ${(q as CodingQuestion).title}\nתיאור: ${(q as CodingQuestion).description}` :
-          `שאלה: ${(q as Exclude<Question, CodingQuestion>).question}\n${'code' in q && q.code ? `קוד:\n${q.code}` : ""}`
-        }`}
+        questionContext={(() => {
+          const base = `סוג: ${q.type}, נושא: ${topic.name}, קושי: ${q.difficulty}`;
+          if (q.type === "quiz") {
+            const qz = q as QuizQuestion;
+            return `${base}\nשאלה: ${qz.question}\nאפשרויות: ${qz.options.map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`).join(", ")}\nתשובה נכונה: ${qz.options[qz.correctIndex]}\nהסבר: ${qz.explanation}${'code' in qz && qz.code ? `\nקוד:\n${qz.code}` : ""}`;
+          }
+          if (q.type === "tracing") {
+            const tr = q as TracingQuestion;
+            return `${base}\nשאלה: ${tr.question}\nקוד:\n${tr.code}\nתשובה נכונה: ${tr.correctAnswer}\nהסבר: ${tr.explanation}`;
+          }
+          if (q.type === "fill-blank") {
+            const fb = q as FillBlankQuestion;
+            return `${base}\nכותרת: ${fb.title}\nתיאור: ${fb.description}\nהסבר: ${fb.solutionExplanation}`;
+          }
+          const cd = q as CodingQuestion;
+          return `${base}\nכותרת: ${cd.title}\nתיאור: ${cd.description}\nהסבר: ${cd.solutionExplanation}`;
+        })()}
       />
     </div>
   );
