@@ -118,6 +118,7 @@ export function AIExplanationDrawer({
             const chunk = parsed.choices?.[0]?.delta?.content;
             if (chunk) upsertAssistant(chunk);
           } catch {
+            // JSON parse may fail for partial lines at chunk boundaries — restore and retry on next read
             textBuffer = line + "\n" + textBuffer;
             break;
           }

@@ -128,7 +128,7 @@ export function AiTutor({ questionContext }: AiTutorProps) {
     sendMessageWithText(text, messages);
   };
 
-  // Send a message directly (used by quick-question chips)
+  // Send a message directly without requiring input field interaction (used by quick-question chips)
   const sendDirectMessage = (text: string) => {
     sendMessageWithText(text, messages);
   };
