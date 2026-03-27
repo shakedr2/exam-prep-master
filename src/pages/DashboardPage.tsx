@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, TrendingUp, AlertTriangle, LayoutGrid } from "lucide-react";
 import { useState, useEffect } from "react";
+import RecommendedPractice from "@/components/RecommendedPractice";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -124,6 +125,8 @@ const DashboardPage = () => {
             </CardContent>
           </Card>
         )}
+
+        <RecommendedPractice />
 
         <div>
           <h2 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">

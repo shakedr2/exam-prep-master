@@ -145,6 +145,26 @@ export function useProgress() {
     return getIncorrectQuestions().filter(q => q.topic === topicId);
   }, [getIncorrectQuestions]);
 
+  const getWeakTopics = useCallback((limit = 3) => {
+    const topicStats: Record<string, { correct: number; attempted: number }> = {};
+    Object.entries(progress.answeredQuestions).forEach(([id, answer]) => {
+      const question = questions.find(q => q.id === id);
+      if (!question) return;
+      const { topic } = question;
+      if (!topicStats[topic]) topicStats[topic] = { correct: 0, attempted: 0 };
+      topicStats[topic].attempted += 1;
+      if (answer.correct) topicStats[topic].correct += 1;
+    });
+    return Object.entries(topicStats)
+      .filter(([, stats]) => stats.attempted > 0)
+      .map(([topicId, stats]) => ({
+        topicId,
+        successRate: stats.correct / stats.attempted,
+      }))
+      .sort((a, b) => a.successRate - b.successRate)
+      .slice(0, limit);
+  }, [progress.answeredQuestions]);
+
   const getAttempts = useCallback((questionId: string) => {
     return progress.answeredQuestions[questionId]?.attempts ?? 0;
   }, [progress.answeredQuestions]);
@@ -160,6 +180,7 @@ export function useProgress() {
     getTopicCompletion,
     getIncorrectQuestions,
     getIncorrectByTopic,
+    getWeakTopics,
     getAttempts,
     saveTopicPosition,
     getTopicPosition,

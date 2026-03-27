@@ -22,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import QuestionsPracticePage from "./pages/QuestionsPracticePage";
 import ConceptsPracticePage from "./pages/ConceptsPracticePage";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import FocusedPracticePage from "./pages/FocusedPracticePage";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const AppContent = () => {
           <Route path="/review-mistakes" element={<AuthGuard><ReviewMistakes /></AuthGuard>} />
           <Route path="/questions/practice" element={<AuthGuard><QuestionsPracticePage /></AuthGuard>} />
           <Route path="/analytics" element={<AuthGuard><AnalyticsPage /></AuthGuard>} />
+          <Route path="/focused-practice" element={<AuthGuard><FocusedPracticePage /></AuthGuard>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <BottomNav />
