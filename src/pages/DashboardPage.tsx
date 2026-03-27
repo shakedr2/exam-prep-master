@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/features/progress/hooks/useProgress";
-import { topics, getQuestionsByTopic } from "@/data/questions";
+import { topics, getQuestionsByTopic, getConceptQuestions } from "@/data/questions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -35,6 +35,12 @@ const DashboardPage = () => {
     const completion = getTopicCompletion(t.id, total);
     return completion > 0 && completion < 60;
   }).slice(0, 3);
+
+  const conceptQuestions = getConceptQuestions();
+  const conceptCorrect = conceptQuestions.filter(
+    (q) => progress.answeredQuestions[q.id]?.correct
+  ).length;
+  const conceptPercent = Math.round((conceptCorrect / Math.max(conceptQuestions.length, 1)) * 100);
 
   if (isLoading) {
     return (
@@ -133,6 +139,36 @@ const DashboardPage = () => {
             <BookOpen className="h-5 w-5 text-primary" />
             All Topics
           </h2>
+
+          {/* Concepts card */}
+          <Card
+            className="cursor-pointer bg-primary/5 border-2 border-primary/30 hover:shadow-md transition-shadow mb-3"
+            onClick={() => navigate("/concepts")}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-2xl">
+                  📚
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-foreground">מושגי יסוד</p>
+                  <p className="text-xs text-muted-foreground">למד את המושגים הבסיסיים לפני שמתחילים לתרגל</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-medium text-primary">{conceptQuestions.length} שאלות</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">התקדמות</span>
+                  <span className="font-semibold text-primary">{conceptPercent}%</span>
+                </div>
+                <Progress value={conceptPercent} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid grid-cols-2 gap-3">
             {topics.map((topic) => {
               const total = getQuestionsByTopic(topic.id).length;
