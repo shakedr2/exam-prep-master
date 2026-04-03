@@ -179,20 +179,20 @@ const PracticePage = () => {
                         key={idx}
                         onClick={() => handleSelect(idx)}
                         disabled={answered}
-                        className={`w-full text-left rounded-xl border px-4 py-3 text-sm transition-all
+                        className={`w-full text-start rounded-sm border px-4 py-3 text-sm transition-all
                           ${answered ? "cursor-default" : "hover:bg-accent cursor-pointer"}
                           ${extra || "border-border bg-background text-foreground"}
                         `}
                       >
-                        <span className="font-semibold mr-2">
+                        <span className="font-semibold me-2">
                           {String.fromCharCode(65 + idx)}.
                         </span>
                         {option}
                         {answered && idx === current.correctIndex && (
-                          <CheckCircle2 className="inline ml-2 h-4 w-4 text-green-400" />
+                          <CheckCircle2 className="inline ms-2 h-4 w-4 text-green-400" />
                         )}
                         {answered && idx === selectedIndex && idx !== current.correctIndex && (
-                          <XCircle className="inline ml-2 h-4 w-4 text-red-400" />
+                          <XCircle className="inline ms-2 h-4 w-4 text-red-400" />
                         )}
                       </button>
                     );
@@ -220,8 +220,8 @@ const PracticePage = () => {
             onClick={handlePrev}
             disabled={currentIndex === 0}
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
+            <ChevronLeft className="h-4 w-4 me-1" />
+            הקודם
           </Button>
 
           <Button
@@ -232,12 +232,12 @@ const PracticePage = () => {
             className="gap-1.5"
           >
             <Bot className="h-4 w-4" />
-            AI Explanation
+            הסבר AI
           </Button>
 
           <Button size="sm" onClick={handleNext} disabled={!answered}>
-            {currentIndex + 1 === allQuestions.length ? "Finish" : "Next"}
-            <ChevronRight className="h-4 w-4 ml-1" />
+            {currentIndex + 1 === allQuestions.length ? "סיום" : "הבא"}
+            <ChevronRight className="h-4 w-4 ms-1" />
           </Button>
         </div>
       </div>

@@ -33,7 +33,7 @@ export function TopicCard({ topic, completion, questionCount, index }: TopicCard
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => navigate(`/topic/${topic.id}`)}
-      className="cursor-pointer overflow-hidden rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
+      className="cursor-pointer overflow-hidden rounded-sm border border-foreground/20 bg-card p-4 transition-colors hover:bg-accent/5"
     >
       <div className="flex items-center gap-3 mb-3">
         <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${topic.color} text-2xl shadow-sm`}>

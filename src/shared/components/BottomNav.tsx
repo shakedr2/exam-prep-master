@@ -1,8 +1,9 @@
-import { BookOpen, Trophy, GraduationCap, BarChart2 } from "lucide-react";
+import { BookOpen, Trophy, GraduationCap, BarChart2, LayoutDashboard } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { to: "/dashboard", icon: LayoutDashboard, label: "ראשי" },
   { to: "/topics", icon: BookOpen, label: "נושאים" },
   { to: "/exam", icon: GraduationCap, label: "מבחן" },
   { to: "/progress", icon: Trophy, label: "התקדמות" },
@@ -11,7 +12,7 @@ const navItems = [
 
 export function BottomNav() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-lg">
+    <nav className="fixed inset-inline-0 bottom-0 z-50 border-t border-foreground/20 bg-background/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-lg items-center justify-around py-2">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
@@ -19,10 +20,10 @@ export function BottomNav() {
             to={to}
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center gap-1 rounded-lg px-4 py-2 text-xs font-medium transition-colors",
+                "flex flex-col items-center gap-1 rounded-sm px-3 py-2 text-xs font-medium font-mono transition-colors",
                 isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-foreground bg-foreground/5 border border-foreground/20"
+                  : "text-muted-foreground hover:text-foreground border border-transparent"
               )
             }
           >
