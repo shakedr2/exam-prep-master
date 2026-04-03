@@ -33,16 +33,16 @@ const RecommendedPractice = () => {
   };
 
   return (
-    <Card className="bg-card border-primary/40">
+    <Card className="bg-card border border-foreground/20">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Target className="h-4 w-4 text-primary" />
-          Adaptive Learning
+          למידה מותאמת
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">
-          Based on your performance, we recommend focusing on these topics:
+          לפי הביצועים שלך, אנחנו ממליצים להתמקד בנושאים הבאים:
         </p>
         <div className="flex flex-wrap gap-2">
           {weakTopics.map(({ topicId, successRate }) => {
@@ -50,7 +50,7 @@ const RecommendedPractice = () => {
             return (
               <span
                 key={topicId}
-                className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive"
+                className="inline-flex items-center gap-1 rounded-sm bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive"
               >
                 {topic?.icon} {topic?.name}
                 <span className="text-destructive/70">
@@ -61,11 +61,11 @@ const RecommendedPractice = () => {
           })}
         </div>
         <p className="text-xs text-muted-foreground">
-          {focusedQuestions.length} question{focusedQuestions.length !== 1 ? "s" : ""} selected for focused practice
+          {focusedQuestions.length} שאלות נבחרו לתרגול ממוקד
         </p>
-        <Button className="w-full" onClick={handleStartFocusedPractice}>
-          <Target className="h-4 w-4 mr-2" />
-          Start Focused Practice
+        <Button className="w-full rounded-sm bg-foreground text-background hover:bg-foreground/80" onClick={handleStartFocusedPractice}>
+          <Target className="h-4 w-4 me-2" />
+          התחל תרגול ממוקד
         </Button>
       </CardContent>
     </Card>

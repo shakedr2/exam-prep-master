@@ -26,7 +26,7 @@ const QuestionsPracticePage = () => {
   const navigate = useNavigate();
 
   const handleTopicSelect = (topic: Topic) => {
-    navigate(`/questions/session?mode=topic&topic=${topic.id}`);
+    navigate(`/practice/${topic.id}`);
   };
 
   return (
@@ -34,7 +34,7 @@ const QuestionsPracticePage = () => {
       <div className="mx-auto max-w-lg px-4 space-y-6">
         {/* Header */}
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-foreground">תרגול שאלות</h1>
+          <h1 className="text-2xl font-bold text-foreground font-mono">תרגול שאלות</h1>
           <p className="text-muted-foreground">בחר מצב תרגול</p>
         </div>
 
@@ -42,8 +42,8 @@ const QuestionsPracticePage = () => {
         <div className="space-y-3">
           {/* Full exam */}
           <Button
-            onClick={() => navigate("/questions/session?mode=full")}
-            className="w-full h-16 text-base gap-3 rounded-xl border border-border bg-card text-foreground hover:bg-accent shadow-sm justify-start px-5"
+            onClick={() => navigate("/exam")}
+            className="w-full h-16 text-base gap-3 rounded-sm border border-foreground/20 bg-card text-foreground hover:bg-accent justify-start px-5"
             variant="ghost"
           >
             <GraduationCap className="h-6 w-6 text-primary shrink-0" />
@@ -53,16 +53,16 @@ const QuestionsPracticePage = () => {
             </div>
           </Button>
 
-          {/* Short set */}
+          {/* Short set — navigate to topics for now */}
           <Button
-            onClick={() => navigate("/questions/session?mode=short")}
-            className="w-full h-16 text-base gap-3 rounded-xl border border-border bg-card text-foreground hover:bg-accent shadow-sm justify-start px-5"
+            onClick={() => navigate("/topics")}
+            className="w-full h-16 text-base gap-3 rounded-sm border border-foreground/20 bg-card text-foreground hover:bg-accent justify-start px-5"
             variant="ghost"
           >
             <Zap className="h-6 w-6 text-xp shrink-0" />
             <div className="text-right">
               <p className="font-semibold">סט קצר</p>
-              <p className="text-xs text-muted-foreground font-normal">10 שאלות מהירות</p>
+              <p className="text-xs text-muted-foreground font-normal">בחר נושא לתרגול מהיר</p>
             </div>
           </Button>
 
@@ -70,7 +70,7 @@ const QuestionsPracticePage = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                className="w-full h-16 text-base gap-3 rounded-xl border border-border bg-card text-foreground hover:bg-accent shadow-sm justify-start px-5"
+                className="w-full h-16 text-base gap-3 rounded-sm border border-foreground/20 bg-card text-foreground hover:bg-accent justify-start px-5"
                 variant="ghost"
               >
                 <BookOpen className="h-6 w-6 text-success shrink-0" />

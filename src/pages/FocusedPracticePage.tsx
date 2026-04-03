@@ -39,8 +39,8 @@ const FocusedPracticePage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4">
         <div className="text-center space-y-4">
-          <p className="text-xl font-semibold text-foreground">No focused practice questions available.</p>
-          <Button onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>
+          <p className="text-xl font-semibold text-foreground">אין שאלות זמינות לתרגול ממוקד.</p>
+          <Button onClick={() => navigate("/dashboard")} className="rounded-sm">חזרה לדף הראשי</Button>
         </div>
       </div>
     );
@@ -101,14 +101,14 @@ const FocusedPracticePage = () => {
           className="max-w-sm w-full text-center space-y-6"
         >
           <div className="text-6xl">{pct >= 70 ? "🎉" : "📚"}</div>
-          <h2 className="text-3xl font-bold text-foreground">Focused Practice Complete!</h2>
+          <h2 className="text-3xl font-bold text-foreground">סיימת את התרגול הממוקד!</h2>
           <p className="text-muted-foreground text-lg">
-            You got <strong className="text-foreground">{correct}</strong> of{" "}
-            <strong className="text-foreground">{allQuestions.length}</strong> correct ({pct}%)
+            ענית נכון על <strong className="text-foreground">{correct}</strong> מתוך{" "}
+            <strong className="text-foreground">{allQuestions.length}</strong> שאלות ({pct}%)
           </p>
           <div className="flex flex-col gap-3">
             <Button
-              className="w-full"
+              className="w-full rounded-sm"
               onClick={() => {
                 setCurrentIndex(0);
                 setSelectedIndex(null);
@@ -118,10 +118,10 @@ const FocusedPracticePage = () => {
                 resetAI();
               }}
             >
-              Try Again
+              נסה שוב
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => navigate("/dashboard")}>
-              Back to Dashboard
+            <Button variant="outline" className="w-full rounded-sm" onClick={() => navigate("/dashboard")}>
+              חזרה לדף הראשי
             </Button>
           </div>
         </motion.div>
@@ -134,14 +134,14 @@ const FocusedPracticePage = () => {
       <div className="mx-auto max-w-2xl px-4 space-y-4">
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
-            ← Back
+            → חזרה
           </Button>
-          <div className="text-sm text-muted-foreground font-medium">
-            Question {currentIndex + 1} of {allQuestions.length}
+          <div className="text-sm text-muted-foreground font-medium font-mono">
+            שאלה {currentIndex + 1} מתוך {allQuestions.length}
           </div>
         </div>
 
-        <p className="text-sm font-semibold text-primary">🎯 Focused Practice</p>
+        <p className="text-sm font-semibold text-primary">🎯 תרגול ממוקד</p>
 
         <Progress value={progressPct} className="h-2" />
 
@@ -215,8 +215,8 @@ const FocusedPracticePage = () => {
             onClick={handlePrev}
             disabled={currentIndex === 0}
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
+            <ChevronRight className="h-4 w-4 me-1" />
+            הקודם
           </Button>
 
           <Button
@@ -231,8 +231,8 @@ const FocusedPracticePage = () => {
           </Button>
 
           <Button size="sm" onClick={handleNext} disabled={!answered}>
-            {currentIndex + 1 === allQuestions.length ? "Finish" : "Next"}
-            <ChevronRight className="h-4 w-4 ml-1" />
+            {currentIndex + 1 === allQuestions.length ? "סיום" : "הבא"}
+            <ChevronLeft className="h-4 w-4 ms-1" />
           </Button>
         </div>
       </div>
