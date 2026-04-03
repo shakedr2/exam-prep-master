@@ -31,8 +31,8 @@ const AdminPage = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-3">
           <AlertTriangle className="h-12 w-12 text-destructive mx-auto" />
-          <h2 className="text-xl font-bold text-foreground">Access Denied</h2>
-          <p className="text-muted-foreground">You do not have permission to view this page.</p>
+          <h2 className="text-xl font-bold text-foreground">אין גישה</h2>
+          <p className="text-muted-foreground">אין לך הרשאה לצפות בדף זה.</p>
         </div>
       </div>
     );
@@ -42,22 +42,22 @@ const AdminPage = () => {
     <div className="min-h-screen bg-background pt-6 pb-24">
       <div className="mx-auto max-w-2xl px-4 space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Admin Panel</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono">לוח ניהול</h1>
           <p className="text-muted-foreground mt-1">
-            Admin area — connect Supabase tables to enable full functionality.
+            אזור ניהול — חבר טבלאות Supabase לפונקציונליות מלאה.
           </p>
         </div>
 
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle>Add Question</CardTitle>
+            <CardTitle>הוסף שאלה</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
-              <Label>Topic</Label>
+              <Label>נושא</Label>
               <Select onValueChange={(v) => setForm((f) => ({ ...f, topic: v }))}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select topic" />
+                  <SelectValue placeholder="בחר נושא" />
                 </SelectTrigger>
                 <SelectContent>
                   {topics.map((t) => (
@@ -69,9 +69,9 @@ const AdminPage = () => {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Question Text</Label>
+              <Label>טקסט השאלה</Label>
               <Textarea
-                placeholder="Enter question..."
+                placeholder="הכנס שאלה..."
                 value={form.question}
                 onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))}
               />
@@ -80,9 +80,9 @@ const AdminPage = () => {
               const key = `option${letter}` as "optionA" | "optionB" | "optionC" | "optionD";
               return (
                 <div key={letter} className="space-y-1.5">
-                  <Label>Option {letter}</Label>
+                  <Label>אפשרות {letter}</Label>
                   <Input
-                    placeholder={`Option ${letter}`}
+                    placeholder={`אפשרות ${letter}`}
                     value={form[key]}
                     onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                   />
@@ -90,10 +90,10 @@ const AdminPage = () => {
               );
             })}
             <div className="space-y-1.5">
-              <Label>Correct Answer</Label>
+              <Label>תשובה נכונה</Label>
               <Select onValueChange={(v) => setForm((f) => ({ ...f, correct: v }))}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select correct answer" />
+                  <SelectValue placeholder="בחר תשובה נכונה" />
                 </SelectTrigger>
                 <SelectContent>
                   {["A", "B", "C", "D"].map((l) => (
@@ -105,25 +105,25 @@ const AdminPage = () => {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Explanation</Label>
+              <Label>הסבר</Label>
               <Textarea
-                placeholder="Explain why this is correct..."
+                placeholder="הסבר למה זו התשובה הנכונה..."
                 value={form.explanation}
                 onChange={(e) => setForm((f) => ({ ...f, explanation: e.target.value }))}
               />
             </div>
             <Button className="w-full" disabled>
-              Add Question (connect Supabase to enable)
+              הוסף שאלה (חבר Supabase להפעלה)
             </Button>
           </CardContent>
         </Card>
 
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle>Questions Database</CardTitle>
+            <CardTitle>מאגר שאלות</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground text-sm">No questions in database yet.</p>
+            <p className="text-muted-foreground text-sm">אין עדיין שאלות במאגר.</p>
           </CardContent>
         </Card>
       </div>
