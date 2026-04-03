@@ -219,7 +219,7 @@ const ReviewMistakes = () => {
             onClick={() => setTopicFilter("all")}
             className="text-xs"
           >
-            <Filter className="h-3 w-3 ml-1" /> הכל ({allMistakes.length})
+            <Filter className="h-3 w-3 ms-1" /> הכל ({allMistakes.length})
           </Button>
           {mistakeTopics.map(t => {
             const count = allMistakes.filter(q => q.topic === t.id).length;

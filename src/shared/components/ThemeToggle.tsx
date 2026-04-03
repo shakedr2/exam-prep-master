@@ -10,7 +10,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="rounded-full bg-white/15 backdrop-blur-sm text-primary-foreground hover:bg-white/25"
+      className="rounded-sm border border-foreground/20 text-foreground hover:bg-foreground/10"
     >
       {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
     </Button>

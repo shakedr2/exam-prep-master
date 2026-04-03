@@ -58,36 +58,36 @@ const DashboardPage = () => {
     <div className="min-h-screen bg-background pb-24 pt-4">
       <div className="mx-auto max-w-2xl px-4 space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Hello, {progress.username} 👋
+          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono">
+            שלום, {progress.username}
           </h1>
-          <p className="text-muted-foreground mt-1">Here's your study overview.</p>
+          <p className="text-muted-foreground mt-1">הנה סקירת הלימודים שלך.</p>
         </div>
 
         {lastTopicId && (
-          <Card className="bg-card border-border">
+          <Card className="bg-card border border-foreground/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                Continue Learning
+                המשך ללמוד
               </CardTitle>
             </CardHeader>
             <CardContent className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Resume <strong>{topics.find((t) => t.id === lastTopicId)?.name}</strong>
+                המשך ב<strong>{topics.find((t) => t.id === lastTopicId)?.name}</strong>
               </p>
-              <Button size="sm" onClick={() => navigate(`/practice/${lastTopicId}`)}>
-                Resume
+              <Button size="sm" variant="outline" className="rounded-sm border-foreground/20" onClick={() => navigate(`/practice/${lastTopicId}`)}>
+                המשך
               </Button>
             </CardContent>
           </Card>
         )}
 
-        <Card className="bg-card border-border">
+        <Card className="bg-card border border-foreground/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <LayoutGrid className="h-4 w-4 text-primary" />
-              Your Progress
+              ההתקדמות שלך
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -108,11 +108,11 @@ const DashboardPage = () => {
         </Card>
 
         {weakTopics.length > 0 && (
-          <Card className="bg-card border-border">
+          <Card className="bg-card border border-foreground/20">
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-warning" />
-                Weak Areas
+                נקודות חולשה
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -124,7 +124,7 @@ const DashboardPage = () => {
                     variant="outline"
                     onClick={() => navigate(`/practice/${topic.id}`)}
                   >
-                    Practice Now
+                    תרגול
                   </Button>
                 </div>
               ))}
@@ -137,7 +137,7 @@ const DashboardPage = () => {
         <div>
           <h2 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-primary" />
-            All Topics
+            כל הנושאים
           </h2>
 
           {/* Concepts card */}
@@ -176,13 +176,13 @@ const DashboardPage = () => {
               return (
                 <Card
                   key={topic.id}
-                  className="cursor-pointer bg-card border-border hover:bg-accent transition-colors"
+                  className="cursor-pointer bg-card border border-foreground/20 hover:bg-accent transition-colors"
                   onClick={() => navigate(`/practice/${topic.id}`)}
                 >
                   <CardContent className="p-4">
                     <div className="text-2xl mb-2">{topic.icon}</div>
                     <p className="font-semibold text-foreground text-sm">{topic.name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{completion}% complete</p>
+                    <p className="text-xs text-muted-foreground mt-1">{completion}% הושלם</p>
                   </CardContent>
                 </Card>
               );
