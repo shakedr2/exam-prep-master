@@ -1,13 +1,11 @@
-import { BookOpen, Trophy, GraduationCap, BarChart2, LayoutDashboard } from "lucide-react";
+import { Trophy, GraduationCap, LayoutDashboard } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "ראשי" },
-  { to: "/topics", icon: BookOpen, label: "נושאים" },
   { to: "/exam", icon: GraduationCap, label: "מבחן" },
   { to: "/progress", icon: Trophy, label: "התקדמות" },
-  { to: "/analytics", icon: BarChart2, label: "ניתוח" },
 ];
 
 export function BottomNav() {

@@ -12,21 +12,11 @@ import { BottomNav } from "@/shared/components/BottomNav";
 import OnboardingPage from "./pages/OnboardingPage";
 import DashboardPage from "./pages/DashboardPage";
 import PracticePage from "./pages/PracticePage";
-import Topics from "./pages/Topics";
-import TopicPractice from "./pages/TopicPractice";
-import TopicLearn from "./pages/TopicLearn";
-import ConceptsPractice from "./pages/ConceptsPractice";
 import ExamMode from "./pages/ExamMode";
 import ProgressPage from "./pages/ProgressPage";
 import NotFound from "./pages/NotFound";
-import QuestionsPracticePage from "./pages/QuestionsPracticePage";
-import ConceptsPracticePage from "./pages/ConceptsPracticePage";
 
-// Lazy-loaded pages (heavy dependencies or rarely visited)
-const AdminPage = lazy(() => import("./pages/AdminPage"));
 const ReviewMistakes = lazy(() => import("./pages/ReviewMistakes"));
-const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
-const FocusedPracticePage = lazy(() => import("./pages/FocusedPracticePage"));
 
 const LazyFallback = () => (
   <div className="flex items-center justify-center min-h-[50vh]">
@@ -82,19 +72,9 @@ const AppContent = () => {
           <Route path="/" element={<OnboardingPage />} />
           <Route path="/dashboard" element={<AuthGuard><DashboardPage /></AuthGuard>} />
           <Route path="/practice/:topicId" element={<AuthGuard><PracticePage /></AuthGuard>} />
-          <Route path="/topics" element={<AuthGuard><Topics /></AuthGuard>} />
-          <Route path="/concepts/:topicId" element={<AuthGuard><ConceptsPractice /></AuthGuard>} />
-          <Route path="/admin" element={<Suspense fallback={<LazyFallback />}><AdminPage /></Suspense>} />
-          <Route path="/topic/:topicId" element={<AuthGuard><TopicPractice /></AuthGuard>} />
-          <Route path="/concepts" element={<AuthGuard><ConceptsPractice /></AuthGuard>} />
-          <Route path="/concepts/practice" element={<AuthGuard><ConceptsPracticePage /></AuthGuard>} />
-          <Route path="/topic/:topicId/learn" element={<AuthGuard><TopicLearn /></AuthGuard>} />
           <Route path="/exam" element={<AuthGuard><ExamMode /></AuthGuard>} />
           <Route path="/progress" element={<AuthGuard><ProgressPage /></AuthGuard>} />
           <Route path="/review-mistakes" element={<AuthGuard><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></AuthGuard>} />
-          <Route path="/questions/practice" element={<AuthGuard><QuestionsPracticePage /></AuthGuard>} />
-          <Route path="/analytics" element={<AuthGuard><Suspense fallback={<LazyFallback />}><AnalyticsPage /></Suspense></AuthGuard>} />
-          <Route path="/focused-practice" element={<AuthGuard><Suspense fallback={<LazyFallback />}><FocusedPracticePage /></Suspense></AuthGuard>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <BottomNav />

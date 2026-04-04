@@ -27,9 +27,7 @@ const RecommendedPractice = () => {
   if (focusedQuestions.length === 0) return null;
 
   const handleStartFocusedPractice = () => {
-    navigate("/focused-practice", {
-      state: { questionIds: focusedQuestions.map((q) => q.id) },
-    });
+    navigate(`/practice/${weakTopics[0].topicId}`);
   };
 
   return (

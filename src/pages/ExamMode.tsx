@@ -4,9 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Trophy, Flag, ChevronLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { getBalancedExamQuestions, topics, type Question, type CodingQuestion } from "@/data/questions";
+import { getBalancedExamQuestions, topics, type Question } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
-import { AiTutor } from "@/components/AiTutor";
 import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
 import { ExamReviewScreen } from "@/components/exam/ExamReviewScreen";
 
@@ -251,12 +250,6 @@ const ExamMode = () => {
         </div>
       </div>
 
-      <AiTutor
-        questionContext={`שאלה במבחן סימולציה\nסוג: ${q.type}\n${
-          q.type === "coding" ? `כותרת: ${(q as CodingQuestion).title}\nתיאור: ${(q as CodingQuestion).description}` :
-          `שאלה: ${(q as Exclude<Question, CodingQuestion>).question}\n${'code' in q && q.code ? `קוד:\n${q.code}` : ""}`
-        }`}
-      />
     </div>
   );
 };
