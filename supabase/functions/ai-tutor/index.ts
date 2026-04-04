@@ -10,8 +10,8 @@ serve(async (req) => {
 
   try {
     const { messages, questionContext } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
 
     const systemPrompt = `אתה מורה פרטי לתכנות Python בשם "פרופ' פייתון". 
 אתה עוזר לסטודנטים להתכונן למבחנים בקורס "כנות בסיסית" (Python) של ד"ר רמי רשקוביץ.
@@ -31,14 +31,14 @@ ${questionContext ? `הקשר השאלה הנוכחית:\n${questionContext}` : 
 
 זכור: המטרה שלך היא ללמד, לא לפתור! 🎓`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           ...messages,
@@ -61,7 +61,7 @@ ${questionContext ? `הקשר השאלה הנוכחית:\n${questionContext}` : 
         });
       }
       const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
+      console.error("OpenAI API error:", response.status, t);
       return new Response(JSON.stringify({ error: "שגיאה בשירות AI" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

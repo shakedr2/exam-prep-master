@@ -38,8 +38,8 @@ const PracticePage = () => {
         <div className="text-center space-y-4">
           {topicId ? (
             <>
-              <p className="text-xl font-semibold text-foreground">No questions found for this topic.</p>
-              <Button onClick={() => navigate("/topics")}>Back to Topics</Button>
+              <p className="text-xl font-semibold text-foreground">לא נמצאו שאלות לנושא זה.</p>
+              <Button onClick={() => navigate("/topics")} className="rounded-sm">חזרה לנושאים</Button>
             </>
           ) : (
             <Skeleton className="h-64 w-96" />
@@ -104,14 +104,14 @@ const PracticePage = () => {
           className="max-w-sm w-full text-center space-y-6"
         >
           <div className="text-6xl">{pct >= 70 ? "🎉" : "📚"}</div>
-          <h2 className="text-3xl font-bold text-foreground">Session Complete!</h2>
+          <h2 className="text-3xl font-bold text-foreground">סיימת את התרגול!</h2>
           <p className="text-muted-foreground text-lg">
-            You got <strong className="text-foreground">{correct}</strong> of{" "}
-            <strong className="text-foreground">{allQuestions.length}</strong> correct ({pct}%)
+            ענית נכון על <strong className="text-foreground">{correct}</strong> מתוך{" "}
+            <strong className="text-foreground">{allQuestions.length}</strong> שאלות ({pct}%)
           </p>
           <div className="flex flex-col gap-3">
             <Button
-              className="w-full"
+              className="w-full rounded-sm"
               onClick={() => {
                 setCurrentIndex(0);
                 setSelectedIndex(null);
@@ -121,10 +121,10 @@ const PracticePage = () => {
                 resetAI();
               }}
             >
-              Try Again
+              נסה שוב
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => navigate("/topics")}>
-              Back to Topics
+            <Button variant="outline" className="w-full rounded-sm" onClick={() => navigate("/topics")}>
+              חזרה לנושאים
             </Button>
           </div>
         </motion.div>
@@ -137,10 +137,10 @@ const PracticePage = () => {
       <div className="mx-auto max-w-2xl px-4 space-y-4">
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={() => navigate("/topics")}>
-            ← Back
+            ← חזרה
           </Button>
-          <div className="text-sm text-muted-foreground font-medium">
-            Question {currentIndex + 1} of {allQuestions.length}
+          <div className="text-sm text-muted-foreground font-medium font-mono">
+            שאלה {currentIndex + 1} מתוך {allQuestions.length}
           </div>
         </div>
 
@@ -179,20 +179,20 @@ const PracticePage = () => {
                         key={idx}
                         onClick={() => handleSelect(idx)}
                         disabled={answered}
-                        className={`w-full text-left rounded-xl border px-4 py-3 text-sm transition-all
+                        className={`w-full text-start rounded-sm border px-4 py-3 text-sm transition-all
                           ${answered ? "cursor-default" : "hover:bg-accent cursor-pointer"}
                           ${extra || "border-border bg-background text-foreground"}
                         `}
                       >
-                        <span className="font-semibold mr-2">
+                        <span className="font-semibold me-2">
                           {String.fromCharCode(65 + idx)}.
                         </span>
                         {option}
                         {answered && idx === current.correctIndex && (
-                          <CheckCircle2 className="inline ml-2 h-4 w-4 text-green-400" />
+                          <CheckCircle2 className="inline ms-2 h-4 w-4 text-green-400" />
                         )}
                         {answered && idx === selectedIndex && idx !== current.correctIndex && (
-                          <XCircle className="inline ml-2 h-4 w-4 text-red-400" />
+                          <XCircle className="inline ms-2 h-4 w-4 text-red-400" />
                         )}
                       </button>
                     );
@@ -220,8 +220,8 @@ const PracticePage = () => {
             onClick={handlePrev}
             disabled={currentIndex === 0}
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
+            <ChevronRight className="h-4 w-4 me-1" />
+            הקודם
           </Button>
 
           <Button
@@ -232,12 +232,12 @@ const PracticePage = () => {
             className="gap-1.5"
           >
             <Bot className="h-4 w-4" />
-            AI Explanation
+            הסבר AI
           </Button>
 
           <Button size="sm" onClick={handleNext} disabled={!answered}>
-            {currentIndex + 1 === allQuestions.length ? "Finish" : "Next"}
-            <ChevronRight className="h-4 w-4 ml-1" />
+            {currentIndex + 1 === allQuestions.length ? "סיום" : "הבא"}
+            <ChevronLeft className="h-4 w-4 ms-1" />
           </Button>
         </div>
       </div>

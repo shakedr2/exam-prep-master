@@ -78,7 +78,7 @@ export function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct:
               if (answered) return;
               setSelected(i);
             }}
-            className={`w-full rounded-xl border p-4 text-right transition-all ${
+            className={`w-full rounded-sm border p-4 text-right transition-all ${
               answered
                 ? i === q.correctIndex
                   ? "border-success bg-success/10 text-success"
@@ -95,8 +95,8 @@ export function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct:
                 {String.fromCharCode(1488 + i)}
               </span>
               <span className="text-sm font-medium">{opt}</span>
-              {answered && i === q.correctIndex && <Check className="mr-auto h-5 w-5 text-success" />}
-              {answered && i === selected && i !== q.correctIndex && <X className="mr-auto h-5 w-5 text-destructive" />}
+              {answered && i === q.correctIndex && <Check className="ms-auto h-5 w-5 text-success" />}
+              {answered && i === selected && i !== q.correctIndex && <X className="ms-auto h-5 w-5 text-destructive" />}
             </div>
           </motion.button>
         ))}

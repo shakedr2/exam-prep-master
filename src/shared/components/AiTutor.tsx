@@ -1,9 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Send, X, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Message {
   role: "user" | "assistant";
@@ -21,6 +20,7 @@ export function AiTutor({ questionContext }: AiTutorProps) {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -124,6 +124,24 @@ export function AiTutor({ questionContext }: AiTutorProps) {
     setLoading(false);
   };
 
+  // Close on backdrop click
+  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
+    if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+      setOpen(false);
+    }
+  }, []);
+
+  // Quick questions auto-send
+  const handleQuickQuestion = useCallback((q: string) => {
+    setInput(q);
+    // Auto-send after setting input
+    setTimeout(() => {
+      const userMsg: Message = { role: "user", content: q };
+      setMessages(prev => [...prev, userMsg]);
+      setInput("");
+    }, 0);
+  }, []);
+
   const quickQuestions = [
     "תעזור לי להבין את הקוד",
     "תן לי רמז",
@@ -132,7 +150,7 @@ export function AiTutor({ questionContext }: AiTutorProps) {
 
   return (
     <>
-      {/* FAB Button */}
+      {/* FAB Button — positioned inline-end (right in RTL) */}
       <AnimatePresence>
         {!open && (
           <motion.button
@@ -142,115 +160,125 @@ export function AiTutor({ questionContext }: AiTutorProps) {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setOpen(true)}
-            className="fixed bottom-24 left-4 z-50 flex h-14 w-14 items-center justify-center rounded-full gradient-primary shadow-xl"
+            className="fixed bottom-24 z-50 flex h-14 w-14 items-center justify-center rounded-full border border-foreground/20 bg-foreground text-background shadow-xl"
+            style={{ insetInlineEnd: "1rem" }}
           >
-            <Sparkles className="h-6 w-6 text-primary-foreground" />
+            <Sparkles className="h-6 w-6" />
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Chat Panel */}
+      {/* Backdrop + Chat Panel */}
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            transition={{ type: "spring", damping: 25 }}
-            className="fixed bottom-20 left-4 right-4 z-50 mx-auto max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
-            style={{ maxHeight: "70vh" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm"
+            onClick={handleBackdropClick}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between gradient-primary p-3 text-primary-foreground">
-              <div className="flex items-center gap-2">
-                <Bot className="h-5 w-5" />
-                <div>
-                  <p className="text-sm font-bold">פרופ' פייתון 🎓</p>
-                  <p className="text-xs opacity-80">עוזר לימודי - מלמד בלי לתת תשובות!</p>
-                </div>
-              </div>
-              <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="text-primary-foreground hover:bg-white/20">
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
-            {/* Messages */}
-            <div ref={scrollRef} className="h-[45vh] overflow-y-auto p-3 space-y-3">
-              {messages.length === 0 && (
-                <div className="text-center py-6 space-y-4">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-3xl">
-                    🤔
-                  </div>
+            <motion.div
+              ref={panelRef}
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="mx-4 mb-4 w-full max-w-lg overflow-hidden rounded-lg border border-foreground/20 bg-card shadow-2xl"
+              style={{ maxHeight: "50vh" }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-foreground/20 bg-foreground p-3 text-background">
+                <div className="flex items-center gap-2">
+                  <Bot className="h-5 w-5" />
                   <div>
-                    <p className="font-semibold text-foreground">צריך עזרה?</p>
-                    <p className="text-xs text-muted-foreground mt-1">אני כאן כדי ללמד אותך, לא לתת תשובות!</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {quickQuestions.map(q => (
-                      <button
-                        key={q}
-                        onClick={() => { setInput(q); }}
-                        className="rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/10 transition-colors"
-                      >
-                        {q}
-                      </button>
-                    ))}
+                    <p className="text-sm font-bold font-mono">פרופ׳ פייתון</p>
+                    <p className="text-xs opacity-70">עוזר לימודי — מלמד בלי לתת תשובות</p>
                   </div>
                 </div>
-              )}
-
-              {messages.map((msg, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
-                      msg.role === "user"
-                        ? "gradient-primary text-primary-foreground rounded-br-md"
-                        : "bg-muted text-foreground rounded-bl-md"
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
-                </motion.div>
-              ))}
-
-              {loading && messages[messages.length - 1]?.role !== "assistant" && (
-                <div className="flex justify-start">
-                  <div className="rounded-2xl bg-muted px-4 py-3 rounded-bl-md">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Input */}
-            <div className="border-t border-border p-3">
-              <form
-                onSubmit={e => { e.preventDefault(); sendMessage(); }}
-                className="flex gap-2"
-              >
-                <Input
-                  ref={inputRef}
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  placeholder="שאל שאלה..."
-                  className="flex-1 text-sm"
-                  disabled={loading}
-                />
-                <Button
-                  type="submit"
-                  size="icon"
-                  disabled={!input.trim() || loading}
-                  className="gradient-primary text-primary-foreground shrink-0"
-                >
-                  <Send className="h-4 w-4" />
+                <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="text-background hover:bg-white/20">
+                  <X className="h-5 w-5" />
                 </Button>
-              </form>
-            </div>
+              </div>
+
+              {/* Messages */}
+              <div ref={scrollRef} className="h-[30vh] overflow-y-auto p-3 space-y-3">
+                {messages.length === 0 && (
+                  <div className="text-center py-6 space-y-4">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg border border-border bg-muted text-2xl">
+                      🤔
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">צריך עזרה?</p>
+                      <p className="text-xs text-muted-foreground mt-1">אני כאן כדי ללמד אותך, לא לתת תשובות!</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {quickQuestions.map(q => (
+                        <button
+                          key={q}
+                          onClick={() => handleQuickQuestion(q)}
+                          className="rounded-sm border border-border bg-muted px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/10 transition-colors font-mono"
+                        >
+                          {q}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {messages.map((msg, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[85%] rounded-lg px-4 py-2.5 text-sm whitespace-pre-wrap ${
+                        msg.role === "user"
+                          ? "bg-foreground text-background"
+                          : "border border-border bg-muted text-foreground"
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
+                  </motion.div>
+                ))}
+
+                {loading && messages[messages.length - 1]?.role !== "assistant" && (
+                  <div className="flex justify-start">
+                    <div className="rounded-lg border border-border bg-muted px-4 py-3">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Input */}
+              <div className="border-t border-foreground/20 p-3">
+                <form
+                  onSubmit={e => { e.preventDefault(); sendMessage(); }}
+                  className="flex gap-2"
+                >
+                  <Input
+                    ref={inputRef}
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    placeholder="שאל שאלה..."
+                    className="flex-1 text-sm rounded-sm border-foreground/20"
+                    disabled={loading}
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={!input.trim() || loading}
+                    className="bg-foreground text-background hover:bg-foreground/80 shrink-0 rounded-sm"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </form>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
