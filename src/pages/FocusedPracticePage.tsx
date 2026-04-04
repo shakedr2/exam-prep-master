@@ -134,7 +134,7 @@ const FocusedPracticePage = () => {
       <div className="mx-auto max-w-2xl px-4 space-y-4">
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
-            → חזרה
+            ← חזרה
           </Button>
           <div className="text-sm text-muted-foreground font-medium font-mono">
             שאלה {currentIndex + 1} מתוך {allQuestions.length}
