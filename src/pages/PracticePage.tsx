@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Bot, CheckCircle2, XCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import { AIExplanationDrawer } from "@/features/questions/components/AIExplanationDrawer";
 import { useProgress } from "@/features/progress/hooks/useProgress";
-import { useAIExplanation } from "@/features/ai/hooks/useAIExplanation";
 import { getQuestionsByTopic, topics } from "@/data/questions";
 import type { TopicId, QuizQuestion } from "@/data/questions";
 
@@ -16,7 +14,6 @@ const PracticePage = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
   const { answerQuestion } = useProgress();
-  const { explanation, loading: aiLoading, fetchExplanation, reset: resetAI } = useAIExplanation();
 
   const allQuestions: QuizQuestion[] = topicId
     ? (getQuestionsByTopic(topicId as TopicId).filter(
@@ -28,7 +25,6 @@ const PracticePage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [answered, setAnswered] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [sessionAnswers, setSessionAnswers] = useState<boolean[]>([]);
   const [finished, setFinished] = useState(false);
 
@@ -39,7 +35,7 @@ const PracticePage = () => {
           {topicId ? (
             <>
               <p className="text-xl font-semibold text-foreground">לא נמצאו שאלות לנושא זה.</p>
-              <Button onClick={() => navigate("/topics")} className="rounded-sm">חזרה לנושאים</Button>
+              <Button onClick={() => navigate("/dashboard")} className="rounded-sm">חזרה לדשבורד</Button>
             </>
           ) : (
             <Skeleton className="h-64 w-96" />
@@ -69,8 +65,6 @@ const PracticePage = () => {
     setCurrentIndex((i) => i + 1);
     setSelectedIndex(null);
     setAnswered(false);
-    resetAI();
-    setDrawerOpen(false);
   };
 
   const handlePrev = () => {
@@ -78,19 +72,6 @@ const PracticePage = () => {
     setCurrentIndex((i) => i - 1);
     setSelectedIndex(null);
     setAnswered(false);
-    resetAI();
-    setDrawerOpen(false);
-  };
-
-  const handleAI = () => {
-    if (!answered) return;
-    fetchExplanation(
-      current.question,
-      current.options,
-      current.correctIndex,
-      selectedIndex ?? undefined
-    );
-    setDrawerOpen(true);
   };
 
   if (finished) {
@@ -118,13 +99,12 @@ const PracticePage = () => {
                 setAnswered(false);
                 setSessionAnswers([]);
                 setFinished(false);
-                resetAI();
               }}
             >
               נסה שוב
             </Button>
-            <Button variant="outline" className="w-full rounded-sm" onClick={() => navigate("/topics")}>
-              חזרה לנושאים
+            <Button variant="outline" className="w-full rounded-sm" onClick={() => navigate("/dashboard")}>
+              חזרה לדשבורד
             </Button>
           </div>
         </motion.div>
@@ -136,7 +116,7 @@ const PracticePage = () => {
     <div className="min-h-screen bg-background pb-24 pt-4">
       <div className="mx-auto max-w-2xl px-4 space-y-4">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/topics")}>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
             ← חזרה
           </Button>
           <div className="text-sm text-muted-foreground font-medium font-mono">
@@ -224,30 +204,12 @@ const PracticePage = () => {
             הקודם
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleAI}
-            disabled={!answered}
-            className="gap-1.5"
-          >
-            <Bot className="h-4 w-4" />
-            הסבר AI
-          </Button>
-
           <Button size="sm" onClick={handleNext} disabled={!answered}>
             {currentIndex + 1 === allQuestions.length ? "סיום" : "הבא"}
             <ChevronLeft className="h-4 w-4 ms-1" />
           </Button>
         </div>
       </div>
-
-      <AIExplanationDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        content={explanation ? `${explanation.explanation}${explanation.tip ? `\n\n💡 ${explanation.tip}` : ""}` : ""}
-        loading={aiLoading}
-      />
     </div>
   );
 };
