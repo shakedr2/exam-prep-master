@@ -134,7 +134,7 @@ const FocusedPracticePage = () => {
       <div className="mx-auto max-w-2xl px-4 space-y-4">
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
-            → חזרה
+            ← חזרה
           </Button>
           <div className="text-sm text-muted-foreground font-medium font-mono">
             שאלה {currentIndex + 1} מתוך {allQuestions.length}
@@ -215,7 +215,7 @@ const FocusedPracticePage = () => {
             onClick={handlePrev}
             disabled={currentIndex === 0}
           >
-            <ChevronLeft className="h-4 w-4 me-1" />
+            <ChevronRight className="h-4 w-4 me-1" />
             הקודם
           </Button>
 
@@ -232,7 +232,7 @@ const FocusedPracticePage = () => {
 
           <Button size="sm" onClick={handleNext} disabled={!answered}>
             {currentIndex + 1 === allQuestions.length ? "סיום" : "הבא"}
-            <ChevronRight className="h-4 w-4 ms-1" />
+            <ChevronLeft className="h-4 w-4 ms-1" />
           </Button>
         </div>
       </div>

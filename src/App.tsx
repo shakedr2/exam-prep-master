@@ -1,3 +1,5 @@
+import { Component, lazy, Suspense } from "react";
+import type { ErrorInfo, ReactNode } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,19 +12,60 @@ import { BottomNav } from "@/shared/components/BottomNav";
 import OnboardingPage from "./pages/OnboardingPage";
 import DashboardPage from "./pages/DashboardPage";
 import PracticePage from "./pages/PracticePage";
-import AdminPage from "./pages/AdminPage";
 import Topics from "./pages/Topics";
 import TopicPractice from "./pages/TopicPractice";
 import TopicLearn from "./pages/TopicLearn";
 import ConceptsPractice from "./pages/ConceptsPractice";
 import ExamMode from "./pages/ExamMode";
 import ProgressPage from "./pages/ProgressPage";
-import ReviewMistakes from "./pages/ReviewMistakes";
 import NotFound from "./pages/NotFound";
 import QuestionsPracticePage from "./pages/QuestionsPracticePage";
 import ConceptsPracticePage from "./pages/ConceptsPracticePage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import FocusedPracticePage from "./pages/FocusedPracticePage";
+
+// Lazy-loaded pages (heavy dependencies or rarely visited)
+const AdminPage = lazy(() => import("./pages/AdminPage"));
+const ReviewMistakes = lazy(() => import("./pages/ReviewMistakes"));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const FocusedPracticePage = lazy(() => import("./pages/FocusedPracticePage"));
+
+const LazyFallback = () => (
+  <div className="flex items-center justify-center min-h-[50vh]">
+    <div className="text-muted-foreground">טוען...</div>
+  </div>
+);
+
+class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("App error:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center" dir="rtl">
+          <h1 className="text-2xl font-bold mb-2">משהו השתבש</h1>
+          <p className="text-muted-foreground mb-4">אירעה שגיאה בלתי צפויה. נסה לרענן את הדף.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+          >
+            רענן דף
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const queryClient = new QueryClient();
 
@@ -41,17 +84,17 @@ const AppContent = () => {
           <Route path="/practice/:topicId" element={<AuthGuard><PracticePage /></AuthGuard>} />
           <Route path="/topics" element={<AuthGuard><Topics /></AuthGuard>} />
           <Route path="/concepts/:topicId" element={<AuthGuard><ConceptsPractice /></AuthGuard>} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin" element={<Suspense fallback={<LazyFallback />}><AdminPage /></Suspense>} />
           <Route path="/topic/:topicId" element={<AuthGuard><TopicPractice /></AuthGuard>} />
           <Route path="/concepts" element={<AuthGuard><ConceptsPractice /></AuthGuard>} />
           <Route path="/concepts/practice" element={<AuthGuard><ConceptsPracticePage /></AuthGuard>} />
           <Route path="/topic/:topicId/learn" element={<AuthGuard><TopicLearn /></AuthGuard>} />
           <Route path="/exam" element={<AuthGuard><ExamMode /></AuthGuard>} />
           <Route path="/progress" element={<AuthGuard><ProgressPage /></AuthGuard>} />
-          <Route path="/review-mistakes" element={<AuthGuard><ReviewMistakes /></AuthGuard>} />
+          <Route path="/review-mistakes" element={<AuthGuard><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></AuthGuard>} />
           <Route path="/questions/practice" element={<AuthGuard><QuestionsPracticePage /></AuthGuard>} />
-          <Route path="/analytics" element={<AuthGuard><AnalyticsPage /></AuthGuard>} />
-          <Route path="/focused-practice" element={<AuthGuard><FocusedPracticePage /></AuthGuard>} />
+          <Route path="/analytics" element={<AuthGuard><Suspense fallback={<LazyFallback />}><AnalyticsPage /></Suspense></AuthGuard>} />
+          <Route path="/focused-practice" element={<AuthGuard><Suspense fallback={<LazyFallback />}><FocusedPracticePage /></Suspense></AuthGuard>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <BottomNav />
@@ -61,11 +104,13 @@ const AppContent = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AppContent />
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AppContent />
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
