@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
+import { translateAuthError, MIN_PASSWORD_LENGTH } from "@/shared/lib/authErrors";
 
 const RegisterPage = () => {
   const { signUp } = useAuth();
@@ -21,8 +22,8 @@ const RegisterPage = () => {
     e.preventDefault();
     setError(null);
 
-    if (password.length < 6) {
-      setError("הסיסמה חייבת להכיל לפחות 6 תווים");
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`הסיסמה חייבת להכיל לפחות ${MIN_PASSWORD_LENGTH} תווים`);
       return;
     }
 
@@ -36,7 +37,7 @@ const RegisterPage = () => {
     setLoading(false);
 
     if (signUpError) {
-      setError(translateError(signUpError));
+      setError(translateAuthError(signUpError));
       return;
     }
 
@@ -167,13 +168,5 @@ const RegisterPage = () => {
     </div>
   );
 };
-
-function translateError(message: string): string {
-  if (message.includes("already registered")) return "האימייל הזה כבר רשום במערכת";
-  if (message.includes("valid email")) return "כתובת אימייל לא תקינה";
-  if (message.includes("Password should be at least")) return "הסיסמה חייבת להכיל לפחות 6 תווים";
-  if (message.includes("Too many requests")) return "יותר מדי ניסיונות, נסה שוב מאוחר יותר";
-  return "שגיאה בהרשמה, נסה שוב";
-}
 
 export default RegisterPage;

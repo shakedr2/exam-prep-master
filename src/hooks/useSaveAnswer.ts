@@ -9,6 +9,8 @@ export function useSaveAnswer() {
     async (questionId: string, topicId: string, isCorrect: boolean) => {
       if (!user) return;
 
+      // Upsert: when a user re-answers the same question, update the existing
+      // record with the new result and timestamp (unique on user_id + question_id)
       const { error } = await supabase.from("user_progress").upsert(
         {
           user_id: user.id,

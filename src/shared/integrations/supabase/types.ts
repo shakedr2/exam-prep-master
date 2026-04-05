@@ -95,7 +95,6 @@ export type Database = {
           }
         ]
       }
-    }
       user_progress: {
         Row: {
           id: string

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
+import { translateAuthError } from "@/shared/lib/authErrors";
 
 const LoginPage = () => {
   const { signIn } = useAuth();
@@ -24,7 +25,7 @@ const LoginPage = () => {
     setLoading(false);
 
     if (signInError) {
-      setError(translateError(signInError));
+      setError(translateAuthError(signInError));
       return;
     }
 
@@ -112,12 +113,5 @@ const LoginPage = () => {
     </div>
   );
 };
-
-function translateError(message: string): string {
-  if (message.includes("Invalid login credentials")) return "אימייל או סיסמה שגויים";
-  if (message.includes("Email not confirmed")) return "יש לאשר את האימייל לפני ההתחברות";
-  if (message.includes("Too many requests")) return "יותר מדי ניסיונות, נסה שוב מאוחר יותר";
-  return "שגיאה בהתחברות, נסה שוב";
-}
 
 export default LoginPage;
