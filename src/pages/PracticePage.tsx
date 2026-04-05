@@ -49,7 +49,7 @@ const PracticePage = () => {
   const topic = topics.find((t) => t.id === topicId);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, { answer: string; correct: boolean }>>({});
+  const [answers, setAnswers] = useState<Record<string, { answer: string; correct: boolean }>>({});
   const [finished, setFinished] = useState(false);
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | null>(null);
   const [reviewMistakesMode, setReviewMistakesMode] = useState(false);
@@ -124,12 +124,11 @@ const PracticePage = () => {
     ? Math.round((answeredCount / activeQuestions.length) * 100)
     : 0;
 
-  const handleAnswer = (index: number, answer: string, correct: boolean) => {
-    setAnswers((prev) => ({ ...prev, [index]: { answer, correct } }));
-    const q = activeQuestions[index];
-    answerQuestion(q.id, correct);
+  const handleAnswer = (questionId: string, answer: string, correct: boolean) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: { answer, correct } }));
+    answerQuestion(questionId, correct);
     if (topicId) {
-      saveAnswer(q.id, topicId, correct);
+      saveAnswer(questionId, topicId, correct);
     }
   };
 
@@ -154,10 +153,10 @@ const PracticePage = () => {
   };
 
   const handleReviewMistakes = () => {
-    const incorrectIndices = Object.entries(answers)
+    const incorrectIds = Object.entries(answers)
       .filter(([, a]) => !a.correct)
-      .map(([idx]) => Number(idx));
-    const mistakes = incorrectIndices.map((idx) => activeQuestions[idx]);
+      .map(([id]) => id);
+    const mistakes = activeQuestions.filter((q) => incorrectIds.includes(q.id));
     setMistakeQuestions(mistakes);
     setReviewMistakesMode(true);
     setCurrentIndex(0);
@@ -179,7 +178,8 @@ const PracticePage = () => {
     const pct = Math.round((correct / total) * 100);
     const mistakes = Object.entries(answers)
       .filter(([, a]) => !a.correct)
-      .map(([idx]) => ({ index: Number(idx), question: activeQuestions[Number(idx)] }));
+      .map(([id]) => activeQuestions.find((q) => q.id === id))
+      .filter((q): q is Question => q != null);
 
     return (
       <div className="min-h-screen bg-background px-4 pb-24 pt-8">
@@ -207,7 +207,7 @@ const PracticePage = () => {
                 ❌ שאלות שטעית בהן ({mistakes.length})
               </h3>
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {mistakes.map(({ question: q }) => (
+                {mistakes.map((q) => (
                   <Card key={q.id} className="border-destructive/20">
                     <CardContent className="p-3">
                       <p className="text-sm font-medium line-clamp-2">{getQuestionTitle(q)}</p>
@@ -321,7 +321,7 @@ const PracticePage = () => {
 
         <AnimatePresence mode="wait">
           <motion.div
-            key={`${reviewMistakesMode}-${currentIndex}`}
+            key={current.id}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -329,8 +329,8 @@ const PracticePage = () => {
           >
             <ExamQuestionRenderer
               question={current}
-              currentAnswer={answers[currentIndex]}
-              onAnswer={(answer, correct) => handleAnswer(currentIndex, answer, correct)}
+              currentAnswer={answers[current.id]}
+              onAnswer={(answer, correct) => handleAnswer(current.id, answer, correct)}
             />
           </motion.div>
         </AnimatePresence>
@@ -346,7 +346,7 @@ const PracticePage = () => {
             הקודם
           </Button>
 
-          <Button className="flex-1" onClick={handleNext} disabled={!answers[currentIndex]}>
+          <Button className="flex-1" onClick={handleNext} disabled={!answers[current.id]}>
             {currentIndex + 1 === activeQuestions.length ? "סיום" : "הבא"}
             <ChevronLeft className="h-4 w-4 ms-1" />
           </Button>
