@@ -1,11 +1,20 @@
-import { Link } from "react-router-dom";
-import { GraduationCap } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { GraduationCap, LogIn, LogOut } from "lucide-react";
 import { useProgress } from "@/features/progress/hooks/useProgress";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Navbar() {
   const { progress } = useProgress();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const username = progress.username;
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/dashboard");
+  };
 
   return (
     <nav className="sticky top-0 z-50 border-b border-foreground/20 bg-background/95 backdrop-blur-sm">
@@ -16,7 +25,33 @@ export function Navbar() {
         </Link>
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          {username && (
+          {user ? (
+            <>
+              <span className="text-xs text-muted-foreground hidden sm:inline truncate max-w-[120px]">
+                {user.email}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-xs gap-1 h-8 px-2"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">יציאה</span>
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/login")}
+              className="text-xs gap-1 h-8 px-2"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              <span>התחברות</span>
+            </Button>
+          )}
+          {username && !user && (
             <div className="flex items-center justify-center h-8 w-8 rounded-sm border border-foreground/20 bg-foreground text-background text-sm font-bold font-mono">
               {username.charAt(0).toUpperCase()}
             </div>
