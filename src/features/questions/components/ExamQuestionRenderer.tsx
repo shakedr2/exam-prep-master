@@ -118,9 +118,6 @@ export function ExamQuestionRenderer({ question, currentAnswer, onAnswer }: Prop
         }`}>
           {question.type === "quiz" ? "🔘 רב-ברירה" : question.type === "tracing" ? "🔍 מעקב קוד" : question.type === "fill-blank" ? "✏️ השלם קוד" : "✍️ כתיבת קוד"}
         </span>
-        <span className="text-xs text-muted-foreground">
-          {question.topic && `${question.topic}`}
-        </span>
       </div>
 
       {question.type === "quiz" && <QuizView q={question} onAnswer={handleAnswer} />}
