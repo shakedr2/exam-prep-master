@@ -7,14 +7,94 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
-      [_ in never]: never
+      topics: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          icon: string | null
+        }
+        Insert: {
+          id: string
+          name: string
+          description?: string | null
+          icon?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          icon?: string | null
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          id: string
+          topic_id: string
+          text: string
+          option_a: string | null
+          option_b: string | null
+          option_c: string | null
+          option_d: string | null
+          correct_answer: string | null
+          explanation: string | null
+          difficulty: string | null
+          question_type: string
+          code_snippet: string | null
+          expected_output: string | null
+          pattern_family: string | null
+          common_mistake: string | null
+        }
+        Insert: {
+          id?: string
+          topic_id: string
+          text: string
+          option_a?: string | null
+          option_b?: string | null
+          option_c?: string | null
+          option_d?: string | null
+          correct_answer?: string | null
+          explanation?: string | null
+          difficulty?: string | null
+          question_type: string
+          code_snippet?: string | null
+          expected_output?: string | null
+          pattern_family?: string | null
+          common_mistake?: string | null
+        }
+        Update: {
+          id?: string
+          topic_id?: string
+          text?: string
+          option_a?: string | null
+          option_b?: string | null
+          option_c?: string | null
+          option_d?: string | null
+          correct_answer?: string | null
+          explanation?: string | null
+          difficulty?: string | null
+          question_type?: string
+          code_snippet?: string | null
+          expected_output?: string | null
+          pattern_family?: string | null
+          common_mistake?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Trophy, Flag, ChevronLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,10 +16,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { getBalancedExamQuestions, topics, type Question } from "@/data/questions";
+import type { Question } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
 import { ExamReviewScreen } from "@/components/exam/ExamReviewScreen";
+import { useSupabaseExamQuestions } from "@/hooks/useSupabaseQuestions";
+import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 
 const EXAM_DURATION = 3 * 60 * 60;
 const EXAM_QUESTIONS = 6;
@@ -41,7 +44,8 @@ const ExamMode = () => {
   const [showReview, setShowReview] = useState(false);
   const [flagged, setFlagged] = useState<Set<number>>(new Set());
 
-  const examQuestions = useMemo(() => getBalancedExamQuestions(EXAM_QUESTIONS), [started]);
+  const { questions: examQuestions, loading: questionsLoading } = useSupabaseExamQuestions(EXAM_QUESTIONS, started);
+  const { topics } = useSupabaseTopics();
 
   useEffect(() => {
     if (!started || finished) return;
@@ -59,7 +63,8 @@ const ExamMode = () => {
 
   const score = Object.values(answers).filter(a => a.correct).length;
   const answeredCount = Object.keys(answers).length;
-  const unansweredCount = EXAM_QUESTIONS - answeredCount;
+  const totalQuestions = examQuestions.length || EXAM_QUESTIONS;
+  const unansweredCount = totalQuestions - answeredCount;
 
   const handleAnswer = (index: number, answer: string, correct: boolean) => {
     setAnswers(a => ({ ...a, [index]: { answer, correct } }));
@@ -76,7 +81,7 @@ const ExamMode = () => {
 
   const handleFinish = () => {
     setFinished(true);
-    addExamResult(score, EXAM_QUESTIONS);
+    addExamResult(score, totalQuestions);
     examQuestions.forEach((q, i) => {
       if (answers[i]) answerQuestion(q.id, answers[i].correct);
     });
@@ -110,6 +115,20 @@ const ExamMode = () => {
     );
   }
 
+  // Loading questions
+  if (questionsLoading || examQuestions.length === 0) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 pb-24">
+        <div className="w-full max-w-sm space-y-4 text-center">
+          <Skeleton className="h-8 w-48 mx-auto" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-64 w-full" />
+          <p className="text-sm text-muted-foreground">טוען שאלות...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Review screen
   if (finished && showReview) {
     return (
@@ -123,7 +142,7 @@ const ExamMode = () => {
 
   // Results screen
   if (finished) {
-    const pct = Math.round((score / EXAM_QUESTIONS) * 100);
+    const pct = Math.round((score / totalQuestions) * 100);
     const topicBreakdown = topics.map(t => {
       const indices = examQuestions.map((q, i) => q.topic === t.id ? i : -1).filter(i => i >= 0);
       const correct = indices.filter(i => answers[i]?.correct).length;
@@ -143,7 +162,7 @@ const ExamMode = () => {
           <h1 className="text-2xl font-bold text-foreground">סיום מבחן!</h1>
           <div className="rounded-lg border border-foreground/10 bg-card p-6 space-y-4">
             <p className="text-5xl font-extrabold text-foreground">{pct}%</p>
-            <p className="text-muted-foreground">{score} מתוך {EXAM_QUESTIONS} נכונות</p>
+            <p className="text-muted-foreground">{score} מתוך {totalQuestions} נכונות</p>
             <Progress value={pct} className="h-2.5" />
 
             {/* Topic breakdown */}
@@ -154,7 +173,7 @@ const ExamMode = () => {
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${tb.correct === tb.total ? "bg-success/10 text-success" : tb.correct > 0 ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive"}`}>
                     {tb.correct}/{tb.total}
                   </span>
-                  <span className="text-muted-foreground">{tb.topic.icon} {tb.topic.name}</span>
+                  <span className="text-muted-foreground">{tb.topic.icon ?? "📖"} {tb.topic.name}</span>
                 </div>
               ))}
             </div>
@@ -196,9 +215,9 @@ const ExamMode = () => {
             </span>
             {isLowTime && <span className="text-xs text-destructive font-medium">זמן אוזל!</span>}
           </div>
-          <span className="text-sm text-muted-foreground">שאלה {currentIndex + 1}/{EXAM_QUESTIONS}</span>
+          <span className="text-sm text-muted-foreground">שאלה {currentIndex + 1}/{totalQuestions}</span>
         </div>
-        <Progress value={((currentIndex + 1) / EXAM_QUESTIONS) * 100} className="h-2 mb-2" />
+        <Progress value={((currentIndex + 1) / totalQuestions) * 100} className="h-2 mb-2" />
 
         {/* Question navigator pills */}
         <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
@@ -257,7 +276,7 @@ const ExamMode = () => {
               <ArrowRight className="h-4 w-4" /> הקודמת
             </Button>
           )}
-          {currentIndex < EXAM_QUESTIONS - 1 ? (
+          {currentIndex < totalQuestions - 1 ? (
             <Button onClick={() => setCurrentIndex(i => i + 1)} className="flex-1 gap-2">
               הבאה <ChevronLeft className="h-4 w-4" />
             </Button>

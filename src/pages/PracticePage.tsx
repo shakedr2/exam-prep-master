@@ -7,35 +7,40 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { useProgress } from "@/features/progress/hooks/useProgress";
 import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
-import { getQuestionsByTopic, topics } from "@/data/questions";
-import type { TopicId } from "@/data/questions";
+import { useSupabaseQuestionsByTopic } from "@/hooks/useSupabaseQuestions";
+import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 
 const PracticePage = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
   const { answerQuestion } = useProgress();
 
-  const allQuestions = topicId
-    ? getQuestionsByTopic(topicId as TopicId)
-    : [];
+  const { questions: allQuestions, loading: questionsLoading } = useSupabaseQuestionsByTopic(topicId);
+  const { topics } = useSupabaseTopics();
   const topic = topics.find((t) => t.id === topicId);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, { answer: string; correct: boolean }>>({});
   const [finished, setFinished] = useState(false);
 
+  if (questionsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="space-y-4 w-full max-w-2xl px-4">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    );
+  }
+
   if (!topicId || allQuestions.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
-          {topicId ? (
-            <>
-              <p className="text-xl font-semibold text-foreground">לא נמצאו שאלות לנושא זה.</p>
-              <Button onClick={() => navigate("/dashboard")} className="rounded-sm">חזרה לדשבורד</Button>
-            </>
-          ) : (
-            <Skeleton className="h-64 w-96" />
-          )}
+          <p className="text-xl font-semibold text-foreground">לא נמצאו שאלות לנושא זה.</p>
+          <Button onClick={() => navigate("/dashboard")} className="rounded-sm">חזרה לדשבורד</Button>
         </div>
       </div>
     );
@@ -113,7 +118,7 @@ const PracticePage = () => {
 
         {topic && (
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-primary">{topic.icon} {topic.name}</p>
+            <p className="text-sm font-semibold text-primary">{topic.icon ?? "📖"} {topic.name}</p>
             <p className="text-xs text-muted-foreground">{answeredCount}/{allQuestions.length} נענו</p>
           </div>
         )}
