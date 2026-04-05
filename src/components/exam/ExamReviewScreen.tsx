@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 import { ArrowRight, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
-import { topics, type Question, type QuizQuestion, type TracingQuestion, type CodingQuestion, type FillBlankQuestion } from "@/data/questions";
+import type { Question, QuizQuestion, TracingQuestion, CodingQuestion, FillBlankQuestion } from "@/data/questions";
+import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 
 interface Props {
   examQuestions: Question[];
@@ -11,10 +12,9 @@ interface Props {
   onBack: () => void;
 }
 
-function ReviewItem({ q, answer, index }: { q: Question; answer?: { answer: string; correct: boolean }; index: number }) {
+function ReviewItem({ q, answer, index, topicName, topicIcon }: { q: Question; answer?: { answer: string; correct: boolean }; index: number; topicName?: string; topicIcon?: string }) {
   const [expanded, setExpanded] = useState(false);
   const isCorrect = answer?.correct ?? false;
-  const topic = topics.find(t => t.id === q.topic);
 
   return (
     <div className={`rounded-xl border p-4 space-y-2 ${isCorrect ? "border-success/30 bg-success/5" : "border-destructive/30 bg-destructive/5"}`}>
@@ -22,7 +22,7 @@ function ReviewItem({ q, answer, index }: { q: Question; answer?: { answer: stri
         <div className="flex items-center gap-2">
           {isCorrect ? <Check className="h-4 w-4 text-success" /> : <X className="h-4 w-4 text-destructive" />}
           <span className="text-sm font-semibold">שאלה {index + 1}</span>
-          <span className="text-xs text-muted-foreground">{topic?.icon} {topic?.name}</span>
+          <span className="text-xs text-muted-foreground">{topicIcon ?? "📖"} {topicName ?? q.topic}</span>
         </div>
         <button onClick={() => setExpanded(!expanded)} className="text-xs text-primary hover:underline">
           {expanded ? "הסתר" : "הצג פרטים"}
@@ -82,6 +82,8 @@ function ReviewItem({ q, answer, index }: { q: Question; answer?: { answer: stri
 }
 
 export function ExamReviewScreen({ examQuestions, answers, onBack }: Props) {
+  const { topics } = useSupabaseTopics();
+
   return (
     <div className="min-h-screen pb-24 pt-4">
       <div className="mx-auto max-w-lg px-4">
@@ -93,9 +95,12 @@ export function ExamReviewScreen({ examQuestions, answers, onBack }: Props) {
         </div>
 
         <div className="space-y-3">
-          {examQuestions.map((q, i) => (
-            <ReviewItem key={q.id} q={q} answer={answers[i]} index={i} />
-          ))}
+          {examQuestions.map((q, i) => {
+            const topic = topics.find(t => t.id === q.topic);
+            return (
+              <ReviewItem key={q.id} q={q} answer={answers[i]} index={i} topicName={topic?.name} topicIcon={topic?.icon ?? undefined} />
+            );
+          })}
         </div>
       </div>
     </div>
