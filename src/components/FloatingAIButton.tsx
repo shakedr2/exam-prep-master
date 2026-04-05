@@ -17,28 +17,55 @@ interface FloatingAIButtonProps {
   userAnswer?: string;
 }
 
-function getQuestionText(q: Question): string {
-  if (q.type === "quiz" || q.type === "tracing") return q.question;
-  return q.title + "\n" + q.description;
-}
-
-function getCodeSnippet(q: Question): string | undefined {
-  if (q.type === "tracing" || q.type === "fill-blank") return q.code;
-  if (q.type === "quiz") return q.code;
-  return undefined;
-}
-
-function getCorrectAnswer(q: Question): string {
-  switch (q.type) {
-    case "quiz":
-      return q.options[q.correctIndex];
-    case "tracing":
-      return q.correctAnswer;
-    case "coding":
-      return q.solution;
-    case "fill-blank":
-      return q.blanks.map((b) => b.answer).join(", ");
+function buildExplainBody(q: Question, userAnswer?: string) {
+  if (q.type === "quiz") {
+    const userAnswerIndex =
+      userAnswer !== undefined ? q.options.indexOf(userAnswer) : undefined;
+    return {
+      type: "explain" as const,
+      questionText: q.question,
+      choices: q.options,
+      correctIndex: q.correctIndex,
+      userAnswerIndex: userAnswerIndex !== undefined && userAnswerIndex >= 0 ? userAnswerIndex : undefined,
+      topic: q.topic,
+    };
   }
+
+  if (q.type === "tracing") {
+    const questionText = `${q.question}\n\nקוד:\n${q.code}`;
+    return {
+      type: "explain" as const,
+      questionText,
+      choices: [q.correctAnswer],
+      correctIndex: 0,
+      userAnswerIndex: userAnswer === q.correctAnswer ? 0 : undefined,
+      topic: q.topic,
+    };
+  }
+
+  if (q.type === "coding") {
+    const questionText = `${q.title}\n\n${q.description}`;
+    return {
+      type: "explain" as const,
+      questionText,
+      choices: [q.solution],
+      correctIndex: 0,
+      userAnswerIndex: undefined,
+      topic: q.topic,
+    };
+  }
+
+  // fill-blank
+  const correctAnswer = q.blanks.map((blank) => blank.answer).join(", ");
+  const questionText = `${q.title}\n\n${q.description}\n\nקוד:\n${q.code}`;
+  return {
+    type: "explain" as const,
+    questionText,
+    choices: [correctAnswer],
+    correctIndex: 0,
+    userAnswerIndex: undefined,
+    topic: q.topic,
+  };
 }
 
 export function FloatingAIButton({ question, userAnswer }: FloatingAIButtonProps) {
@@ -66,13 +93,9 @@ export function FloatingAIButton({ question, userAnswer }: FloatingAIButtonProps
     setError(null);
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke("explain", {
-        body: {
-          question_text: getQuestionText(question),
-          code_snippet: getCodeSnippet(question),
-          user_answer: userAnswer ?? "לא נענתה",
-          correct_answer: getCorrectAnswer(question),
-        },
+      const body = buildExplainBody(question, userAnswer);
+      const { data, error: fnError } = await supabase.functions.invoke("ai-explain", {
+        body,
       });
 
       if (fnError) throw fnError;
