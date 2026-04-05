@@ -4,6 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Trophy, Flag, ChevronLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { getBalancedExamQuestions, topics, type Question } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
@@ -47,6 +58,8 @@ const ExamMode = () => {
   }, [started, finished]);
 
   const score = Object.values(answers).filter(a => a.correct).length;
+  const answeredCount = Object.keys(answers).length;
+  const unansweredCount = EXAM_QUESTIONS - answeredCount;
 
   const handleAnswer = (index: number, answer: string, correct: boolean) => {
     setAnswers(a => ({ ...a, [index]: { answer, correct } }));
@@ -78,18 +91,20 @@ const ExamMode = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-sm text-center space-y-6"
         >
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl gradient-primary text-4xl shadow-lg">📝</div>
-          <h1 className="text-2xl font-bold">מבחן סימולציה</h1>
-          <div className="space-y-2 text-sm text-muted-foreground">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 text-4xl">📝</div>
+          <h1 className="text-2xl font-bold text-foreground">מבחן סימולציה</h1>
+          <div className="rounded-lg border border-foreground/10 bg-card p-4 space-y-2 text-sm text-muted-foreground text-right">
             <p>⏱️ {EXAM_QUESTIONS} שאלות, 3 שעות</p>
             <p>📊 שאלה אחת לפחות מכל נושא</p>
             <p>🎯 ציון מפורט בסוף המבחן</p>
             <p>🚩 אפשר לסמן שאלות לחזרה</p>
           </div>
-          <Button onClick={() => setStarted(true)} className="w-full gradient-primary text-primary-foreground text-lg py-6 rounded-xl">
-            התחל מבחן 🚀
+          <Button onClick={() => setStarted(true)} className="w-full text-lg py-6 rounded-lg">
+            התחל מבחן
           </Button>
-          <Button variant="ghost" onClick={() => navigate("/")}>חזרה לדף הבית</Button>
+          <Button variant="outline" className="w-full" onClick={() => navigate("/dashboard")}>
+            חזרה לדף הבית
+          </Button>
         </motion.div>
       </div>
     );
@@ -122,21 +137,21 @@ const ExamMode = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-sm text-center space-y-6"
         >
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl gradient-success text-4xl shadow-lg">
-            <Trophy className="h-10 w-10 text-success-foreground" />
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-success/10">
+            <Trophy className="h-10 w-10 text-success" />
           </div>
-          <h1 className="text-2xl font-bold">סיום מבחן!</h1>
-          <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-            <p className="text-5xl font-extrabold text-gradient-primary">{pct}%</p>
+          <h1 className="text-2xl font-bold text-foreground">סיום מבחן!</h1>
+          <div className="rounded-lg border border-foreground/10 bg-card p-6 space-y-4">
+            <p className="text-5xl font-extrabold text-foreground">{pct}%</p>
             <p className="text-muted-foreground">{score} מתוך {EXAM_QUESTIONS} נכונות</p>
-            <Progress value={pct} className="h-3" />
+            <Progress value={pct} className="h-2.5" />
 
             {/* Topic breakdown */}
             <div className="space-y-2 text-right">
               <p className="text-sm font-semibold text-foreground">פירוט לפי נושא:</p>
               {topicBreakdown.map(tb => (
                 <div key={tb.topic.id} className="flex items-center justify-between text-sm">
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${tb.correct === tb.total ? "bg-success/10 text-success" : tb.correct > 0 ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive"}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${tb.correct === tb.total ? "bg-success/10 text-success" : tb.correct > 0 ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive"}`}>
                     {tb.correct}/{tb.total}
                   </span>
                   <span className="text-muted-foreground">{tb.topic.icon} {tb.topic.name}</span>
@@ -146,13 +161,13 @@ const ExamMode = () => {
           </div>
           <div className="flex flex-col gap-3">
             <Button onClick={() => setShowReview(true)} variant="outline" className="w-full gap-2">
-              📋 סקירת שאלות ותשובות
+              סקירת שאלות ותשובות
             </Button>
             <div className="flex gap-3">
-              <Button onClick={() => navigate("/")} variant="outline" className="flex-1">דף הבית</Button>
+              <Button onClick={() => navigate("/dashboard")} variant="outline" className="flex-1">דף הבית</Button>
               <Button
                 onClick={() => { setStarted(false); setFinished(false); setCurrentIndex(0); setAnswers({}); setTimeLeft(EXAM_DURATION); setFlagged(new Set()); setShowReview(false); }}
-                className="flex-1 gradient-primary text-primary-foreground"
+                className="flex-1"
               >
                 מבחן חדש
               </Button>
@@ -167,15 +182,19 @@ const ExamMode = () => {
   const q = examQuestions[currentIndex];
   const isFlagged = flagged.has(currentIndex);
   const flaggedList = Array.from(flagged).sort((a, b) => a - b);
+  const isLowTime = timeLeft <= 15 * 60;
 
   return (
     <div className="min-h-screen pb-24 pt-4">
       <div className="mx-auto max-w-lg px-4">
         {/* Timer & progress */}
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4 text-warning" />
-            <span className="font-mono font-bold text-warning">{formatTime(timeLeft)}</span>
+          <div className={`flex items-center gap-2 text-sm ${isLowTime ? "animate-pulse" : ""}`}>
+            <Clock className={`h-4 w-4 ${isLowTime ? "text-destructive" : "text-warning"}`} />
+            <span className={`font-mono font-bold ${isLowTime ? "text-destructive" : "text-warning"}`}>
+              {formatTime(timeLeft)}
+            </span>
+            {isLowTime && <span className="text-xs text-destructive font-medium">זמן אוזל!</span>}
           </div>
           <span className="text-sm text-muted-foreground">שאלה {currentIndex + 1}/{EXAM_QUESTIONS}</span>
         </div>
@@ -187,10 +206,10 @@ const ExamMode = () => {
             <button
               key={i}
               onClick={() => setCurrentIndex(i)}
-              className={`flex-shrink-0 h-8 w-8 rounded-lg text-xs font-bold transition-all ${
+              className={`flex-shrink-0 h-9 w-9 rounded-lg text-xs font-bold transition-all ${
                 i === currentIndex ? "bg-primary text-primary-foreground ring-2 ring-primary/50" :
                 answers[i] ? "bg-success/20 text-success border border-success/30" :
-                "bg-muted text-muted-foreground border border-border"
+                "bg-muted text-muted-foreground border border-foreground/10"
               } ${flagged.has(i) ? "ring-2 ring-warning/60" : ""}`}
             >
               {flagged.has(i) ? "🚩" : i + 1}
@@ -203,7 +222,7 @@ const ExamMode = () => {
           <button
             onClick={() => toggleFlag(currentIndex)}
             className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-              isFlagged ? "bg-warning/20 text-warning border border-warning/30" : "bg-muted text-muted-foreground border border-border hover:border-warning/50"
+              isFlagged ? "bg-warning/20 text-warning border border-warning/30" : "bg-muted text-muted-foreground border border-foreground/10 hover:border-warning/50"
             }`}
           >
             <Flag className="h-3.5 w-3.5" />
@@ -221,7 +240,7 @@ const ExamMode = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="rounded-2xl border border-border bg-card p-5 shadow-sm"
+            className="rounded-lg border border-foreground/10 bg-card p-5"
           >
             <ExamQuestionRenderer
               question={q}
@@ -239,17 +258,34 @@ const ExamMode = () => {
             </Button>
           )}
           {currentIndex < EXAM_QUESTIONS - 1 ? (
-            <Button onClick={() => setCurrentIndex(i => i + 1)} className="flex-1 gradient-primary text-primary-foreground gap-2">
+            <Button onClick={() => setCurrentIndex(i => i + 1)} className="flex-1 gap-2">
               הבאה <ChevronLeft className="h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleFinish} className="flex-1 gradient-success text-success-foreground gap-2">
-              סיום מבחן ✓
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button className="flex-1 gap-2 bg-success text-success-foreground hover:bg-success/90">
+                  סיום מבחן
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent dir="rtl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>סיום המבחן?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {unansweredCount > 0
+                      ? `יש לך עוד ${unansweredCount} שאלות שלא נענו. בטוח שברצונך לסיים?`
+                      : "ענית על כל השאלות. ברצונך לסיים את המבחן?"}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="flex-row-reverse gap-2">
+                  <AlertDialogAction onClick={handleFinish}>כן, סיים מבחן</AlertDialogAction>
+                  <AlertDialogCancel>חזור למבחן</AlertDialogCancel>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </div>
-
     </div>
   );
 };
