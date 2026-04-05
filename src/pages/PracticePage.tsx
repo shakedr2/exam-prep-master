@@ -136,10 +136,10 @@ const PracticePage = () => {
           </motion.div>
         </AnimatePresence>
 
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex gap-3">
           <Button
             variant="outline"
-            size="sm"
+            className="flex-1"
             onClick={handlePrev}
             disabled={currentIndex === 0}
           >
@@ -147,7 +147,7 @@ const PracticePage = () => {
             הקודם
           </Button>
 
-          <Button size="sm" onClick={handleNext} disabled={!answers[currentIndex]}>
+          <Button className="flex-1" onClick={handleNext} disabled={!answers[currentIndex]}>
             {currentIndex + 1 === allQuestions.length ? "סיום" : "הבא"}
             <ChevronLeft className="h-4 w-4 ms-1" />
           </Button>
