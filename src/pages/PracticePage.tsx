@@ -1,31 +1,27 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { useProgress } from "@/features/progress/hooks/useProgress";
+import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
 import { getQuestionsByTopic, topics } from "@/data/questions";
-import type { TopicId, QuizQuestion } from "@/data/questions";
+import type { TopicId } from "@/data/questions";
 
 const PracticePage = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
   const { answerQuestion } = useProgress();
 
-  const allQuestions: QuizQuestion[] = topicId
-    ? (getQuestionsByTopic(topicId as TopicId).filter(
-        (q): q is QuizQuestion => q.type === "quiz"
-      ))
+  const allQuestions = topicId
+    ? getQuestionsByTopic(topicId as TopicId)
     : [];
   const topic = topics.find((t) => t.id === topicId);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [answered, setAnswered] = useState(false);
-  const [sessionAnswers, setSessionAnswers] = useState<boolean[]>([]);
+  const [answers, setAnswers] = useState<Record<number, { answer: string; correct: boolean }>>({});
   const [finished, setFinished] = useState(false);
 
   if (!topicId || allQuestions.length === 0) {
@@ -47,14 +43,11 @@ const PracticePage = () => {
 
   const current = allQuestions[currentIndex];
   const progressPct = Math.round(((currentIndex + 1) / allQuestions.length) * 100);
+  const answeredCount = Object.keys(answers).length;
 
-  const handleSelect = (idx: number) => {
-    if (answered) return;
-    setSelectedIndex(idx);
-    setAnswered(true);
-    const isCorrect = idx === current.correctIndex;
-    answerQuestion(current.id, isCorrect);
-    setSessionAnswers((prev) => [...prev, isCorrect]);
+  const handleAnswer = (index: number, answer: string, correct: boolean) => {
+    setAnswers((prev) => ({ ...prev, [index]: { answer, correct } }));
+    answerQuestion(allQuestions[index].id, correct);
   };
 
   const handleNext = () => {
@@ -63,19 +56,15 @@ const PracticePage = () => {
       return;
     }
     setCurrentIndex((i) => i + 1);
-    setSelectedIndex(null);
-    setAnswered(false);
   };
 
   const handlePrev = () => {
     if (currentIndex === 0) return;
     setCurrentIndex((i) => i - 1);
-    setSelectedIndex(null);
-    setAnswered(false);
   };
 
   if (finished) {
-    const correct = sessionAnswers.filter(Boolean).length;
+    const correct = Object.values(answers).filter((a) => a.correct).length;
     const pct = Math.round((correct / allQuestions.length) * 100);
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -95,9 +84,7 @@ const PracticePage = () => {
               className="w-full rounded-sm"
               onClick={() => {
                 setCurrentIndex(0);
-                setSelectedIndex(null);
-                setAnswered(false);
-                setSessionAnswers([]);
+                setAnswers({});
                 setFinished(false);
               }}
             >
@@ -125,7 +112,10 @@ const PracticePage = () => {
         </div>
 
         {topic && (
-          <p className="text-sm font-semibold text-primary">{topic.icon} {topic.name}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-primary">{topic.icon} {topic.name}</p>
+            <p className="text-xs text-muted-foreground">{answeredCount}/{allQuestions.length} נענו</p>
+          </div>
         )}
 
         <Progress value={progressPct} className="h-2" />
@@ -138,58 +128,11 @@ const PracticePage = () => {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            <Card className="bg-card border-border">
-              <CardContent className="p-6">
-                <p className="text-lg font-semibold text-foreground leading-relaxed mb-6">
-                  {current.question}
-                </p>
-
-                <div className="space-y-3">
-                  {current.options.map((option, idx) => {
-                    let extra = "";
-                    if (answered) {
-                      if (idx === current.correctIndex) {
-                        extra = "bg-green-900/50 border-green-500 text-green-100";
-                      } else if (idx === selectedIndex) {
-                        extra = "bg-red-900/50 border-red-500 text-red-100";
-                      }
-                    }
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => handleSelect(idx)}
-                        disabled={answered}
-                        className={`w-full text-start rounded-sm border px-4 py-3 text-sm transition-all
-                          ${answered ? "cursor-default" : "hover:bg-accent cursor-pointer"}
-                          ${extra || "border-border bg-background text-foreground"}
-                        `}
-                      >
-                        <span className="font-semibold me-2">
-                          {String.fromCharCode(65 + idx)}.
-                        </span>
-                        {option}
-                        {answered && idx === current.correctIndex && (
-                          <CheckCircle2 className="inline ms-2 h-4 w-4 text-green-400" />
-                        )}
-                        {answered && idx === selectedIndex && idx !== current.correctIndex && (
-                          <XCircle className="inline ms-2 h-4 w-4 text-red-400" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {answered && current.explanation && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-4 rounded-lg bg-muted p-4 text-sm text-muted-foreground"
-                  >
-                    {current.explanation}
-                  </motion.div>
-                )}
-              </CardContent>
-            </Card>
+            <ExamQuestionRenderer
+              question={current}
+              currentAnswer={answers[currentIndex]}
+              onAnswer={(answer, correct) => handleAnswer(currentIndex, answer, correct)}
+            />
           </motion.div>
         </AnimatePresence>
 
@@ -204,7 +147,7 @@ const PracticePage = () => {
             הקודם
           </Button>
 
-          <Button size="sm" onClick={handleNext} disabled={!answered}>
+          <Button size="sm" onClick={handleNext} disabled={!answers[currentIndex]}>
             {currentIndex + 1 === allQuestions.length ? "סיום" : "הבא"}
             <ChevronLeft className="h-4 w-4 ms-1" />
           </Button>
