@@ -1,9 +1,10 @@
-import { Trophy, GraduationCap, LayoutDashboard } from "lucide-react";
+import { Trophy, GraduationCap, LayoutDashboard, BookOpen } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "ראשי" },
+  { to: "/exam-prep", icon: BookOpen, label: "מפת לימוד" },
   { to: "/exam", icon: GraduationCap, label: "מבחן" },
   { to: "/progress", icon: Trophy, label: "התקדמות" },
 ];

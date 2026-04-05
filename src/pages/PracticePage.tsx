@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb } from "lucide-react";
 import { FloatingAIButton } from "@/components/FloatingAIButton";
+import { TopicTutorial } from "@/components/TopicTutorial";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
@@ -10,9 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useProgress } from "@/features/progress/hooks/useProgress";
 import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
-import { useSupabaseQuestionsByTopic } from "@/hooks/useSupabaseQuestions";
+import { useSupabaseQuestionsByTopic, useSupabaseQuestionCount } from "@/hooks/useSupabaseQuestions";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 import { useSaveAnswer } from "@/hooks/useSaveAnswer";
+import { getTutorialByTopicId } from "@/data/topicTutorials";
 import type { Difficulty, Question } from "@/data/questions";
 
 const difficultyLabels: Record<Difficulty, string> = {
@@ -34,9 +36,41 @@ const typeLabels: Record<string, string> = {
   "fill-blank": "השלמה",
 };
 
+const encouragingMessages = [
+  "כל הכבוד! 🎯",
+  "מצוין! ממשיכים! 💪",
+  "נכון מאוד! אתה על הדרך הנכונה! ⭐",
+  "יופי! הבנת את זה מעולה! 🌟",
+  "תשובה נכונה! אלוף/ה! 🏆",
+  "בול! תמשיך/י ככה! 🔥",
+  "מדהים! ההבנה שלך מתחזקת! 💡",
+  "נהדר! עוד צעד לקראת המבחן! 📚",
+  "אחלה! את/ה שולט/ת בחומר! ✨",
+  "יפה מאוד! ההשקעה משתלמת! 🎉",
+];
+
 function getQuestionTitle(q: Question): string {
   if (q.type === "coding" || q.type === "fill-blank") return q.title;
   return q.question;
+}
+
+function getHintForQuestion(q: Question): string | null {
+  if (q.type === "quiz") {
+    if (q.code) return "קרא/י את הקוד שורה אחר שורה ועקוב/י אחרי הערכים המשתנים.";
+    return "נסה/י לפסול תשובות שבוודאות לא נכונות כדי לצמצם את האפשרויות.";
+  }
+  if (q.type === "tracing") {
+    return "בנה/י טבלת מעקב: רשום/י את ערכי המשתנים בכל שלב של הלולאה.";
+  }
+  if (q.type === "coding") {
+    return "התחל/י מלכתוב את חתימת הפונקציה, אחר כך חשוב/י על המקרה הפשוט ביותר.";
+  }
+  if (q.type === "fill-blank") {
+    const blanks = q.blanks;
+    if (blanks.length > 0 && blanks[0].hint) return blanks[0].hint;
+    return "קרא/י את הקוד סביב החלקים החסרים כדי להבין מה צריך להשלים.";
+  }
+  return null;
 }
 
 const PracticePage = () => {
@@ -48,12 +82,18 @@ const PracticePage = () => {
   const { questions: allQuestions, loading: questionsLoading } = useSupabaseQuestionsByTopic(topicId);
   const { topics } = useSupabaseTopics();
   const topic = topics.find((t) => t.id === topicId);
+  const questionCount = useSupabaseQuestionCount(topicId);
 
+  const tutorial = topicId ? getTutorialByTopicId(topicId) : undefined;
+  const [showTutorial, setShowTutorial] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, { answer: string; correct: boolean }>>({});
   const [finished, setFinished] = useState(false);
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | null>(null);
   const [reviewMistakesMode, setReviewMistakesMode] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [lastFeedbackIdx, setLastFeedbackIdx] = useState(-1);
 
   const filteredQuestions = useMemo(() => {
     let qs = allQuestions;
@@ -63,9 +103,37 @@ const PracticePage = () => {
     return qs;
   }, [allQuestions, difficultyFilter]);
 
-  // In review-mistakes mode, only show incorrect questions from last run
   const [mistakeQuestions, setMistakeQuestions] = useState<Question[]>([]);
   const activeQuestions = reviewMistakesMode ? mistakeQuestions : filteredQuestions;
+
+  const getRandomEncouragement = useCallback(() => {
+    let idx: number;
+    do {
+      idx = Math.floor(Math.random() * encouragingMessages.length);
+    } while (idx === lastFeedbackIdx && encouragingMessages.length > 1);
+    setLastFeedbackIdx(idx);
+    return encouragingMessages[idx];
+  }, [lastFeedbackIdx]);
+
+  // Show tutorial first if available
+  if (showTutorial && tutorial && !questionsLoading && allQuestions.length > 0) {
+    return (
+      <div className="min-h-screen bg-background pb-24 pt-4">
+        <div className="mx-auto max-w-2xl px-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="mb-4">
+            ← חזרה לדשבורד
+          </Button>
+          <TopicTutorial
+            tutorial={tutorial}
+            topicName={topic?.name ?? ""}
+            topicIcon={topic?.icon ?? "📖"}
+            questionCount={questionCount}
+            onStartPractice={() => setShowTutorial(false)}
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (questionsLoading) {
     return (
@@ -131,6 +199,13 @@ const PracticePage = () => {
     if (topicId) {
       saveAnswer(questionId, topicId, correct);
     }
+    setShowHint(false);
+    if (correct) {
+      setFeedbackMessage(getRandomEncouragement());
+      setTimeout(() => setFeedbackMessage(null), 3000);
+    } else {
+      setFeedbackMessage(null);
+    }
   };
 
   const handleNext = () => {
@@ -139,11 +214,15 @@ const PracticePage = () => {
       return;
     }
     setCurrentIndex((i) => i + 1);
+    setShowHint(false);
+    setFeedbackMessage(null);
   };
 
   const handlePrev = () => {
     if (currentIndex === 0) return;
     setCurrentIndex((i) => i - 1);
+    setShowHint(false);
+    setFeedbackMessage(null);
   };
 
   const handleRetry = () => {
@@ -151,6 +230,8 @@ const PracticePage = () => {
     setAnswers({});
     setFinished(false);
     setReviewMistakesMode(false);
+    setShowHint(false);
+    setFeedbackMessage(null);
   };
 
   const handleReviewMistakes = () => {
@@ -201,7 +282,6 @@ const PracticePage = () => {
             <Progress value={pct} className="h-3 max-w-xs mx-auto" />
           </div>
 
-          {/* Mistakes list */}
           {mistakes.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-destructive">
@@ -246,6 +326,8 @@ const PracticePage = () => {
       </div>
     );
   }
+
+  const hint = getHintForQuestion(current);
 
   return (
     <div className="min-h-screen bg-background pb-24 pt-4">
@@ -320,6 +402,20 @@ const PracticePage = () => {
 
         <Progress value={progressPct} className="h-2" />
 
+        {/* Encouraging feedback message */}
+        <AnimatePresence>
+          {feedbackMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              className="rounded-lg bg-success/10 border border-success/30 p-3 text-center text-sm font-semibold text-success"
+            >
+              {feedbackMessage}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <AnimatePresence mode="wait">
           <motion.div
             key={current.id}
@@ -335,6 +431,34 @@ const PracticePage = () => {
             />
           </motion.div>
         </AnimatePresence>
+
+        {/* Hint button */}
+        {hint && !answers[current.id] && (
+          <div className="space-y-2">
+            {!showHint ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 text-xs border-yellow-300/50 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-950/20"
+                onClick={() => setShowHint(true)}
+              >
+                <Lightbulb className="h-3.5 w-3.5" />
+                רמז
+              </Button>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="rounded-lg border border-yellow-300/50 bg-yellow-50 dark:bg-yellow-950/20 p-3"
+              >
+                <div className="flex items-start gap-2">
+                  <Lightbulb className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" />
+                  <p className="text-sm text-yellow-900 dark:text-yellow-200">{hint}</p>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        )}
 
         <div className="flex gap-3">
           <Button
