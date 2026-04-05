@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Trophy, Flag, ChevronLeft, ArrowRight } from "lucide-react";
+import { FloatingAIButton } from "@/components/FloatingAIButton";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -310,6 +311,11 @@ const ExamMode = () => {
           )}
         </div>
       </div>
+
+      <FloatingAIButton
+        question={q}
+        userAnswer={answers[currentIndex]?.answer}
+      />
     </div>
   );
 };

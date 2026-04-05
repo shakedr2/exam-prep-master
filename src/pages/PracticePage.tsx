@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon } from "lucide-react";
+import { FloatingAIButton } from "@/components/FloatingAIButton";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
@@ -352,6 +353,11 @@ const PracticePage = () => {
           </Button>
         </div>
       </div>
+
+      <FloatingAIButton
+        question={current}
+        userAnswer={answers[current.id]?.answer}
+      />
     </div>
   );
 };
