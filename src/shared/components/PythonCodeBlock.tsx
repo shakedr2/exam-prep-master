@@ -99,15 +99,15 @@ function tokenize(code: string): Token[] {
 }
 
 const TOKEN_COLORS: Record<Token["type"], string> = {
-  keyword: "text-purple-400 font-semibold",
-  builtin: "text-cyan-400",
-  string: "text-emerald-400",
-  number: "text-amber-400",
+  keyword: "text-purple-700 dark:text-purple-400 font-semibold",
+  builtin: "text-cyan-700 dark:text-cyan-400",
+  string: "text-emerald-700 dark:text-emerald-400",
+  number: "text-amber-700 dark:text-amber-400",
   comment: "text-slate-500 italic",
-  operator: "text-pink-400",
-  function: "text-yellow-300",
-  param: "text-orange-300",
-  text: "text-slate-200",
+  operator: "text-pink-700 dark:text-pink-400",
+  function: "text-yellow-700 dark:text-yellow-300",
+  param: "text-orange-700 dark:text-orange-300",
+  text: "text-slate-800 dark:text-slate-200",
 };
 
 interface PythonCodeBlockProps {
@@ -121,20 +121,20 @@ export function PythonCodeBlock({ code }: PythonCodeBlockProps) {
   }, [code]);
 
   return (
-    <div dir="ltr" className="relative overflow-hidden rounded-xl border border-white/10 bg-[#1a1b2e] shadow-lg">
+    <div dir="ltr" className="relative overflow-hidden rounded-xl border border-border bg-slate-100 dark:bg-[#1a1b2e] shadow-lg">
       {/* Header bar */}
-      <div className="flex items-center gap-1.5 border-b border-white/5 bg-white/5 px-4 py-2">
+      <div className="flex items-center gap-1.5 border-b border-border bg-black/5 dark:bg-white/5 px-4 py-2">
         <div className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
         <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
         <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
-        <span className="mr-3 text-[10px] text-slate-500 font-mono">Python</span>
+        <span className="mr-3 text-[10px] text-muted-foreground font-mono">Python</span>
       </div>
 
       <div className="overflow-x-auto p-4">
         <pre className="text-sm leading-6 font-mono">
           {lines.map((lineTokens, lineIdx) => (
             <div key={lineIdx} className="flex">
-              <span className="mr-4 inline-block w-6 select-none text-right text-xs leading-6 text-slate-600">
+              <span className="mr-4 inline-block w-6 select-none text-right text-xs leading-6 text-muted-foreground">
                 {lineIdx + 1}
               </span>
               <code>
