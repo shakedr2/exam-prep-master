@@ -22,6 +22,7 @@ import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
 import { ExamReviewScreen } from "@/components/exam/ExamReviewScreen";
 import { useSupabaseExamQuestions } from "@/hooks/useSupabaseQuestions";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
+import { useSaveAnswer } from "@/hooks/useSaveAnswer";
 
 const EXAM_DURATION = 3 * 60 * 60;
 const EXAM_QUESTIONS = 6;
@@ -36,6 +37,7 @@ function formatTime(seconds: number) {
 const ExamMode = () => {
   const navigate = useNavigate();
   const { answerQuestion, addExamResult } = useProgress();
+  const { saveAnswer } = useSaveAnswer();
   const [started, setStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(EXAM_DURATION);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -83,7 +85,10 @@ const ExamMode = () => {
     setFinished(true);
     addExamResult(score, totalQuestions);
     examQuestions.forEach((q, i) => {
-      if (answers[i]) answerQuestion(q.id, answers[i].correct);
+      if (answers[i]) {
+        answerQuestion(q.id, answers[i].correct);
+        saveAnswer(q.id, q.topic, answers[i].correct);
+      }
     });
   };
 

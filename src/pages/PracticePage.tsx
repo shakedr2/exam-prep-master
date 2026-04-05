@@ -9,11 +9,13 @@ import { useProgress } from "@/features/progress/hooks/useProgress";
 import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
 import { useSupabaseQuestionsByTopic } from "@/hooks/useSupabaseQuestions";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
+import { useSaveAnswer } from "@/hooks/useSaveAnswer";
 
 const PracticePage = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
   const { answerQuestion } = useProgress();
+  const { saveAnswer } = useSaveAnswer();
 
   const { questions: allQuestions, loading: questionsLoading } = useSupabaseQuestionsByTopic(topicId);
   const { topics } = useSupabaseTopics();
@@ -52,7 +54,11 @@ const PracticePage = () => {
 
   const handleAnswer = (index: number, answer: string, correct: boolean) => {
     setAnswers((prev) => ({ ...prev, [index]: { answer, correct } }));
-    answerQuestion(allQuestions[index].id, correct);
+    const q = allQuestions[index];
+    answerQuestion(q.id, correct);
+    if (topicId) {
+      saveAnswer(q.id, topicId, correct);
+    }
   };
 
   const handleNext = () => {

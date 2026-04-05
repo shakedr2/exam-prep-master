@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useTheme } from "@/hooks/useTheme";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/shared/components/AuthGuard";
 import { Navbar } from "@/shared/components/Navbar";
 import { BottomNav } from "@/shared/components/BottomNav";
@@ -14,6 +15,8 @@ import DashboardPage from "./pages/DashboardPage";
 import PracticePage from "./pages/PracticePage";
 import ExamMode from "./pages/ExamMode";
 import ProgressPage from "./pages/ProgressPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import NotFound from "./pages/NotFound";
 
 const ReviewMistakes = lazy(() => import("./pages/ReviewMistakes"));
@@ -70,6 +73,8 @@ const AppContent = () => {
         <Navbar />
         <Routes>
           <Route path="/" element={<OnboardingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<AuthGuard><DashboardPage /></AuthGuard>} />
           <Route path="/practice/:topicId" element={<AuthGuard><PracticePage /></AuthGuard>} />
           <Route path="/exam" element={<AuthGuard><ExamMode /></AuthGuard>} />
@@ -87,7 +92,9 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AppContent />
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>

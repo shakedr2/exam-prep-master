@@ -96,6 +96,56 @@ export type Database = {
         ]
       }
     }
+      user_progress: {
+        Row: {
+          id: string
+          user_id: string
+          question_id: string
+          topic_id: string
+          is_correct: boolean
+          answered_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          question_id: string
+          topic_id: string
+          is_correct: boolean
+          answered_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          question_id?: string
+          topic_id?: string
+          is_correct?: boolean
+          answered_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_progress_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_progress_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+    }
     Views: {
       [_ in never]: never
     }
