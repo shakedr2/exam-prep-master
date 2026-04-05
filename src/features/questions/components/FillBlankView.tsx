@@ -80,17 +80,17 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
       <p className="text-sm text-muted-foreground whitespace-pre-wrap">{q.description}</p>
 
       {/* Code with blanks */}
-      <div className="rounded-xl bg-[#1e1e2e] p-4 font-mono text-sm overflow-x-auto" dir="ltr">
-        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
+      <div className="rounded-xl bg-slate-100 dark:bg-[#1e1e2e] p-4 font-mono text-sm overflow-x-auto" dir="ltr">
+        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
           <span className="h-3 w-3 rounded-full bg-red-500" />
           <span className="h-3 w-3 rounded-full bg-yellow-500" />
           <span className="h-3 w-3 rounded-full bg-green-500" />
-          <span className="text-xs text-white/40 ml-2">השלם את החלקים החסרים</span>
+          <span className="text-xs text-muted-foreground ml-2">השלם את החלקים החסרים</span>
         </div>
         <pre className="whitespace-pre-wrap leading-relaxed">
           {codeParts.map((part, i) => {
             if (typeof part === "string") {
-              return <span key={i} className="text-white/90">{part}</span>;
+              return <span key={i} className="text-foreground">{part}</span>;
             }
             const bi = part.blankIndex;
             const blank = q.blanks[bi];
