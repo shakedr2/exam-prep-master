@@ -453,6 +453,150 @@ print(grade(85))`,
       }
     ],
   },
+  {
+    id: "c19",
+    type: "quiz",
+    topic: "conditions",
+    difficulty: "easy",
+    question: "מה ידפיס הקוד הבא?",
+    code: `x = 5
+y = 0
+if x > 0 and y > 0:
+    print("שניהם חיוביים")
+elif x > 0 or y > 0:
+    print("לפחות אחד חיובי")
+else:
+    print("אף אחד לא חיובי")`,
+    options: ["שניהם חיוביים", "לפחות אחד חיובי", "אף אחד לא חיובי", "שגיאה"],
+    correctIndex: 1,
+    explanation: "x > 0 הוא True אבל y > 0 הוא False. לכן and נכשל (צריך ששניהם True). אבל or מצליח כי מספיק שאחד True. לכן מודפס \"לפחות אחד חיובי\".",
+  },
+  {
+    id: "c20",
+    type: "quiz",
+    topic: "conditions",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `a = 3
+b = 7
+c = 5
+if a < b < c:
+    print("עולה")
+elif a < c < b:
+    print("a הכי קטן")
+else:
+    print("אחר")`,
+    options: ["עולה", "a הכי קטן", "אחר", "שגיאה"],
+    correctIndex: 1,
+    explanation: "Python תומכת בשרשור השוואות: a < b < c פירושו a < b וגם b < c. כאן 3 < 7 < 5 → 3 < 7 (True) אבל 7 < 5 (False) → False. בודקים את elif: a < c < b → 3 < 5 < 7 → True וגם True → True. לכן מודפס \"a הכי קטן\".",
+  },
+  {
+    id: "c21",
+    type: "quiz",
+    topic: "conditions",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `def check(val):
+    if isinstance(val, int):
+        if val > 0:
+            return "מספר שלם חיובי"
+        else:
+            return "מספר שלם לא חיובי"
+    elif isinstance(val, str):
+        if len(val) > 0:
+            return "מחרוזת לא ריקה"
+        else:
+            return "מחרוזת ריקה"
+    return "טיפוס אחר"
+
+print(check(3.14))`,
+    options: ["מספר שלם חיובי", "טיפוס אחר", "מחרוזת לא ריקה", "שגיאה"],
+    correctIndex: 1,
+    explanation: "3.14 הוא float ולא int, לכן isinstance(val, int) הוא False. הוא גם לא str, לכן isinstance(val, str) הוא False. מגיעים ל-return \"טיפוס אחר\". שימו לב: isinstance בודקת את הטיפוס המדויק — float אינו int.",
+  },
+  {
+    id: "c22",
+    type: "tracing",
+    topic: "conditions",
+    difficulty: "medium",
+    question: "מה תדפיס הפונקציה הבאה עבור הקריאה test(0, 5)?",
+    code: `def test(a, b):
+    result = "start"
+    if a:
+        result += "-a"
+    if not b:
+        result += "-not_b"
+    if a or b:
+        result += "-or"
+    if a and b:
+        result += "-and"
+    print(result)
+
+test(0, 5)`,
+    correctAnswer: "start-or",
+    explanation: "a=0 הוא falsy, לכן if a נכשל. b=5 הוא truthy, לכן if not b נכשל. a or b → 0 or 5 → 5 (truthy) לכן מוסיפים \"-or\". a and b → 0 and 5 → 0 (falsy) לכן if a and b נכשל. התוצאה: \"start-or\". זהו דוגמה ל-short-circuit evaluation: ב-or, אם הצד השני truthy — מספיק.",
+  },
+  {
+    id: "c23",
+    type: "tracing",
+    topic: "conditions",
+    difficulty: "hard",
+    question: "מה תדפיס הפונקציה הבאה עבור הקריאה classify(-4)?",
+    code: `def classify(n):
+    label = "pos" if n > 0 else ("zero" if n == 0 else "neg")
+    size = "big" if abs(n) > 10 else "small"
+    even = "even" if n % 2 == 0 else "odd"
+    print(f"{label}-{size}-{even}")
+
+classify(-4)`,
+    correctAnswer: "neg-small-even",
+    explanation: "n = -4. ביטוי טרנרי ראשון: n > 0 → False, ולכן בודקים n == 0 → False, לכן label = \"neg\". abs(-4) = 4, לא גדול מ-10, לכן size = \"small\". -4 % 2 == 0 → True (מספר זוגי), לכן even = \"even\". התוצאה: \"neg-small-even\".",
+  },
+  {
+    id: "c24",
+    type: "coding",
+    topic: "conditions",
+    difficulty: "medium",
+    title: "סיווג ציון עם תנאים מקוננים",
+    description: "כתבו פונקציה classify_grade(score) שמקבלת ציון (0-100) ומחזירה מחרוזת לפי הכללים הבאים:\n- אם הציון לא בטווח 0-100, החזירו \"קלט לא תקין\"\n- ציון 90 ומעלה: \"מצטיין\" (אם 100 בדיוק: \"מושלם\")\n- ציון 70-89: \"עובר\"\n- מתחת ל-70: \"נכשל\" (אם 0 בדיוק: \"לא התייצב\")",
+    sampleInput: "classify_grade(100)",
+    sampleOutput: "מושלם",
+    solution: `def classify_grade(score):
+    if score < 0 or score > 100:
+        return "קלט לא תקין"
+    if score >= 90:
+        if score == 100:
+            return "מושלם"
+        return "מצטיין"
+    elif score >= 70:
+        return "עובר"
+    else:
+        if score == 0:
+            return "לא התייצב"
+        return "נכשל"`,
+    solutionExplanation: "הפונקציה משתמשת בתנאים מקוננים: קודם בודקת טווח תקין, ואז מסווגת את הציון. בתוך הקטגוריות \"מצטיין\" ו\"נכשל\" יש בדיקות פנימיות נוספות עבור מקרי קצה (100 ו-0). שימו לב לשימוש ב-or לבדיקת טווח לא תקין.",
+  },
+  {
+    id: "c25",
+    type: "fill-blank",
+    topic: "conditions",
+    difficulty: "easy",
+    title: "השלם: שימוש ב-pass ובביטוי טרנרי",
+    description: "השלם את החלקים החסרים בקוד שבודק האם מספר חיובי, שלילי או אפס, ומחזיר תיאור מתאים.",
+    code: `def describe(n):
+    if n > 0:
+        ___  # לא עושים כלום עם חיוביים כרגע
+    result = "אפס" if n == 0 ___ "לא אפס"
+    return result
+
+# דוגמה: describe(0) → "אפס"
+# דוגמה: describe(5) → "לא אפס"`,
+    blanks: [
+      { answer: "pass", hint: "מילת מפתח שאומרת 'לא לעשות כלום'" },
+      { answer: "else", hint: "חלק שני של ביטוי טרנרי" },
+    ],
+    solutionExplanation: "pass היא מילת מפתח שמאפשרת בלוק ריק — חובה כשיש if ללא גוף. בביטוי הטרנרי value_if_true if condition else value_if_false, המילה else מפרידה בין שני הערכים האפשריים.",
+  },
 
   // === LOOPS ===
   {
@@ -577,6 +721,365 @@ print(count)`,
         options: ["3 (כי n-i = 4-1)", "4", "0", "1"],
         correctIndex: 0,
         explanation: "בשורה i=1 (הראשונה), צריך n-i = 4-1 = 3 רווחים לפני המספרים."
+      }
+    ],
+  },
+  {
+    id: "l21",
+    type: "quiz",
+    topic: "loops",
+    difficulty: "easy",
+    question: "מה ידפיס הקוד הבא?",
+    code: `fruits = ["תפוח", "בננה", "דובדבן"]
+for i, fruit in enumerate(fruits):
+    print(i, fruit)`,
+    options: [
+      "0 תפוח\\n1 בננה\\n2 דובדבן",
+      "1 תפוח\\n2 בננה\\n3 דובדבן",
+      "תפוח 0\\nבננה 1\\nדובדבן 2",
+      "תפוח\\nבננה\\nדובדבן"
+    ],
+    correctIndex: 0,
+    explanation: "enumerate מחזירה זוגות של (אינדקס, ערך). כברירת מחדל האינדקס מתחיל מ-0. לכן מודפס: 0 תפוח, 1 בננה, 2 דובדבן.",
+    examSource: "מבחן 5",
+    warmupQuestions: [
+      {
+        question: "מה מחזירה enumerate(['a', 'b'])?",
+        options: ["(0, 'a'), (1, 'b')", "('a', 0), ('b', 1)", "(1, 'a'), (2, 'b')", "['a', 'b']"],
+        correctIndex: 0,
+        explanation: "enumerate מחזירה זוגות (אינדקס, ערך), כאשר האינדקס מתחיל מ-0."
+      },
+      {
+        question: "מה יקרה אם נכתוב enumerate(fruits, 1)?",
+        options: ["האינדקס יתחיל מ-1", "ידלג על האיבר הראשון", "שגיאה", "יחזיר רק את האיבר הראשון"],
+        correctIndex: 0,
+        explanation: "הפרמטר השני של enumerate קובע את ערך ההתחלה של המונה."
+      }
+    ],
+  },
+  {
+    id: "l22",
+    type: "tracing",
+    topic: "loops",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `n = 4
+for i in range(1, n + 1):
+    for j in range(1, n + 1):
+        if j <= i:
+            print("*", end="")
+        else:
+            print(" ", end="")
+    print()`,
+    correctAnswer: "*   \n**  \n*** \n****",
+    explanation: "הקוד מדפיס משולש ישר-זווית. בכל שורה i, מודפסות i כוכביות ואחריהן (n-i) רווחים. שורה 1: * ו-3 רווחים, שורה 2: ** ו-2 רווחים, וכן הלאה.",
+    examSource: "מבחן 5",
+    traceTable: {
+      headers: ["i", "j=1", "j=2", "j=3", "j=4", "פלט שורה"],
+      rows: [
+        ["1", "*", " ", " ", " ", "*   "],
+        ["2", "*", "*", " ", " ", "**  "],
+        ["3", "*", "*", "*", " ", "*** "],
+        ["4", "*", "*", "*", "*", "****"],
+      ]
+    },
+    warmupQuestions: [
+      {
+        question: "כש-i=2 ו-j=3, מה מתקיים?",
+        options: ["j > i, לכן מודפס רווח", "j <= i, לכן מודפס *", "j == i, לכן מודפס *", "הלולאה נעצרת"],
+        correctIndex: 0,
+        explanation: "כש-i=2 ו-j=3, התנאי j <= i (3 <= 2) לא מתקיים, לכן מודפס רווח."
+      },
+      {
+        question: "מה עושה print() ללא ארגומנטים?",
+        options: ["מדפיס שורה חדשה (ירידת שורה)", "לא עושה כלום", "מדפיס רווח", "שגיאה"],
+        correctIndex: 0,
+        explanation: "print() ללא ארגומנטים מדפיס רק ירידת שורה, מה שמעביר לשורה הבאה."
+      }
+    ],
+  },
+  {
+    id: "l23",
+    type: "quiz",
+    topic: "loops",
+    difficulty: "medium",
+    question: "מה יהיה ערך total בסוף ריצת הקוד?",
+    code: `n = 1
+total = 0
+while n <= 100 and total < 50:
+    total += n
+    n += 1`,
+    options: ["50", "55", "45", "100"],
+    correctIndex: 1,
+    explanation: "הלולאה מוסיפה 1+2+3+...+n כל עוד n <= 100 וגם total < 50. אחרי n=9: total=45 (עדיין < 50). אחרי n=10: total=55 (כעת total >= 50 והלולאה נעצרת). התשובה היא 55.",
+    examSource: "מבחן 6",
+    warmupQuestions: [
+      {
+        question: "מתי תנאי while עם and נכשל?",
+        options: ["כשאחד מהתנאים לא מתקיים", "כששני התנאים לא מתקיימים", "כשהתנאי הראשון לא מתקיים", "כשהתנאי השני לא מתקיים"],
+        correctIndex: 0,
+        explanation: "ב-and, מספיק שתנאי אחד יהיה False כדי שכל הביטוי יהיה False והלולאה תיעצר."
+      },
+      {
+        question: "מה הסכום 1+2+3+...+10?",
+        options: ["55", "50", "45", "100"],
+        correctIndex: 0,
+        explanation: "הנוסחה: n*(n+1)/2 = 10*11/2 = 55."
+      }
+    ],
+  },
+  {
+    id: "l24",
+    type: "coding",
+    topic: "loops",
+    difficulty: "hard",
+    title: "ספירת תנועות בכל מילה",
+    description: "כתבו פונקציה count_vowels_per_word(sentence) שמקבלת משפט (מחרוזת) ומחזירה רשימה של מספרים. כל מספר מייצג את כמות התנועות (a, e, i, o, u) במילה המתאימה.",
+    sampleInput: 'count_vowels_per_word("hello world apple")',
+    sampleOutput: "[2, 1, 2]",
+    solution: `def count_vowels_per_word(sentence):
+    vowels = "aeiouAEIOU"
+    result = []
+    words = sentence.split()
+    for word in words:
+        count = 0
+        for ch in word:
+            if ch in vowels:
+                count += 1
+        result.append(count)
+    return result`,
+    solutionExplanation: "מפצלים את המשפט למילים עם split(). עבור כל מילה, סופרים כמה תווים הם תנועות באמצעות לולאה פנימית ובדיקת in. מוסיפים את הספירה לרשימת התוצאות.",
+    examSource: "מבחן 6",
+    warmupQuestions: [
+      {
+        question: 'מה מחזיר "hello world".split()?',
+        options: ['["hello", "world"]', '["h","e","l","l","o"," ","w","o","r","l","d"]', '"hello world"', "שגיאה"],
+        correctIndex: 0,
+        explanation: "split() ללא ארגומנטים מפצל לפי רווחים ומחזיר רשימת מילים."
+      },
+      {
+        question: 'האם \'e\' in "aeiou" מחזיר True?',
+        options: ["כן, כי e נמצא במחרוזת", "לא, כי in עובד רק על רשימות", "שגיאה", "מחזיר את האינדקס"],
+        correctIndex: 0,
+        explanation: "האופרטור in עובד גם על מחרוזות — בודק אם תת-מחרוזת קיימת."
+      }
+    ],
+  },
+  {
+    id: "l25",
+    type: "fill-blank",
+    topic: "loops",
+    difficulty: "medium",
+    title: "השלם: צבירה עם enumerate",
+    description: "השלם את החלקים החסרים בפונקציה שמחזירה את סכום המכפלות של כל איבר באינדקס שלו ברשימה.",
+    code: `def weighted_sum(lst):
+    total = ___
+    for i, val in ___(lst):
+        total += ___ * val
+    return total
+# דוגמה: weighted_sum([3, 1, 4]) → 0*3 + 1*1 + 2*4 = 9`,
+    blanks: [
+      { answer: "0", hint: "ערך התחלתי של צובר (accumulator)" },
+      { answer: "enumerate", hint: "פונקציה שמחזירה אינדקס וערך" },
+      { answer: "i", hint: "את מה מכפילים בערך? את ה..." },
+    ],
+    solutionExplanation: "מאתחלים total ב-0. משתמשים ב-enumerate כדי לקבל גם אינדקס (i) וגם ערך (val). בכל איטרציה מוסיפים i * val לצובר. עבור [3,1,4]: 0*3 + 1*1 + 2*4 = 0 + 1 + 8 = 9.",
+    examSource: "מבחן 6",
+    warmupQuestions: [
+      {
+        question: "מה הערך ההתחלתי המתאים לצובר סכום?",
+        options: ["0", "1", "[]", "None"],
+        correctIndex: 0,
+        explanation: "כשצוברים סכום, מתחילים מ-0 כי הוא האיבר הניטרלי של חיבור."
+      },
+      {
+        question: "מה מחזיר enumerate([10, 20, 30])?",
+        options: ["(0,10), (1,20), (2,30)", "(1,10), (2,20), (3,30)", "[10, 20, 30]", "שגיאה"],
+        correctIndex: 0,
+        explanation: "enumerate מחזירה זוגות (אינדקס, ערך), כאשר האינדקס מתחיל מ-0 כברירת מחדל."
+      }
+    ],
+  },
+  {
+    id: "l26",
+    type: "quiz",
+    topic: "loops",
+    difficulty: "easy",
+    question: "מה ידפיס הקוד הבא?",
+    code: `for i, ch in enumerate("abc"):
+    print(i, ch)`,
+    options: [
+      "0 a\\n1 b\\n2 c",
+      "a 0\\nb 1\\nc 2",
+      "1 a\\n2 b\\n3 c",
+      "a b c"
+    ],
+    correctIndex: 0,
+    explanation: "enumerate עוברת על המחרוזת ומחזירה זוגות (אינדקס, תו). האינדקס מתחיל מ-0 כברירת מחדל, כך שמקבלים: 0 a, 1 b, 2 c.",
+    examSource: "מבחן 7",
+    warmupQuestions: [
+      {
+        question: "מה מחזיר enumerate כשעוברים על מחרוזת?",
+        options: ["זוגות (אינדקס, תו)", "רק את האינדקסים", "רק את התווים", "שגיאה"],
+        correctIndex: 0,
+        explanation: "enumerate מחזירה זוגות של (אינדקס, ערך), בין אם עוברים על רשימה, מחרוזת או כל iterable."
+      },
+      {
+        question: "מאיזה מספר מתחיל האינדקס ב-enumerate כברירת מחדל?",
+        options: ["0", "1", "-1", "תלוי באורך"],
+        correctIndex: 0,
+        explanation: "כברירת מחדל, enumerate מתחיל מ-0. אפשר לשנות עם enumerate(x, start=1)."
+      }
+    ],
+  },
+  {
+    id: "l27",
+    type: "tracing",
+    topic: "loops",
+    difficulty: "medium",
+    question: "מה ידפיס הקוד הבא?",
+    code: `n = 4
+for i in range(1, n + 1):
+    line = ""
+    for j in range(1, n + 1):
+        if j <= n - i:
+            line += " "
+        else:
+            line += "*"
+    print(line)`,
+    correctAnswer: "   *\n  **\n ***\n****",
+    explanation: "בכל שורה i מ-1 עד 4: מדפיסים (n-i) רווחים ואחריהם i כוכביות. שורה 1: 3 רווחים + 1 כוכבית. שורה 2: 2 רווחים + 2 כוכביות. שורה 3: 1 רווח + 3 כוכביות. שורה 4: 0 רווחים + 4 כוכביות.",
+    examSource: "מבחן 7",
+    traceTable: {
+      headers: ["i", "רווחים (n-i)", "כוכביות (i)", "שורה"],
+      rows: [
+        ["1", "3", "1", "   *"],
+        ["2", "2", "2", "  **"],
+        ["3", "1", "3", " ***"],
+        ["4", "0", "4", "****"],
+      ]
+    },
+    warmupQuestions: [
+      {
+        question: "כש-i=2 ו-n=4, מה הערך של n-i?",
+        options: ["2", "4", "6", "0"],
+        correctIndex: 0,
+        explanation: "n-i = 4-2 = 2. זה מספר הרווחים לפני הכוכביות בשורה השנייה."
+      },
+      {
+        question: "בלולאה מקוננת, כמה פעמים הלולאה הפנימית רצה בסה\"כ אם שתי הלולאות רצות 4 פעמים כל אחת?",
+        options: ["16", "8", "4", "12"],
+        correctIndex: 0,
+        explanation: "לולאה חיצונית 4 פעמים × לולאה פנימית 4 פעמים = 16 פעמים בסה\"כ."
+      }
+    ],
+  },
+  {
+    id: "l28",
+    type: "quiz",
+    topic: "loops",
+    difficulty: "hard",
+    question: "מה ידפיס הקוד הבא?",
+    code: `x = 100
+steps = 0
+while x != 1:
+    if x % 2 == 0:
+        x = x // 2
+    else:
+        x = 3 * x + 1
+    steps += 1
+    if steps > 50:
+        break
+print(steps)`,
+    options: ["25", "26", "12", "שגיאה"],
+    correctIndex: 1,
+    explanation: "זו סדרת Collatz. מתחילים מ-100 ובכל צעד: אם זוגי — מחלקים ב-2, אם אי-זוגי — כופלים ב-3 ומוסיפים 1. הסדרה מגיעה ל-1 אחרי 26 צעדים (לפני שה-break מופעל). לכן מודפס 26.",
+    examSource: "מבחן 8",
+    warmupQuestions: [
+      {
+        question: "מתי while x != 1 תפסיק לרוץ?",
+        options: ["כש-x מגיע ל-1", "כש-x מגיע ל-0", "אחרי איטרציה אחת", "לעולם לא"],
+        correctIndex: 0,
+        explanation: "התנאי x != 1 בודק אם x שונה מ-1. כשמגיעים ל-1, התנאי הופך ל-False והלולאה נפסקת."
+      },
+      {
+        question: "אם x = 7, מה הערך של x % 2?",
+        options: ["1 (אי-זוגי)", "0 (זוגי)", "3", "שגיאה"],
+        correctIndex: 0,
+        explanation: "7 % 2 = 1 כי 7 = 3*2 + 1. שארית 1 מצביעה על מספר אי-זוגי."
+      }
+    ],
+  },
+  {
+    id: "l29",
+    type: "coding",
+    topic: "loops",
+    difficulty: "hard",
+    title: "מציאת המילה הארוכה ביותר",
+    description: "כתבו פונקציה longest_word(sentence) שמקבלת משפט (מחרוזת עם מילים מופרדות ברווחים) ומחזירה את המילה הארוכה ביותר. אם יש כמה מילים באותו אורך, החזירו את הראשונה.",
+    sampleInput: 'longest_word("the quick brown fox")',
+    sampleOutput: '"quick"',
+    solution: `def longest_word(sentence):
+    words = sentence.split()
+    longest = ""
+    for word in words:
+        if len(word) > len(longest):
+            longest = word
+    return longest`,
+    solutionExplanation: "מפצלים את המשפט למילים עם split(). מאתחלים longest למחרוזת ריקה. עוברים על כל מילה — אם היא ארוכה מהמילה הארוכה ביותר שמצאנו עד כה, מעדכנים. השימוש ב-> (גדול ממש, לא גדול-שווה) מבטיח שנחזיר את המילה הראשונה במקרה של שוויון.",
+    examSource: "מבחן 8",
+    warmupQuestions: [
+      {
+        question: "מה מחזיר split() ללא פרמטרים?",
+        options: ["רשימת מילים מופרדות ברווחים", "רשימת תווים", "שגיאה", "את המחרוזת ללא שינוי"],
+        correctIndex: 0,
+        explanation: "split() ללא פרמטרים מפצל את המחרוזת לפי רווחים ומחזיר רשימת מילים."
+      },
+      {
+        question: "מה הערך ההתחלתי המתאים לצובר של מחרוזת ארוכה ביותר?",
+        options: ['מחרוזת ריקה ""', "None", "0", "המילה הראשונה"],
+        correctIndex: 0,
+        explanation: 'מחרוזת ריקה באורך 0 מבטיחה שכל מילה תהיה ארוכה ממנה, כך שנתפוס את המילה הראשונה.'
+      }
+    ],
+  },
+  {
+    id: "l30",
+    type: "fill-blank",
+    topic: "loops",
+    difficulty: "medium",
+    title: "השלם: עיבוד מחרוזת עם לולאה",
+    description: "השלם את החלקים החסרים בפונקציה שמקבלת מחרוזת ומחזירה מחרוזת חדשה שבה כל אות קטנה הפכה לגדולה וכל אות גדולה הפכה לקטנה (swap case).",
+    code: `def swap_case(s):
+    result = ___
+    for ch in s:
+        if ch.isupper():
+            result += ch.___()
+        elif ch.islower():
+            result += ch.___()
+        else:
+            result += ch
+    return result
+# דוגמה: swap_case("Hello World") → "hELLO wORLD"`,
+    blanks: [
+      { answer: '""', hint: "ערך התחלתי של מחרוזת ריקה" },
+      { answer: "lower", hint: "מתודה שממירה אות גדולה לקטנה" },
+      { answer: "upper", hint: "מתודה שממירה אות קטנה לגדולה" },
+    ],
+    solutionExplanation: "מאתחלים result למחרוזת ריקה. עוברים על כל תו: אם הוא אות גדולה (isupper), ממירים לקטנה עם lower(). אם אות קטנה (islower), ממירים לגדולה עם upper(). אחרת (רווחים, סימנים) מוסיפים כמו שהוא. עבור \"Hello World\": H→h, e→E, l→L, l→L, o→O, רווח→רווח, W→w, o→O, r→R, l→L, d→D.",
+    examSource: "מבחן 8",
+    warmupQuestions: [
+      {
+        question: "מה מחזיר 'A'.isupper()?",
+        options: ["True", "False", "שגיאה", "'a'"],
+        correctIndex: 0,
+        explanation: "isupper() בודק אם התו הוא אות גדולה. 'A' היא אות גדולה, אז מחזיר True."
+      },
+      {
+        question: "מה מחזיר 'H'.lower()?",
+        options: ["'h'", "'H'", "True", "שגיאה"],
+        correctIndex: 0,
+        explanation: "lower() ממיר אות גדולה לקטנה. 'H'.lower() מחזיר 'h'."
       }
     ],
   },
