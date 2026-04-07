@@ -1,5 +1,6 @@
 export type QuestionType = "quiz" | "tracing" | "coding" | "fill-blank";
-export type TopicId = "tracing" | "conditions" | "loops" | "lists" | "math";
+// The 8 official syllabus topics. "tracing" and "math" are legacy aliases kept until PR 1B remaps all questions.
+export type TopicId = "variables_io" | "arithmetic" | "conditions" | "loops" | "functions" | "strings" | "lists" | "tuples_sets_dicts" | "tracing" | "math";
 export type Difficulty = "easy" | "medium" | "hard";
 
 export interface WarmupQuestion {
@@ -91,11 +92,14 @@ export interface Topic {
 }
 
 export const topics: Topic[] = [
-  { id: "tracing", name: "מעקב קוד", icon: "🔍", description: "שאלות mystery - מה יודפס?", color: "from-purple-500 to-indigo-600" },
-  { id: "conditions", name: "תנאים ולוגיקה", icon: "🔀", description: "if/else, חישובי הנחות, תנאים מורכבים", color: "from-cyan-500 to-teal-600" },
-  { id: "loops", name: "לולאות ודפוסים", icon: "🔄", description: "הדפסת פירמידות, עיבוד מחרוזות", color: "from-orange-500 to-red-600" },
-  { id: "lists", name: "רשימות ופונקציות", icon: "📋", description: "divisible, largerThan, mindiff", color: "from-green-500 to-emerald-600" },
-  { id: "math", name: "מספרים ומתמטיקה", icon: "🔢", description: "ראשוניים, ספרות ייחודיות, סדרת Pell", color: "from-yellow-500 to-amber-600" },
+  { id: "variables_io", name: "משתנים וקלט/פלט", icon: "📥", description: "טיפוסים, input/print, המרות", color: "from-sky-500 to-blue-600" },
+  { id: "arithmetic", name: "חשבון ואופרטורים", icon: "➕", description: "+, -, *, /, //, %, **, math", color: "from-yellow-500 to-amber-600" },
+  { id: "conditions", name: "תנאים", icon: "🔀", description: "if/elif/else, and/or/not", color: "from-cyan-500 to-teal-600" },
+  { id: "loops", name: "לולאות", icon: "🔄", description: "for, while, break, continue", color: "from-orange-500 to-red-600" },
+  { id: "functions", name: "פונקציות", icon: "🧩", description: "def, פרמטרים, return, scope", color: "from-pink-500 to-rose-600" },
+  { id: "strings", name: "מחרוזות", icon: "🔤", description: "indexing, slicing, methods", color: "from-violet-500 to-purple-600" },
+  { id: "lists", name: "רשימות", icon: "📋", description: "append, pop, slicing, comprehensions", color: "from-green-500 to-emerald-600" },
+  { id: "tuples_sets_dicts", name: "טאפלים, קבוצות ומילונים", icon: "🗂️", description: "tuple, set, dict ופעולות עליהם", color: "from-indigo-500 to-purple-600" },
 ];
 
 export const questions: Question[] = [
@@ -3928,7 +3932,8 @@ export function getRandomQuestions(count: number): Question[] {
 }
 
 export function getBalancedExamQuestions(count: number): Question[] {
-  const topicIds: TopicId[] = ["tracing", "conditions", "loops", "lists", "math"];
+  // Includes legacy "tracing" and "math" until PR 1B remaps existing questions.
+  const topicIds: TopicId[] = ["variables_io", "arithmetic", "conditions", "loops", "functions", "strings", "lists", "tuples_sets_dicts", "tracing", "math"];
   const typeIds: QuestionType[] = ["quiz", "tracing", "coding", "fill-blank"];
   
   const byTopic: Record<string, Question[]> = {};
@@ -3988,7 +3993,7 @@ export function getBalancedExamQuestions(count: number): Question[] {
   return selected.sort(() => Math.random() - 0.5);
 }
 
-const CONCEPT_TOPIC_ORDER: TopicId[] = ["tracing", "conditions", "loops", "lists", "math"];
+const CONCEPT_TOPIC_ORDER: TopicId[] = ["variables_io", "arithmetic", "conditions", "loops", "functions", "strings", "lists", "tuples_sets_dicts", "tracing", "math"];
 
 export function getConceptQuestions(): Question[] {
   const concepts = questions.filter(q => q.id.startsWith("concept_"));
@@ -4000,9 +4005,14 @@ export function getConceptQuestions(): Question[] {
 }
 
 export const conceptTopicLabels: Record<TopicId, string> = {
-  tracing: "מעקב קוד",
-  conditions: "תנאים ולוגיקה",
+  variables_io: "משתנים וקלט/פלט",
+  arithmetic: "חשבון ואופרטורים",
+  conditions: "תנאים",
   loops: "לולאות",
+  functions: "פונקציות",
+  strings: "מחרוזות",
   lists: "רשימות",
+  tuples_sets_dicts: "טאפלים, קבוצות ומילונים",
+  tracing: "מעקב קוד",
   math: "מתמטיקה",
 };

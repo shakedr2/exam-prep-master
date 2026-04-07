@@ -315,6 +315,82 @@ for _ in range(10):
     quickTip:
       "לפרק מספר לספרותיו: loop עם % 10 (קבל ספרה) ו-// 10 (הסר ספרה). זה דפוס שחוזר בהרבה שאלות!",
   },
+  // === PR 1A placeholder tutorials for the 5 new syllabus topics. Full content lands in PR 3. ===
+  {
+    topicId: "variables_io",
+    title: "משתנים וקלט/פלט",
+    introduction: "הנושא הראשון בקורס: יצירת משתנים, טיפוסי נתונים בסיסיים, קריאת קלט מהמשתמש והדפסת פלט.",
+    concepts: [
+      {
+        title: "משתנים וטיפוסים",
+        explanation: "ב-Python יש int, float, str, bool. אפשר לבדוק טיפוס עם type().",
+        codeExample: "x = 5\ny = 3.14\nname = \"דנה\"\nprint(type(x), type(y), type(name))",
+        expectedOutput: "<class 'int'> <class 'float'> <class 'str'>",
+      },
+    ],
+    commonMistakes: ["שכחה ש-input() תמיד מחזיר מחרוזת — צריך להמיר עם int() או float()"],
+    quickTip: "המר קלט מספרי מיד עם int(input(...)) או float(input(...)).",
+  },
+  {
+    topicId: "arithmetic",
+    title: "חשבון ואופרטורים",
+    introduction: "פעולות חשבון בסיסיות, חלוקה שלמה, מודולו, חזקות ופונקציות מהמודול math.",
+    concepts: [
+      {
+        title: "אופרטורים מספריים",
+        explanation: "+, -, *, / (חלוקה), // (חלוקה שלמה), % (שארית), ** (חזקה).",
+        codeExample: "print(7 / 2, 7 // 2, 7 % 2, 2 ** 3)",
+        expectedOutput: "3.5 3 1 8",
+      },
+    ],
+    commonMistakes: ["בלבול בין / ל-//", "שכחה לייבא את math לפני שימוש ב-math.sqrt"],
+    quickTip: "שימוש ב-% הוא הדרך המהירה לבדוק התחלקות: x % 2 == 0 → זוגי.",
+  },
+  {
+    topicId: "functions",
+    title: "פונקציות",
+    introduction: "פונקציות מאפשרות לארוז קוד שניתן לקרוא לו שוב ושוב, עם פרמטרים וערך מוחזר.",
+    concepts: [
+      {
+        title: "def, פרמטרים ו-return",
+        explanation: "פונקציה מוגדרת עם def, מקבלת פרמטרים ויכולה להחזיר ערך עם return.",
+        codeExample: "def add(a, b):\n    return a + b\n\nprint(add(3, 4))",
+        expectedOutput: "7",
+      },
+    ],
+    commonMistakes: ["שכחה ל-return — הפונקציה תחזיר None", "בלבול בין משתנה לוקלי לגלובלי"],
+    quickTip: "כל פונקציה צריכה לעשות דבר אחד ברור — אם היא עושה שניים, פצל אותה.",
+  },
+  {
+    topicId: "strings",
+    title: "מחרוזות",
+    introduction: "מחרוזות הן רצף של תווים. ניתן לגשת לתווים לפי אינדקס, לחתוך, ולהשתמש בשיטות רבות.",
+    concepts: [
+      {
+        title: "indexing ו-slicing",
+        explanation: "s[0] = תו ראשון, s[-1] = תו אחרון, s[1:4] = חיתוך מאינדקס 1 עד 3.",
+        codeExample: "s = \"python\"\nprint(s[0], s[-1], s[1:4])",
+        expectedOutput: "p n yth",
+      },
+    ],
+    commonMistakes: ["שכחה שמחרוזות immutable — אי אפשר לשנות תו במקום"],
+    quickTip: "להמיר מחרוזת לרשימת תווים: list(s). להמיר חזרה: \"\".join(lst).",
+  },
+  {
+    topicId: "tuples_sets_dicts",
+    title: "טאפלים, קבוצות ומילונים",
+    introduction: "שלושה אוספים נוספים: tuple (מסודר ולא משתנה), set (ייחודי וללא סדר), dict (מפתח-ערך).",
+    concepts: [
+      {
+        title: "מילון בסיסי",
+        explanation: "מילון שומר זוגות מפתח→ערך. גישה עם d[key], מעבר עם .items().",
+        codeExample: "d = {\"a\": 1, \"b\": 2}\nfor k, v in d.items():\n    print(k, v)",
+        expectedOutput: "a 1\nb 2",
+      },
+    ],
+    commonMistakes: ["ניסיון לשנות tuple", "שכחה ש-set לא שומר סדר"],
+    quickTip: "set מצוין למחיקת כפילויות: list(set(my_list)).",
+  },
 ];
 
 export function getTutorialByTopicId(topicId: string): TopicTutorial | undefined {
