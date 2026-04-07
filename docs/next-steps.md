@@ -48,7 +48,7 @@ First real reviewed batch from lecturer materials. Priority order:
 
 Every inserted question must have: Hebrew text, correct topic, type, answer, explanation, source metadata. No low-quality bulk dumps.
 
-## Step 6 — Write AI tutor contract *(in progress — handled separately)*
+## Step 6 — Write AI tutor contract *(completed — see `docs/ai-tutor-spec.md`)*
 Spec document defining:
 - Input context the tutor receives
 - Tutoring mode
@@ -60,7 +60,12 @@ Spec document defining:
 
 The tutor is a learning assistant, not a shortcut answer bot.
 
-## Step 7 — Prepare personalized learning foundation *(in progress — see `docs/personalized-learning-spec.md`)*
+## Step 7 — Prepare personalized learning foundation *(completed — see `docs/personalized-learning-spec.md`)*
+
+## Integration *(completed)*
+- `selectNextQuestion` wired into `PracticePage` to pick the first question per topic adaptively from the learner's progress.
+- Hint ladder (`hintLevel` 1/2/3) wired end-to-end: `FloatingAIButton` → `ai-explain` edge function.
+- Per-topic mastery shown on `ProgressPage` via `useSupabaseProgress` (`accuracy = correct / answered`) and local fallback via `getTopicCompletion`.
 Minimal adaptive next-question selection that considers:
 - Topic mastery
 - Repeated mistakes
