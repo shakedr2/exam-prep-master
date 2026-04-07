@@ -27,9 +27,12 @@ function TopicCard({
 
   return (
     <Card
-      className="cursor-pointer bg-card border border-foreground/10 hover:border-primary/40 hover:shadow-md transition-all group"
+      className="cursor-pointer bg-card border border-foreground/10 hover:border-primary/40 hover:shadow-md transition-all group relative"
       onClick={onClick}
     >
+      {completion === 100 && (
+        <span className="absolute top-2 right-2 text-lg" title="הושלם">✅</span>
+      )}
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-2xl">{topic.icon ?? "📖"}</span>
