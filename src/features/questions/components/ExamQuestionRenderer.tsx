@@ -109,7 +109,7 @@ export function ExamQuestionRenderer({ question, currentAnswer, onAnswer }: Prop
         </div>
       )}
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
           question.type === "quiz" ? "bg-primary/10 text-primary" :
           question.type === "tracing" ? "bg-accent/10 text-accent" :
@@ -117,6 +117,13 @@ export function ExamQuestionRenderer({ question, currentAnswer, onAnswer }: Prop
           "bg-warning/10 text-warning"
         }`}>
           {question.type === "quiz" ? "🔘 רב-ברירה" : question.type === "tracing" ? "🔍 מעקב קוד" : question.type === "fill-blank" ? "✏️ השלם קוד" : "✍️ כתיבת קוד"}
+        </span>
+        <span className={`rounded-full px-2 py-0.5 text-xs font-medium border ${
+          question.difficulty === "easy" ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30" :
+          question.difficulty === "hard" ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30" :
+          "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/30"
+        }`}>
+          {question.difficulty === "easy" ? "🟢 קל" : question.difficulty === "hard" ? "🔴 קשה" : "🟡 בינוני"}
         </span>
       </div>
 

@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp, ArrowLeft } from "lucide-react";
 import { FloatingAIButton } from "@/components/FloatingAIButton";
 import { TopicTutorial } from "@/components/TopicTutorial";
 import { Button } from "@/components/ui/button";
@@ -80,7 +80,7 @@ function getHintForQuestion(q: Question): string | null {
 const PracticePage = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
-  const { answerQuestion, progress } = useProgress();
+  const { answerQuestion, getWeakTopics, progress } = useProgress();
   const { saveAnswer } = useSaveAnswer();
 
   const { questions: allQuestions, loading: questionsLoading } = useSupabaseQuestionsByTopic(topicId);
@@ -284,6 +284,33 @@ const PracticePage = () => {
       .map(([id]) => activeQuestions.find((q) => q.id === id))
       .filter((q): q is Question => q != null);
 
+    // Weak areas: types where mistakes occurred most
+    const mistakesByType: Record<string, number> = {};
+    for (const q of mistakes) {
+      mistakesByType[q.type] = (mistakesByType[q.type] ?? 0) + 1;
+    }
+    const weakTypes = Object.entries(mistakesByType)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 2)
+      .map(([type]) => typeLabels[type]);
+
+    // Weak difficulty areas
+    const mistakesByDifficulty: Record<string, number> = {};
+    for (const q of mistakes) {
+      mistakesByDifficulty[q.difficulty] = (mistakesByDifficulty[q.difficulty] ?? 0) + 1;
+    }
+    const hardestDifficulty = Object.entries(mistakesByDifficulty)
+      .sort(([, a], [, b]) => b - a)[0]?.[0] as Difficulty | undefined;
+
+    // Next topic suggestion: the weakest topic (excluding current), fallback to first unattempted topic
+    const weakTopics = getWeakTopics(4);
+    const attemptedTopicIds = new Set(weakTopics.map((wt) => wt.topicId));
+    const nextTopicSuggestion = weakTopics.find((wt) => wt.topicId !== topicId);
+    const nextTopicData = nextTopicSuggestion
+      ? topics.find((t) => t.id === nextTopicSuggestion.topicId)
+      : topics.find((t) => t.id !== topicId && !attemptedTopicIds.has(t.id)) ??
+        topics.find((t) => t.id !== topicId);
+
     return (
       <div className="min-h-screen bg-background px-4 pb-24 pt-8">
         <motion.div
@@ -303,12 +330,41 @@ const PracticePage = () => {
             <Progress value={pct} className="h-3 max-w-xs mx-auto" />
           </div>
 
+          {/* Weak areas */}
+          {mistakes.length > 0 && (weakTypes.length > 0 || hardestDifficulty) && (
+            <Card className="border-warning/20 bg-warning/5">
+              <CardContent className="p-4 space-y-2">
+                <h3 className="text-sm font-semibold text-warning flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  אזורים לשיפור
+                </h3>
+                {weakTypes.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    סוגי שאלות: <span className="text-foreground font-medium">{weakTypes.join(", ")}</span>
+                  </p>
+                )}
+                {hardestDifficulty && (
+                  <p className="text-xs text-muted-foreground">
+                    רמת קושי בעייתית:{" "}
+                    <span className={`font-medium ${
+                      hardestDifficulty === "easy" ? "text-green-600 dark:text-green-400" :
+                      hardestDifficulty === "hard" ? "text-red-600 dark:text-red-400" :
+                      "text-yellow-600 dark:text-yellow-400"
+                    }`}>
+                      {difficultyLabels[hardestDifficulty]}
+                    </span>
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {mistakes.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-destructive">
                 ❌ שאלות שטעית בהן ({mistakes.length})
               </h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
+              <div className="space-y-2 max-h-48 overflow-y-auto">
                 {mistakes.map((q) => (
                   <Card key={q.id} className="border-destructive/20">
                     <CardContent className="p-3">
@@ -323,6 +379,27 @@ const PracticePage = () => {
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Next topic suggestion */}
+          {!reviewMistakesMode && nextTopicData && (
+            <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:border-primary/40 transition-colors"
+              onClick={() => navigate(`/practice/${nextTopicData.id}`)}>
+              <CardContent className="p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">נושא מומלץ לתרגול הבא</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {nextTopicData.icon ?? "📖"} {nextTopicData.name}
+                  </p>
+                  {nextTopicSuggestion && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      אחוז הצלחה: {Math.round(nextTopicSuggestion.successRate * 100)}%
+                    </p>
+                  )}
+                </div>
+                <ArrowLeft className="h-4 w-4 text-primary shrink-0" />
+              </CardContent>
+            </Card>
           )}
 
           <div className="flex flex-col gap-3">
