@@ -269,14 +269,38 @@ serve(async (req) => {
       responseSchema = "question";
     }
 
-    // Use Gemini as primary, fall back to OpenAI if Gemini key is unavailable
-    let content: string;
-    if (GEMINI_API_KEY) {
-      content = await callGemini(systemPrompt, userPrompt, GEMINI_API_KEY);
-    } else if (OPENAI_API_KEY) {
-      content = await callOpenAI(systemPrompt, userPrompt, OPENAI_API_KEY);
-    } else {
+    // Try Gemini first; if it throws (e.g. 429 rate limit), fall back to OpenAI.
+    // Only error out if both providers are unavailable or both fail.
+    if (!GEMINI_API_KEY && !OPENAI_API_KEY) {
       throw new Error("Neither GEMINI_API_KEY nor OPENAI_API_KEY is configured");
+    }
+
+    let content: string | undefined;
+    let geminiError: unknown = null;
+    if (GEMINI_API_KEY) {
+      try {
+        content = await callGemini(systemPrompt, userPrompt, GEMINI_API_KEY);
+      } catch (err) {
+        geminiError = err;
+        console.error("Gemini call failed, attempting OpenAI fallback:", err);
+      }
+    }
+
+    if (content === undefined) {
+      if (!OPENAI_API_KEY) {
+        throw geminiError instanceof Error
+          ? geminiError
+          : new Error("Gemini failed and OPENAI_API_KEY is not configured");
+      }
+      try {
+        content = await callOpenAI(systemPrompt, userPrompt, OPENAI_API_KEY);
+      } catch (openaiError) {
+        console.error("OpenAI fallback also failed:", openaiError);
+        throw openaiError;
+      }
+    }
+    if (content === undefined) {
+      throw new Error("No AI provider produced a response");
     }
 
     if (responseSchema === "hint") {
