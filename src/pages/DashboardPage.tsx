@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, AlertTriangle, GraduationCap } from "lucide-react";
+import { Flame, CheckCircle2, GraduationCap } from "lucide-react";
+import { questions as staticQuestions } from "@/data/questions";
 
 function TopicCard({
   topic,
@@ -21,9 +22,14 @@ function TopicCard({
 }) {
   const count = useSupabaseQuestionCount(topic.id);
   const completion = getTopicCompletion(topic.id, count);
-  const answered = Object.keys(progress.answeredQuestions).filter((id) =>
-    id.startsWith(topic.id) || progress.answeredQuestions[id] !== undefined
-  ).length;
+
+  // Count questions correctly answered for this topic using static question IDs
+  const topicQuestionIds = new Set(
+    staticQuestions.filter((q) => q.topic === topic.id).map((q) => q.id)
+  );
+  const answeredCorrect = Object.entries(progress.answeredQuestions)
+    .filter(([id, v]) => topicQuestionIds.has(id) && v.correct)
+    .length;
 
   return (
     <Card
@@ -50,7 +56,10 @@ function TopicCard({
         </div>
         <div className="space-y-1">
           <Progress value={completion} className="h-1.5" />
-          <p className="text-[11px] text-muted-foreground text-left">{completion}%</p>
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] text-muted-foreground">{answeredCorrect} נפתרו נכון</p>
+            <p className="text-[11px] text-muted-foreground font-mono">{completion}%</p>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -59,11 +68,22 @@ function TopicCard({
 
 const DashboardPage = () => {
   const navigate = useNavigate();
-  const { progress, getTopicCompletion } = useProgress();
+  const { progress, getTopicCompletion, totalCorrect, totalAnswered } = useProgress();
   const { topics, loading } = useSupabaseTopics();
 
   const lastExam = progress.examHistory.length > 0
     ? progress.examHistory[progress.examHistory.length - 1]
+    : null;
+
+  const lastActiveLabel = progress.lastActiveDate
+    ? (() => {
+        const today = new Date().toDateString();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (progress.lastActiveDate === today) return "היום";
+        if (progress.lastActiveDate === yesterday.toDateString()) return "אתמול";
+        return new Date(progress.lastActiveDate).toLocaleDateString("he-IL");
+      })()
     : null;
 
   if (loading) {
@@ -86,6 +106,42 @@ const DashboardPage = () => {
             שלום, {progress.username}
           </h1>
           <p className="text-muted-foreground mt-1">הנה סקירת הלימודים שלך.</p>
+        </div>
+
+        {/* Global stats bar */}
+        <div className="grid grid-cols-3 gap-3">
+          <Card className="bg-card border border-foreground/10">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-foreground font-mono">{totalCorrect}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">שאלות נכונות</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-card border border-foreground/10">
+            <CardContent className="p-3 text-center">
+              <p className="text-2xl font-bold text-foreground font-mono">{totalAnswered}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">סה״כ נפתרו</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-card border border-foreground/10">
+            <CardContent className="p-3 text-center flex flex-col items-center">
+              {progress.streak > 0 ? (
+                <>
+                  <div className="flex items-center gap-1">
+                    <Flame className="h-5 w-5 text-orange-500" />
+                    <p className="text-2xl font-bold text-foreground font-mono">{progress.streak}</p>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">ימים רצופים</p>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-5 w-5 text-muted-foreground mb-0.5" />
+                  <p className="text-[11px] text-muted-foreground">
+                    {lastActiveLabel ? `פעיל ${lastActiveLabel}` : "התחל לתרגל!"}
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Quick exam CTA */}
