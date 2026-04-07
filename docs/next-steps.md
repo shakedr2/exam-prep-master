@@ -101,17 +101,19 @@ Sprint 1 deliverables:
 
 Not yet scheduled — capture of direction only. Keep each item small and reviewable.
 
-### 1. Grow reviewed question bank to 150+
+### 1. Grow reviewed question bank to 150+ *(in progress)*
+- 80 reviewed questions from Sprint 1 + 72 new in `scripts/insert-questions-batch2.sql` = **152 target**.
+- Batch script ready to run; see `docs/operations.md` for execution steps.
 - Continue the reviewed import pipeline, lecturer materials only.
 - Target gaps first: `loops`, `conditions`, `functions`, `tuples_sets_dicts`.
 - Every question keeps Hebrew text, source metadata, `pattern_family`, `common_mistake`.
 - No bulk AI dumps — every insert passes review.
 
-### 2. AI tutor with Gemini API
-- Replace/augment the current `ai-explain` backend with Gemini for hint generation.
-- Stay faithful to the hint-ladder contract (`docs/ai-tutor-spec.md`) — no shortcut answers by default.
-- Ground prompts in lecturer materials; never free-form unrestricted generation.
-- Preserve Hebrew-only responses and existing `hintLevel` contract so the frontend is untouched.
+### 2. AI tutor with Gemini API *(completed)*
+- `supabase/functions/ai-explain` now calls Gemini as the primary provider and falls back to OpenAI on any error (including 429 rate limits).
+- Hint-ladder contract preserved (`hintLevel` 1/2/3); frontend untouched.
+- Hebrew-only responses, grounded prompts.
+- See `docs/operations.md` for `GEMINI_API_KEY` / `OPENAI_API_KEY` secret setup.
 
 ### 3. Exam simulation improvements
 - Fidelity to real exam: 6 questions, 110 points, 3 hours, mix of tracing/coding/MCQ/fill-blank.
