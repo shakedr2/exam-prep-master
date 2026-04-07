@@ -99,7 +99,7 @@ export function FloatingAIButton({ question, userAnswer }: FloatingAIButtonProps
   const [error, setError] = useState<string | null>(null);
 
   const questionId = question.id;
-  const currentLevel: HintLevel = hints.length === 0 ? 1 : hints.length === 1 ? 2 : hints.length === 2 ? 3 : 3;
+  const currentLevel = Math.min(hints.length + 1, 3) as HintLevel;
   const allLevelsShown = hints.length >= 3;
 
   // Reset hints when question changes
@@ -124,10 +124,17 @@ export function FloatingAIButton({ question, userAnswer }: FloatingAIButtonProps
       if (fnError) throw fnError;
       if (data?.error) throw new Error(data.error);
 
-      const text: string =
-        level < 3
-          ? (data.hint ?? "")
-          : [data.explanation, data.tip ? `\n\n💡 **טיפ לזכירה:** ${data.tip}` : ""].join("");
+      let text: string;
+      if (level < 3) {
+        const hint = typeof data?.hint === "string" ? data.hint : "";
+        if (!hint) throw new Error("לא התקבל רמז מהשרת");
+        text = hint;
+      } else {
+        const explanation = typeof data?.explanation === "string" ? data.explanation : "";
+        if (!explanation) throw new Error("לא התקבל הסבר מהשרת");
+        const tip = typeof data?.tip === "string" && data.tip ? `\n\n💡 **טיפ לזכירה:** ${data.tip}` : "";
+        text = explanation + tip;
+      }
 
       setHints((prev) => [...prev, { level, text }]);
     } catch (e) {

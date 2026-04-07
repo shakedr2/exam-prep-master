@@ -25,7 +25,22 @@ interface SimilarRequestBody {
 
 type RequestBody = ExplainRequestBody | SimilarRequestBody;
 
-interface OpenAIChatMessage {
+interface HintResponse {
+  hint: string;
+  level: number;
+}
+
+interface ExplanationResponse {
+  explanation: string;
+  tip: string;
+  level: number;
+}
+
+interface SimilarResponse {
+  question: string;
+}
+
+
   role: "system" | "user" | "assistant";
   content: string;
 }
@@ -180,15 +195,14 @@ serve(async (req) => {
       throw new Error("Empty response from OpenAI");
     }
 
-    const parsed = (() => {
-      try {
-        return JSON.parse(content) as Record<string, string | number>;
-      } catch {
-        throw new Error(`Failed to parse OpenAI response as JSON: ${content}`);
-      }
-    })();
-
     if (responseSchema === "hint") {
+      const parsed = (() => {
+        try {
+          return JSON.parse(content) as HintResponse;
+        } catch {
+          throw new Error(`Failed to parse OpenAI response as JSON: ${content}`);
+        }
+      })();
       return new Response(
         JSON.stringify({
           hint: parsed.hint ?? "",
@@ -199,6 +213,13 @@ serve(async (req) => {
         },
       );
     } else if (responseSchema === "explanation+tip") {
+      const parsed = (() => {
+        try {
+          return JSON.parse(content) as ExplanationResponse;
+        } catch {
+          throw new Error(`Failed to parse OpenAI response as JSON: ${content}`);
+        }
+      })();
       return new Response(
         JSON.stringify({
           explanation: parsed.explanation ?? "",
@@ -210,6 +231,13 @@ serve(async (req) => {
         },
       );
     } else {
+      const parsed = (() => {
+        try {
+          return JSON.parse(content) as SimilarResponse;
+        } catch {
+          throw new Error(`Failed to parse OpenAI response as JSON: ${content}`);
+        }
+      })();
       return new Response(
         JSON.stringify({ question: parsed.question ?? "" }),
         {
