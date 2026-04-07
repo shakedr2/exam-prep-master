@@ -77,20 +77,20 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-card-foreground">{q.title}</h3>
-      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{q.description}</p>
+      <p className="text-base text-foreground/90 whitespace-pre-wrap leading-relaxed">{q.description}</p>
 
       {/* Code with blanks */}
-      <div className="rounded-xl bg-slate-100 dark:bg-[#1e1e2e] p-4 font-mono text-sm overflow-x-auto" dir="ltr">
+      <div className="rounded-xl bg-slate-100 dark:bg-[#1e1e2e] p-4 font-mono text-base overflow-x-auto border border-border/60" dir="ltr">
         <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
           <span className="h-3 w-3 rounded-full bg-red-500" />
           <span className="h-3 w-3 rounded-full bg-yellow-500" />
           <span className="h-3 w-3 rounded-full bg-green-500" />
           <span className="text-xs text-muted-foreground ml-2">השלם את החלקים החסרים</span>
         </div>
-        <pre className="whitespace-pre-wrap leading-relaxed">
+        <pre className="whitespace-pre-wrap leading-loose text-slate-900 dark:text-slate-100">
           {codeParts.map((part, i) => {
             if (typeof part === "string") {
-              return <span key={i} className="text-foreground">{part}</span>;
+              return <span key={i}>{part}</span>;
             }
             const bi = part.blankIndex;
             const blank = q.blanks[bi];
@@ -111,7 +111,7 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
                       setAnswers(newAnswers);
                     }}
                     placeholder={blank.hint || "___"}
-                    className="inline-block w-24 h-7 text-xs font-mono bg-primary/10 border-primary/30 text-center px-1 text-foreground"
+                    className="inline-block w-28 h-9 text-sm font-mono font-semibold bg-background border-2 border-primary/60 text-center px-2 text-foreground focus-visible:ring-2 focus-visible:ring-primary"
                     disabled={submitted}
                   />
                 )}
