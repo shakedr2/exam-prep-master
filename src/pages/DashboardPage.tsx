@@ -160,7 +160,7 @@ const DashboardPage = () => {
                 </p>
               </div>
             </div>
-            <div className="text-start shrink-0">
+            <div className="text-right shrink-0">
               {lastExam ? (
                 <p className="text-xs text-muted-foreground">
                   אחרון: {Math.round((lastExam.score / lastExam.total) * 100)}%

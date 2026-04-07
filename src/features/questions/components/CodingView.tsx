@@ -37,7 +37,6 @@ export function CodingView({ q, onAnswer }: { q: CodingQuestion; onAnswer: (corr
         disabled={selfAssessed !== null}
         autoCapitalize="none"
         autoCorrect="off"
-        autoComplete="off"
         spellCheck={false}
       />
       <Button
