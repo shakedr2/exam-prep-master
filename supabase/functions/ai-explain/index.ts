@@ -13,7 +13,7 @@ interface ExplainRequestBody {
   correctIndex: number;
   userAnswerIndex?: number;
   topic?: string;
-  /** Hint ladder level: 1 = general hint, 2 = specific hint, 3 = full explanation */
+  /** Hint ladder level: 1 = nudge, 2 = conceptual hint, 3 = worked explanation */
   hintLevel?: 1 | 2 | 3;
 }
 
@@ -40,6 +40,25 @@ interface SimilarResponse {
   question: string;
 }
 
+// Gemini REST API types
+interface GeminiPart {
+  text: string;
+}
+
+interface GeminiContent {
+  role?: string;
+  parts: GeminiPart[];
+}
+
+interface GeminiResponse {
+  candidates: Array<{
+    content: {
+      parts: GeminiPart[];
+    };
+  }>;
+}
+
+// OpenAI fallback types
 interface OpenAIMessage {
   role: "system" | "user" | "assistant";
   content: string;
@@ -115,22 +134,109 @@ ${choicesList}
 {"explanation": "הסבר מלא", "tip": "טיפ לזכירה", "level": 3}`;
 }
 
+async function callGemini(
+  systemPrompt: string,
+  userPrompt: string,
+  apiKey: string,
+): Promise<string> {
+  const url =
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+  const body = {
+    systemInstruction: {
+      parts: [{ text: systemPrompt }],
+    } as GeminiContent,
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: userPrompt }],
+      } as GeminiContent,
+    ],
+    generationConfig: {
+      responseMimeType: "application/json",
+      temperature: 0.7,
+    },
+  };
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Gemini API error:", res.status, errorText);
+    throw new Error(`Gemini API error: ${res.status}`);
+  }
+
+  const data: GeminiResponse = await res.json();
+  const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  if (!content) {
+    throw new Error("Empty response from Gemini");
+  }
+
+  return content;
+}
+
+async function callOpenAI(
+  systemPrompt: string,
+  userPrompt: string,
+  apiKey: string,
+): Promise<string> {
+  const messages: OpenAIMessage[] = [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userPrompt },
+  ];
+
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages,
+      temperature: 0.7,
+      response_format: { type: "json_object" },
+    }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("OpenAI API error:", res.status, errorText);
+    throw new Error(`OpenAI API error: ${res.status}`);
+  }
+
+  const data: OpenAIResponse = await res.json();
+  const content = data.choices[0]?.message?.content;
+
+  if (!content) {
+    throw new Error("Empty response from OpenAI");
+  }
+
+  return content;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-    if (!OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not configured");
-    }
 
     const body: RequestBody = await req.json();
     const { questionText, topic, type } = body;
 
     const systemPrompt =
-      "אתה מורה מנוסה לתכנות Python באוניברסיטה הפתוחה. אתה עוזר לתלמידים להתכונן למבחן. ענה תמיד בעברית. כשנותנים רמזים — אל תחשוף את התשובה. כשמסבירים — הסבר בצורה מעמיקה וצעד אחר צעד.";
+      "אתה מורה מנוסה לתכנות Python באוניברסיטה הפתוחה. אתה עוזר לתלמידים להתכונן למבחן. ענה תמיד בעברית בלבד. כשנותנים רמזים ברמה 1 או 2 — אל תחשוף את התשובה הנכונה בשום אופן. כשמסבירים ברמה 3 — הסבר בצורה מעמיקה וצעד אחר צעד. שמור על טון מעודד וסבלני.";
 
     let userPrompt: string;
     let responseSchema: string;
@@ -163,36 +269,14 @@ serve(async (req) => {
       responseSchema = "question";
     }
 
-    const messages: OpenAIChatMessage[] = [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ];
-
-    const openAIRes = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages,
-        temperature: 0.7,
-        response_format: { type: "json_object" },
-      }),
-    });
-
-    if (!openAIRes.ok) {
-      const errorText = await openAIRes.text();
-      console.error("OpenAI API error:", openAIRes.status, errorText);
-      throw new Error(`OpenAI API error: ${openAIRes.status}`);
-    }
-
-    const openAIData: OpenAIResponse = await openAIRes.json();
-    const content = openAIData.choices[0]?.message?.content;
-
-    if (!content) {
-      throw new Error("Empty response from OpenAI");
+    // Use Gemini as primary, fall back to OpenAI if Gemini key is unavailable
+    let content: string;
+    if (GEMINI_API_KEY) {
+      content = await callGemini(systemPrompt, userPrompt, GEMINI_API_KEY);
+    } else if (OPENAI_API_KEY) {
+      content = await callOpenAI(systemPrompt, userPrompt, OPENAI_API_KEY);
+    } else {
+      throw new Error("Neither GEMINI_API_KEY nor OPENAI_API_KEY is configured");
     }
 
     if (responseSchema === "hint") {
@@ -200,7 +284,7 @@ serve(async (req) => {
         try {
           return JSON.parse(content) as HintResponse;
         } catch {
-          throw new Error(`Failed to parse OpenAI response as JSON: ${content}`);
+          throw new Error(`Failed to parse AI response as JSON: ${content}`);
         }
       })();
       return new Response(
@@ -217,7 +301,7 @@ serve(async (req) => {
         try {
           return JSON.parse(content) as ExplanationResponse;
         } catch {
-          throw new Error(`Failed to parse OpenAI response as JSON: ${content}`);
+          throw new Error(`Failed to parse AI response as JSON: ${content}`);
         }
       })();
       return new Response(
@@ -235,7 +319,7 @@ serve(async (req) => {
         try {
           return JSON.parse(content) as SimilarResponse;
         } catch {
-          throw new Error(`Failed to parse OpenAI response as JSON: ${content}`);
+          throw new Error(`Failed to parse AI response as JSON: ${content}`);
         }
       })();
       return new Response(
