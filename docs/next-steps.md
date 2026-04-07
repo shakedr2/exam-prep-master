@@ -66,21 +66,64 @@ The tutor is a learning assistant, not a shortcut answer bot.
 - `selectNextQuestion` wired into `PracticePage` to pick the first question per topic adaptively from the learner's progress.
 - Hint ladder (`hintLevel` 1/2/3) wired end-to-end: `FloatingAIButton` → `ai-explain` edge function.
 - Per-topic mastery shown on `ProgressPage` via `useSupabaseProgress` (`accuracy = correct / answered`) and local fallback via `getTopicCompletion`.
-Minimal adaptive next-question selection that considers:
-- Topic mastery
-- Repeated mistakes
-- `pattern_family`
-- `common_mistake`
-- Warm-up vs reinforcement vs challenge
-
-Foundation only — do not overbuild.
 
 ---
 
-### Hard rules across all steps
-- No giant rewrites
-- No scope creep
-- No unrestricted AI generation
-- No immediate-answer chat behavior by default
+## Sprint 1 Summary *(complete — shipped to production)*
+
+All 7 roadmap steps plus integration and UX polish landed. CI green, deployment live.
+
+Merged PRs:
+- #49 — Lock roadmap & execution order (Step 1)
+- #50 — Topic normalization audit (Step 2)
+- #51 — Supabase question schema + migrations (Step 3)
+- #52 — Reviewed import pipeline (Step 4)
+- #53 — Tutorials for all 8 topics + first reviewed content batch (Step 5)
+- #54 — Roadmap merge to main
+- #55 — AI tutor contract / hint-ladder spec + `ai-explain` hintLevel support (Step 6)
+- #56 — Personalized learning foundation: `selectNextQuestion` (Step 7)
+- #57 — Step 7 PR
+- #58 — Integration: wire `selectNextQuestion` into `PracticePage`, finalize docs
+- #59 — UX polish: weak-area summary, next-topic suggestion, dashboard improvements
+- #60 — `ai-explain` parsing-error hotfix
+
+Sprint 1 deliverables:
+- 8-topic canonical taxonomy, stable routes
+- 80 reviewed Supabase questions, tutorials for all 8 topics
+- AI tutor hint ladder wired end-to-end (`hintLevel` 1/2/3)
+- Adaptive next-question selection wired into practice flow
+- Per-topic mastery on progress page
+- End-of-topic weak-area summary + next-topic suggestion
+
+---
+
+## Sprint 2 — Priorities
+
+Not yet scheduled — capture of direction only. Keep each item small and reviewable.
+
+### 1. Grow reviewed question bank to 150+
+- Continue the reviewed import pipeline, lecturer materials only.
+- Target gaps first: `loops`, `conditions`, `functions`, `tuples_sets_dicts`.
+- Every question keeps Hebrew text, source metadata, `pattern_family`, `common_mistake`.
+- No bulk AI dumps — every insert passes review.
+
+### 2. AI tutor with Gemini API
+- Replace/augment the current `ai-explain` backend with Gemini for hint generation.
+- Stay faithful to the hint-ladder contract (`docs/ai-tutor-spec.md`) — no shortcut answers by default.
+- Ground prompts in lecturer materials; never free-form unrestricted generation.
+- Preserve Hebrew-only responses and existing `hintLevel` contract so the frontend is untouched.
+
+### 3. Exam simulation improvements
+- Fidelity to real exam: 6 questions, 110 points, 3 hours, mix of tracing/coding/MCQ/fill-blank.
+- Better in-exam UX: navigation between questions, flag-for-review, time budget per question.
+- Post-exam review with per-question explanation and mistake tagging feeding `useProgress`.
+
+### 4. Mobile polish
+- Audit RTL layout on small viewports (dashboard, practice, exam mode).
+- Tap-target sizing, sticky action bars, keyboard handling for coding questions.
+- Verify `FloatingAIButton` placement does not overlap answer controls on mobile.
+
+### Hard rules still apply
 - No English in learner content
-- No skipping verification
+- No unrestricted AI generation into production
+- No scope creep, no giant rewrites
