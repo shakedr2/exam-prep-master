@@ -13,6 +13,8 @@ interface ExplainRequestBody {
   correctIndex: number;
   userAnswerIndex?: number;
   topic?: string;
+  /** Hint ladder level: 1 = general hint, 2 = specific hint, 3 = full explanation */
+  hintLevel?: 1 | 2 | 3;
 }
 
 interface SimilarRequestBody {
@@ -36,6 +38,68 @@ interface OpenAIResponse {
   }>;
 }
 
+function buildHintPrompt(
+  questionText: string,
+  choices: string[],
+  correctAnswer: string,
+  wrongAnswer: string | undefined,
+  hintLevel: 1 | 2 | 3,
+): string {
+  const choicesList = choices.map((c, i) => `${i + 1}. ${c}`).join("\n");
+  const wrongAnswerContext = wrongAnswer
+    ? `\nהמשתמש בחר בתשובה שגויה: "${wrongAnswer}".`
+    : "";
+
+  if (hintLevel === 1) {
+    return `שאלה: "${questionText}"
+
+אפשרויות:
+${choicesList}
+${wrongAnswerContext}
+
+תן רמז קצר מאוד (משפט או שניים בלבד) שמכוון את התלמיד לכיוון הנכון.
+אל תחשוף את התשובה הנכונה בשום אופן.
+השתמש בשאלה סוקרטית או הצבע על מושג רלוונטי שכדאי לבדוק.
+ענה בעברית.
+החזר JSON בדיוק בפורמט הבא ללא טקסט נוסף:
+{"hint": "רמז קצר", "level": 1}`;
+  }
+
+  if (hintLevel === 2) {
+    return `שאלה: "${questionText}"
+
+אפשרויות:
+${choicesList}
+${wrongAnswerContext}
+
+תן רמז ספציפי יותר (3-5 משפטים) שמזכיר את המושג או האופרטור הרלוונטי.
+אפשר לכלול דוגמת קוד קצרה להמחשה.
+עדיין אל תגלה את התשובה הסופית.
+ענה בעברית.
+החזר JSON בדיוק בפורמט הבא ללא טקסט נוסף:
+{"hint": "רמז ספציפי", "level": 2}`;
+  }
+
+  // hintLevel === 3
+  const wrongAnswerExplanation = wrongAnswer
+    ? `\nבחרת "${wrongAnswer}" — הסבר מדוע זו תשובה שגויה ומה הטעות הנפוצה.`
+    : "";
+
+  return `שאלה: "${questionText}"
+
+אפשרויות:
+${choicesList}
+
+התשובה הנכונה היא: "${correctAnswer}".${wrongAnswerExplanation}
+
+הסבר בעברית צעד אחר צעד מדוע "${correctAnswer}" היא התשובה הנכונה.
+אם יש קוד בשאלה, עקוב אחרי הריצה שורה אחרי שורה.
+בסוף תן טיפ קצר לזכירה.
+ענה בעברית.
+החזר JSON בדיוק בפורמט הבא ללא טקסט נוסף:
+{"explanation": "הסבר מלא", "tip": "טיפ לזכירה", "level": 3}`;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -51,35 +115,28 @@ serve(async (req) => {
     const { questionText, topic, type } = body;
 
     const systemPrompt =
-      "אתה עוזר חכם לתלמידים שמתכוננים למבחן תכנות בפייתון. ענה תמיד בעברית בצורה קצרה וברורה.";
+      "אתה מורה מנוסה לתכנות Python באוניברסיטה הפתוחה. אתה עוזר לתלמידים להתכונן למבחן. ענה תמיד בעברית. כשנותנים רמזים — אל תחשוף את התשובה. כשמסבירים — הסבר בצורה מעמיקה וצעד אחר צעד.";
 
     let userPrompt: string;
     let responseSchema: string;
 
     if (type === "explain") {
-      const { choices, correctIndex, userAnswerIndex } = body;
+      const { choices, correctIndex, userAnswerIndex, hintLevel = 3 } = body;
       const correctAnswer = choices[correctIndex];
-      const wrongAnswerPart =
+      const wrongAnswer =
         userAnswerIndex !== undefined && userAnswerIndex !== correctIndex
-          ? ` המשתמש בחר בתשובה שגויה: "${choices[userAnswerIndex]}".`
-          : "";
+          ? choices[userAnswerIndex]
+          : undefined;
 
-      const choicesList = choices
-        .map((c, i) => `${i + 1}. ${c}`)
-        .join("\n");
+      userPrompt = buildHintPrompt(
+        questionText,
+        choices,
+        correctAnswer,
+        wrongAnswer,
+        hintLevel,
+      );
 
-      userPrompt = `שאלה: "${questionText}"
-
-אפשרויות:
-${choicesList}
-
-התשובה הנכונה היא: "${correctAnswer}".${wrongAnswerPart}
-
-הסבר בעברית מדוע זו התשובה הנכונה, ותן טיפ לזכור זאת.
-החזר JSON בדיוק בפורמט הבא ללא טקסט נוסף:
-{"explanation": "הסבר קצר וברור", "tip": "טיפ לזכירה"}`;
-
-      responseSchema = "explanation+tip";
+      responseSchema = hintLevel < 3 ? "hint" : "explanation+tip";
     } else {
       userPrompt = `צור שאלת בחירה מרובה דומה לשאלה הבאה בנושא "${topic ?? "פייתון"}":
 "${questionText}"
@@ -125,17 +182,28 @@ ${choicesList}
 
     const parsed = (() => {
       try {
-        return JSON.parse(content) as Record<string, string>;
+        return JSON.parse(content) as Record<string, string | number>;
       } catch {
         throw new Error(`Failed to parse OpenAI response as JSON: ${content}`);
       }
     })();
 
-    if (responseSchema === "explanation+tip") {
+    if (responseSchema === "hint") {
+      return new Response(
+        JSON.stringify({
+          hint: parsed.hint ?? "",
+          level: parsed.level ?? 1,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    } else if (responseSchema === "explanation+tip") {
       return new Response(
         JSON.stringify({
           explanation: parsed.explanation ?? "",
           tip: parsed.tip ?? "",
+          level: 3,
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },

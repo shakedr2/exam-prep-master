@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Lightbulb, ChevronDown, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sheet,
@@ -8,16 +8,24 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/shared/integrations/supabase/client";
 import type { Question } from "@/data/questions";
+
+type HintLevel = 1 | 2 | 3;
+
+interface HintEntry {
+  level: HintLevel;
+  text: string;
+}
 
 interface FloatingAIButtonProps {
   question: Question;
   userAnswer?: string;
 }
 
-function buildExplainBody(q: Question, userAnswer?: string) {
+function buildExplainBody(q: Question, userAnswer: string | undefined, hintLevel: HintLevel) {
   if (q.type === "quiz") {
     const userAnswerIndex =
       userAnswer !== undefined ? q.options.indexOf(userAnswer) : undefined;
@@ -28,6 +36,7 @@ function buildExplainBody(q: Question, userAnswer?: string) {
       correctIndex: q.correctIndex,
       userAnswerIndex: userAnswerIndex !== undefined && userAnswerIndex >= 0 ? userAnswerIndex : undefined,
       topic: q.topic,
+      hintLevel,
     };
   }
 
@@ -40,6 +49,7 @@ function buildExplainBody(q: Question, userAnswer?: string) {
       correctIndex: 0,
       userAnswerIndex: userAnswer === q.correctAnswer ? 0 : undefined,
       topic: q.topic,
+      hintLevel,
     };
   }
 
@@ -52,6 +62,7 @@ function buildExplainBody(q: Question, userAnswer?: string) {
       correctIndex: 0,
       userAnswerIndex: undefined,
       topic: q.topic,
+      hintLevel,
     };
   }
 
@@ -65,66 +76,78 @@ function buildExplainBody(q: Question, userAnswer?: string) {
     correctIndex: 0,
     userAnswerIndex: undefined,
     topic: q.topic,
+    hintLevel,
   };
 }
 
+const HINT_LABELS: Record<HintLevel, string> = {
+  1: "💡 רמז",
+  2: "➕ עזרה נוספת",
+  3: "📖 הצג תשובה",
+};
+
+const HINT_LEVEL_LABELS: Record<HintLevel, string> = {
+  1: "רמז כללי",
+  2: "רמז ספציפי",
+  3: "הסבר מלא",
+};
+
 export function FloatingAIButton({ question, userAnswer }: FloatingAIButtonProps) {
   const [open, setOpen] = useState(false);
-  const [explanation, setExplanation] = useState<string | null>(null);
+  const [hints, setHints] = useState<HintEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [requestCounts, setRequestCounts] = useState<Record<string, number>>({});
 
   const questionId = question.id;
-  const usedCount = requestCounts[questionId] ?? 0;
-  const isLimited = usedCount >= 3;
+  const currentLevel: HintLevel = hints.length === 0 ? 1 : hints.length === 1 ? 2 : hints.length === 2 ? 3 : 3;
+  const allLevelsShown = hints.length >= 3;
 
-  // Reset explanation when question changes
+  // Reset hints when question changes
   useEffect(() => {
-    setExplanation(null);
+    setHints([]);
     setError(null);
     setLoading(false);
   }, [questionId]);
 
-  const fetchExplanation = useCallback(async () => {
-    if (isLimited || loading) return;
+  const fetchHint = useCallback(async (level: HintLevel) => {
+    if (loading) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const body = buildExplainBody(question, userAnswer);
+      const body = buildExplainBody(question, userAnswer, level);
       const { data, error: fnError } = await supabase.functions.invoke("ai-explain", {
         body,
       });
 
       if (fnError) throw fnError;
-
-      if (data?.error === "rate_limit") {
-        setError(data.message);
-        return;
-      }
-
       if (data?.error) throw new Error(data.error);
 
-      setExplanation(data.explanation);
-      setRequestCounts((prev) => ({
-        ...prev,
-        [questionId]: (prev[questionId] ?? 0) + 1,
-      }));
+      const text: string =
+        level < 3
+          ? (data.hint ?? "")
+          : [data.explanation, data.tip ? `\n\n💡 **טיפ לזכירה:** ${data.tip}` : ""].join("");
+
+      setHints((prev) => [...prev, { level, text }]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "שגיאה בקבלת ההסבר");
+      setError(e instanceof Error ? e.message : "שגיאה בקבלת הרמז");
     } finally {
       setLoading(false);
     }
-  }, [question, questionId, userAnswer, isLimited, loading]);
+  }, [question, userAnswer, loading]);
 
   const handleOpen = () => {
     setOpen(true);
-    if (!explanation && !loading && !isLimited) {
-      fetchExplanation();
+  };
+
+  const handleNextHint = () => {
+    if (!loading && currentLevel <= 3 && hints.length < 3) {
+      fetchHint(currentLevel);
     }
   };
+
+  const nextButtonLabel = HINT_LABELS[currentLevel];
 
   return (
     <>
@@ -136,14 +159,13 @@ export function FloatingAIButton({ question, userAnswer }: FloatingAIButtonProps
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleOpen}
-          disabled={isLimited && !explanation}
-          className="fixed bottom-20 left-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25 transition-shadow hover:shadow-xl hover:shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="הסבר AI"
+          className="fixed bottom-20 left-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25 transition-shadow hover:shadow-xl hover:shadow-purple-500/30"
+          aria-label="עזרת AI"
         >
           <Sparkles className="h-6 w-6" />
-          {usedCount > 0 && usedCount < 3 && (
+          {hints.length > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-background text-[10px] font-bold text-foreground border border-border">
-              {3 - usedCount}
+              {hints.length}
             </span>
           )}
         </motion.button>
@@ -152,49 +174,92 @@ export function FloatingAIButton({ question, userAnswer }: FloatingAIButtonProps
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="bottom"
-          className="max-h-[80vh] overflow-y-auto rounded-t-2xl"
+          className="max-h-[85vh] overflow-y-auto rounded-t-2xl"
           dir="rtl"
         >
           <SheetHeader className="text-right">
             <SheetTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-purple-500" />
-              הסבר AI
+              מדריך AI
             </SheetTitle>
             <SheetDescription>
-              הסבר מפורט לשאלה הנוכחית ({usedCount}/3 שימושים)
+              {allLevelsShown
+                ? "הסבר מלא"
+                : `רמה ${hints.length}/3 — לחץ/י על הכפתור לעזרה הדרגתית`}
             </SheetDescription>
           </SheetHeader>
 
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 space-y-3">
+            {/* Displayed hints */}
+            <AnimatePresence>
+              {hints.map((entry) => (
+                <motion.div
+                  key={entry.level}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`rounded-lg border p-4 ${
+                    entry.level === 1
+                      ? "border-yellow-300/40 bg-yellow-50 dark:bg-yellow-950/20"
+                      : entry.level === 2
+                      ? "border-orange-300/40 bg-orange-50 dark:bg-orange-950/20"
+                      : "border-blue-300/40 bg-blue-50 dark:bg-blue-950/20"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    {entry.level === 1 && <Lightbulb className="h-4 w-4 text-yellow-600 dark:text-yellow-400 shrink-0" />}
+                    {entry.level === 2 && <ChevronDown className="h-4 w-4 text-orange-600 dark:text-orange-400 shrink-0" />}
+                    {entry.level === 3 && <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />}
+                    <span className={`text-xs font-semibold ${
+                      entry.level === 1
+                        ? "text-yellow-700 dark:text-yellow-300"
+                        : entry.level === 2
+                        ? "text-orange-700 dark:text-orange-300"
+                        : "text-blue-700 dark:text-blue-300"
+                    }`}>
+                      {HINT_LEVEL_LABELS[entry.level]}
+                    </span>
+                  </div>
+                  <div
+                    className="prose prose-sm dark:prose-invert max-w-none text-right leading-relaxed"
+                    dir="rtl"
+                  >
+                    <ExplanationRenderer text={entry.text} />
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Loading skeleton */}
             {loading && (
               <div className="space-y-3">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-5/6" />
                 <Skeleton className="h-4 w-4/6" />
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-4 w-3/4" />
               </div>
             )}
 
+            {/* Error */}
             {error && (
               <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
                 {error}
               </div>
             )}
 
-            {explanation && !loading && (
-              <div
-                className="prose prose-sm dark:prose-invert max-w-none text-right leading-relaxed"
-                dir="rtl"
+            {/* Next hint button */}
+            {!allLevelsShown && !loading && (
+              <Button
+                onClick={handleNextHint}
+                variant="outline"
+                className={`w-full gap-2 ${
+                  currentLevel === 1
+                    ? "border-yellow-300/50 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-950/20"
+                    : currentLevel === 2
+                    ? "border-orange-300/50 text-orange-700 dark:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                    : "border-blue-300/50 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                }`}
               >
-                <ExplanationRenderer text={explanation} />
-              </div>
-            )}
-
-            {isLimited && !explanation && !loading && (
-              <div className="rounded-lg border border-warning/30 bg-warning/10 p-4 text-sm text-warning text-center">
-                הגעת למגבלת 3 הסברים לשאלה זו
-              </div>
+                {nextButtonLabel}
+              </Button>
             )}
           </div>
         </SheetContent>
