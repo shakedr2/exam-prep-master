@@ -23,7 +23,7 @@ export function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct:
               if (answered) return;
               setSelected(i);
             }}
-            className={`w-full rounded-sm border p-4 text-right transition-all ${
+            className={`w-full rounded-sm border p-3 sm:p-4 text-right transition-all touch-manipulation min-h-[44px] ${
               answered
                 ? i === q.correctIndex
                   ? "border-success bg-success/10 text-success"

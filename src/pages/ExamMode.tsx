@@ -254,10 +254,10 @@ const ExamMode = () => {
     <div className="min-h-screen pb-24 pt-4">
       <div className="mx-auto max-w-4xl px-4">
         {/* Timer bar */}
-        <div className="flex items-center justify-between mb-2">
-          <div className={`flex items-center gap-3 text-sm ${isLowTime ? "animate-pulse" : ""}`}>
+        <div className="flex items-center justify-between mb-2 gap-2">
+          <div className={`flex items-center gap-2 text-sm ${isLowTime ? "animate-pulse" : ""}`}>
             <div className="flex items-center gap-1.5">
-              <Clock className={`h-4 w-4 ${isLowTime ? "text-destructive" : "text-warning"}`} />
+              <Clock className={`h-4 w-4 shrink-0 ${isLowTime ? "text-destructive" : "text-warning"}`} />
               <span className={`font-mono font-bold ${isLowTime ? "text-destructive" : "text-warning"}`}>
                 {formatTime(timeLeft)}
               </span>
@@ -271,7 +271,7 @@ const ExamMode = () => {
               </div>
             )}
           </div>
-          <span className="text-sm text-muted-foreground">שאלה {currentIndex + 1}/{totalQuestions}</span>
+          <span className="text-sm text-muted-foreground shrink-0">שאלה {currentIndex + 1}/{totalQuestions}</span>
         </div>
         <Progress value={((currentIndex + 1) / totalQuestions) * 100} className="h-2 mb-4" />
 
@@ -284,7 +284,7 @@ const ExamMode = () => {
                 <button
                   key={i}
                   onClick={() => setCurrentIndex(i)}
-                  className={`flex-shrink-0 h-9 w-9 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex-shrink-0 h-11 w-11 rounded-lg text-xs font-bold transition-all touch-manipulation ${
                     i === currentIndex ? "bg-primary text-primary-foreground ring-2 ring-primary/50" :
                     answers[i]?.correct ? "bg-success/20 text-success border border-success/30" :
                     answers[i] ? "bg-destructive/20 text-destructive border border-destructive/30" :
@@ -300,7 +300,7 @@ const ExamMode = () => {
             <div className="flex items-center justify-between mb-3">
               <button
                 onClick={() => toggleFlag(currentIndex)}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-xs font-medium transition-all min-h-[44px] touch-manipulation ${
                   isFlagged ? "bg-warning/20 text-warning border border-warning/30" : "bg-muted text-muted-foreground border border-foreground/10 hover:border-warning/50"
                 }`}
               >
@@ -333,18 +333,18 @@ const ExamMode = () => {
             {/* Navigation */}
             <div className="flex gap-3 mt-4">
               {currentIndex > 0 && (
-                <Button variant="outline" onClick={() => setCurrentIndex(i => i - 1)} className="flex-1 gap-2">
+                <Button variant="outline" onClick={() => setCurrentIndex(i => i - 1)} className="flex-1 gap-2 min-h-[44px] touch-manipulation">
                   <ArrowRight className="h-4 w-4" /> הקודמת
                 </Button>
               )}
               {currentIndex < totalQuestions - 1 ? (
-                <Button onClick={() => setCurrentIndex(i => i + 1)} className="flex-1 gap-2">
+                <Button onClick={() => setCurrentIndex(i => i + 1)} className="flex-1 gap-2 min-h-[44px] touch-manipulation">
                   הבאה <ChevronLeft className="h-4 w-4" />
                 </Button>
               ) : (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button className="flex-1 gap-2 bg-success text-success-foreground hover:bg-success/90">
+                    <Button className="flex-1 gap-2 bg-success text-success-foreground hover:bg-success/90 min-h-[44px] touch-manipulation">
                       סיום מבחן
                     </Button>
                   </AlertDialogTrigger>

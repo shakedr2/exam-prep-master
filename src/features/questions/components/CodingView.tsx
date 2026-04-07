@@ -35,6 +35,10 @@ export function CodingView({ q, onAnswer }: { q: CodingQuestion; onAnswer: (corr
         placeholder="כתוב את הפתרון שלך כאן..."
         className="min-h-[150px] font-mono text-sm text-foreground"
         disabled={selfAssessed !== null}
+        autoCapitalize="none"
+        autoCorrect="off"
+        autoComplete="off"
+        spellCheck={false}
       />
       <Button
         onClick={() => setShowSolution(!showSolution)}
@@ -63,14 +67,14 @@ export function CodingView({ q, onAnswer }: { q: CodingQuestion; onAnswer: (corr
                 <Button
                   onClick={() => handleSelfAssess(true)}
                   variant="outline"
-                  className="flex-1 gap-2 border-success/30 hover:bg-success/10 text-success"
+                  className="flex-1 gap-2 border-success/30 hover:bg-success/10 text-success min-h-[44px] touch-manipulation"
                 >
                   <ThumbsUp className="h-4 w-4" /> כן, נכון
                 </Button>
                 <Button
                   onClick={() => handleSelfAssess(false)}
                   variant="outline"
-                  className="flex-1 gap-2 border-destructive/30 hover:bg-destructive/10 text-destructive"
+                  className="flex-1 gap-2 border-destructive/30 hover:bg-destructive/10 text-destructive min-h-[44px] touch-manipulation"
                 >
                   <ThumbsDown className="h-4 w-4" /> לא, טעיתי
                 </Button>
