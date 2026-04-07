@@ -40,7 +40,7 @@ interface SimilarResponse {
   question: string;
 }
 
-
+interface OpenAIMessage {
   role: "system" | "user" | "assistant";
   content: string;
 }

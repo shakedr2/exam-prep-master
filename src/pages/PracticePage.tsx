@@ -15,6 +15,10 @@ import { useSupabaseQuestionsByTopic, useSupabaseQuestionCount } from "@/hooks/u
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 import { useSaveAnswer } from "@/hooks/useSaveAnswer";
 import { getTutorialByTopicId } from "@/data/topicTutorials";
+import {
+  selectNextQuestion,
+  type SelectableQuestion,
+} from "@/features/progress/lib/adaptiveSelection";
 import type { Difficulty, Question } from "@/data/questions";
 
 const difficultyLabels: Record<Difficulty, string> = {
@@ -76,7 +80,7 @@ function getHintForQuestion(q: Question): string | null {
 const PracticePage = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
-  const { answerQuestion, getWeakTopics } = useProgress();
+  const { answerQuestion, getWeakTopics, progress } = useProgress();
   const { saveAnswer } = useSaveAnswer();
 
   const { questions: allQuestions, loading: questionsLoading } = useSupabaseQuestionsByTopic(topicId);
@@ -95,13 +99,30 @@ const PracticePage = () => {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [lastFeedbackIdx, setLastFeedbackIdx] = useState(-1);
 
+  // Adaptive ordering: use selectNextQuestion to pick the first question
+  // based on the learner's current progress, then keep the rest in the
+  // existing order. Computed once per topic load so it doesn't shuffle on
+  // every answer.
+  const adaptiveQuestions = useMemo(() => {
+    if (!topicId || allQuestions.length === 0) return allQuestions;
+    const pool = allQuestions as unknown as SelectableQuestion[];
+    const first = selectNextQuestion(pool, progress, topicId);
+    if (!first) return allQuestions;
+    return [
+      allQuestions.find((q) => q.id === first.id)!,
+      ...allQuestions.filter((q) => q.id !== first.id),
+    ];
+    // intentionally omit `progress` so the order is stable mid-session
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allQuestions, topicId]);
+
   const filteredQuestions = useMemo(() => {
-    let qs = allQuestions;
+    let qs = adaptiveQuestions;
     if (difficultyFilter) {
       qs = qs.filter((q) => q.difficulty === difficultyFilter);
     }
     return qs;
-  }, [allQuestions, difficultyFilter]);
+  }, [adaptiveQuestions, difficultyFilter]);
 
   const [mistakeQuestions, setMistakeQuestions] = useState<Question[]>([]);
   const activeQuestions = reviewMistakesMode ? mistakeQuestions : filteredQuestions;
