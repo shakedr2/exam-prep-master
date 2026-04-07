@@ -360,7 +360,7 @@ print("HELLO".lower())`,
           "ניתן לעבור תו אחרי תו עם for. כך ספירת תווים, בדיקת תנאים על כל תו ובנייה של מחרוזת חדשה. " +
           "len(s) מחזיר את אורך המחרוזת.",
         codeExample: `def count_vowels(s):
-    vowels = "אeiouAEIOU"
+    vowels = "aeiouAEIOU"
     count = 0
     for ch in s:
         if ch in vowels:
