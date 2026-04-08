@@ -5,6 +5,28 @@ import type { Question } from "@/data/questions";
 
 export type DbQuestion = Tables<"questions">;
 
+const LETTER_INDEX: Record<string, number> = { a: 0, b: 1, c: 2, d: 3 };
+
+function letterToIndex(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const trimmed = value.trim().toLowerCase();
+  if (trimmed.length === 1 && trimmed in LETTER_INDEX) {
+    return LETTER_INDEX[trimmed];
+  }
+  return null;
+}
+
+function letterToOption(
+  letter: string | null | undefined,
+  row: Pick<DbQuestion, "option_a" | "option_b" | "option_c" | "option_d">
+): string | null {
+  const idx = letterToIndex(letter);
+  if (idx === null) return null;
+  const values = [row.option_a, row.option_b, row.option_c, row.option_d];
+  const value = values[idx];
+  return typeof value === "string" ? value : null;
+}
+
 function mapDbQuestion(row: DbQuestion): Question {
   const base = {
     id: row.id,
@@ -15,42 +37,77 @@ function mapDbQuestion(row: DbQuestion): Question {
 
   if (row.question_type === "multiple_choice") {
     const options = [row.option_a, row.option_b, row.option_c, row.option_d].filter(
-      (o): o is string => o != null
+      (o): o is string => typeof o === "string" && o.length > 0
     );
-    const correctIndex = options.indexOf(row.correct_answer ?? "");
+    // correct_answer is stored as a single letter ('a'..'d'). Legacy rows
+    // may store the literal option text — fall back to indexOf for those.
+    const letterIdx = letterToIndex(row.correct_answer);
+    const correctIndex =
+      letterIdx !== null && letterIdx < options.length
+        ? letterIdx
+        : Math.max(0, options.indexOf(row.correct_answer ?? ""));
     return {
       ...base,
       type: "quiz" as const,
       question: row.text,
       code: row.code_snippet ?? undefined,
       options,
-      correctIndex: correctIndex >= 0 ? correctIndex : 0,
+      correctIndex,
     };
   }
 
   if (row.question_type === "tracing") {
+    // Prefer expected_output; otherwise resolve the letter stored in
+    // correct_answer ('a' → option_a's text); otherwise use correct_answer as-is.
+    const resolvedAnswer =
+      row.expected_output ||
+      letterToOption(row.correct_answer, row) ||
+      row.correct_answer ||
+      "";
     return {
       ...base,
       type: "tracing" as const,
       question: row.text,
       code: row.code_snippet ?? "",
-      correctAnswer: row.expected_output ?? row.correct_answer ?? "",
+      correctAnswer: resolvedAnswer,
     };
   }
 
   if (row.question_type === "fill_blank") {
+    // Fill-blank rows in the new batches fold the code into `text` and keep
+    // the real answer in option_a with correct_answer='a'. Split the text
+    // into a description line + code block so FillBlankView can render the
+    // ___ placeholders.
+    let title = row.text;
+    let code = row.code_snippet ?? "";
+    if (!code && row.text.includes("___")) {
+      const nl = row.text.indexOf("\n");
+      if (nl > 0) {
+        title = row.text.slice(0, nl).trim();
+        code = row.text.slice(nl + 1);
+      } else {
+        code = row.text;
+      }
+    }
+
+    // Resolve the actual blank answers. Prefer the letter mapping (batch2
+    // style); fall back to a comma-separated correct_answer (legacy style).
     const blanks: { answer: string; hint: string }[] = [];
-    if (row.correct_answer) {
+    const letterAnswer = letterToOption(row.correct_answer, row);
+    if (letterAnswer !== null) {
+      blanks.push({ answer: letterAnswer, hint: "" });
+    } else if (row.correct_answer) {
       row.correct_answer.split(",").forEach((ans) => {
         blanks.push({ answer: ans.trim(), hint: "" });
       });
     }
+
     return {
       ...base,
       type: "fill-blank" as const,
-      title: row.text,
+      title,
       description: "",
-      code: row.code_snippet ?? "",
+      code,
       blanks,
       solutionExplanation: row.explanation ?? "",
     };
@@ -58,15 +115,17 @@ function mapDbQuestion(row: DbQuestion): Question {
 
   // Fallback: treat as quiz
   const options = [row.option_a, row.option_b, row.option_c, row.option_d].filter(
-    (o): o is string => o != null
+    (o): o is string => typeof o === "string" && o.length > 0
   );
+  const letterIdx = letterToIndex(row.correct_answer);
   return {
     ...base,
     type: "quiz" as const,
     question: row.text,
     code: row.code_snippet ?? undefined,
     options,
-    correctIndex: 0,
+    correctIndex:
+      letterIdx !== null && letterIdx < options.length ? letterIdx : 0,
   };
 }
 
