@@ -1,14 +1,56 @@
 import { motion } from "framer-motion";
-import { Target, CheckCircle2, BarChart3, RotateCcw, AlertCircle } from "lucide-react";
+import { Target, CheckCircle2, BarChart3, RotateCcw, AlertCircle, TrendingUp, Trophy } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProgress } from "@/hooks/useProgress";
 import { useSupabaseProgress } from "@/hooks/useSupabaseProgress";
-import { useWeakPatterns } from "@/hooks/useWeakPatterns";
+import { useWeakPatterns, type PatternStat } from "@/hooks/useWeakPatterns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { patternFamilyLabel } from "@/lib/patternFamilyLabels";
+
+type MasteryTier = "weak" | "inProgress" | "mastered";
+
+const TIER_STYLES: Record<MasteryTier, {
+  cardClass: string;
+  accuracyClass: string;
+  progressClass: string;
+}> = {
+  weak: {
+    cardClass: "border-destructive/20 bg-destructive/5",
+    accuracyClass: "text-destructive",
+    progressClass: "bg-destructive/20 [&>div]:bg-destructive",
+  },
+  inProgress: {
+    cardClass: "border-warning/30 bg-warning/5",
+    accuracyClass: "text-warning",
+    progressClass: "bg-warning/20 [&>div]:bg-warning",
+  },
+  mastered: {
+    cardClass: "border-success/30 bg-success/5",
+    accuracyClass: "text-success",
+    progressClass: "bg-success/20 [&>div]:bg-success",
+  },
+};
+
+function PatternMasteryCard({ stat, tier }: { stat: PatternStat; tier: MasteryTier }) {
+  const styles = TIER_STYLES[tier];
+  return (
+    <div className={`rounded-lg border p-3 ${styles.cardClass}`}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-sm font-medium text-foreground">
+          {patternFamilyLabel(stat.patternFamily)}
+        </span>
+        <span className={`text-xs font-bold ${styles.accuracyClass}`}>{stat.accuracy}%</span>
+      </div>
+      <Progress value={stat.accuracy} className={`h-1.5 ${styles.progressClass}`} />
+      <p className="text-xs text-muted-foreground mt-1">
+        {stat.correct} נכונות מתוך {stat.total} ניסיונות
+      </p>
+    </div>
+  );
+}
 
 const ProgressPage = () => {
   const { progress, getIncorrectQuestions } = useProgress();
@@ -102,29 +144,52 @@ const ProgressPage = () => {
           </p>
         </div>
 
-        {/* Weak Pattern Families */}
-        {!weakPatterns.loading && weakPatterns.weak.length > 0 && (
+        {/* Mastery ladder by pattern family (red / yellow / green) */}
+        {!weakPatterns.loading && (weakPatterns.weak.length > 0 || weakPatterns.inProgress.length > 0 || weakPatterns.mastered.length > 0) && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <h2 className="font-bold text-foreground mb-3 flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-destructive" />
-              נושאים הדורשים תשומת לב
-            </h2>
-            <div className="space-y-2">
-              {weakPatterns.weak.slice(0, 5).map((stat) => (
-                <div key={stat.patternFamily} className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-medium text-foreground">
-                      {patternFamilyLabel(stat.patternFamily)}
-                    </span>
-                    <span className="text-xs font-bold text-destructive">{stat.accuracy}%</span>
-                  </div>
-                  <Progress value={stat.accuracy} className="h-1.5 bg-destructive/20 [&>div]:bg-destructive" />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stat.correct} נכונות מתוך {stat.total} ניסיונות
-                  </p>
+            <h2 className="font-bold text-foreground mb-3">שליטה לפי תבנית</h2>
+
+            {weakPatterns.weak.length > 0 && (
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold text-destructive mb-2 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  דורש תשומת לב
+                </h3>
+                <div className="space-y-2">
+                  {weakPatterns.weak.slice(0, 5).map((stat) => (
+                    <PatternMasteryCard key={stat.patternFamily} stat={stat} tier="weak" />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {weakPatterns.inProgress.length > 0 && (
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold text-warning mb-2 flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  בתהליך שיפור
+                </h3>
+                <div className="space-y-2">
+                  {weakPatterns.inProgress.slice(0, 3).map((stat) => (
+                    <PatternMasteryCard key={stat.patternFamily} stat={stat} tier="inProgress" />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {weakPatterns.mastered.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-success mb-2 flex items-center gap-2">
+                  <Trophy className="h-4 w-4" />
+                  שלטת במלואו
+                </h3>
+                <div className="space-y-2">
+                  {weakPatterns.mastered.slice(0, 3).map((stat) => (
+                    <PatternMasteryCard key={stat.patternFamily} stat={stat} tier="mastered" />
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 

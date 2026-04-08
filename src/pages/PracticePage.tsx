@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp, ArrowLeft } from "lucide-react";
@@ -16,9 +16,11 @@ import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 import { useSupabaseAnsweredQuestions } from "@/hooks/useSupabaseAnsweredQuestions";
 import { useLocalProgressMigration } from "@/hooks/useLocalProgressMigration";
 import { useSaveAnswer } from "@/hooks/useSaveAnswer";
+import { useWeakPatterns } from "@/hooks/useWeakPatterns";
 import { getTutorialByTopicId } from "@/data/topicTutorials";
 import {
   selectNextQuestion,
+  type ProgressLike,
   type SelectableQuestion,
 } from "@/features/progress/lib/adaptiveSelection";
 import type { Difficulty, Question } from "@/data/questions";
@@ -91,6 +93,7 @@ const PracticePage = () => {
   // Remote source of truth for adaptive selection. Falls back to the
   // local `progress` object when Supabase has nothing for this topic yet.
   const { answeredQuestions: remoteAnswered } = useSupabaseAnsweredQuestions(topicId);
+  const { weak: weakPatternStats } = useWeakPatterns();
 
   const { questions: allQuestions, loading: questionsLoading } = useSupabaseQuestionsByTopic(topicId);
   const { topics } = useSupabaseTopics();
@@ -108,40 +111,112 @@ const PracticePage = () => {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [lastFeedbackIdx, setLastFeedbackIdx] = useState(-1);
 
-  // Adaptive ordering: use selectNextQuestion to pick the first question
-  // based on the learner's current progress, then keep the rest in the
-  // existing order. Computed once per topic load so it doesn't shuffle on
-  // every answer.
+  // Adaptive queue: the list of questions presented in this session. Grows
+  // by one each time the learner advances, with each new question chosen
+  // by `selectNextQuestion` based on the latest in-memory answers. This
+  // replaces the old "pick the first question, then natural order" logic
+  // so every step of the practice loop is adaptive.
   //
   // Progress source: prefer Supabase answers (survives across devices);
   // fall back to the local progress hook when the remote set is empty
   // (e.g. offline / first load before the migration runs).
-  const adaptiveQuestions = useMemo(() => {
-    if (!topicId || allQuestions.length === 0) return allQuestions;
+  const [adaptiveQueue, setAdaptiveQueue] = useState<Question[]>([]);
+  const sessionAnswersRef = useRef<Record<string, { correct: boolean; attempts: number }>>({});
+  // Tracks which (topic, allQuestions) combination the queue has been seeded
+  // for, so we only re-seed when those inputs actually change.
+  const seededKeyRef = useRef<string | null>(null);
+
+  const globalWeakPatterns = useMemo(
+    () => new Set(weakPatternStats.map((s) => s.patternFamily)),
+    [weakPatternStats]
+  );
+
+  const buildSelectionProgress = useCallback((): ProgressLike => {
+    // Merge remote history (prior sessions) with in-memory session answers
+    // so a question answered this session is immediately deprioritised.
+    const merged: Record<string, { correct: boolean; attempts: number }> = {};
+    if (Object.keys(remoteAnswered).length > 0) {
+      for (const [id, rec] of Object.entries(remoteAnswered)) {
+        merged[id] = { correct: rec.correct, attempts: rec.attempts };
+      }
+    } else {
+      for (const [id, rec] of Object.entries(progress.answeredQuestions)) {
+        merged[id] = { correct: rec.correct, attempts: rec.attempts };
+      }
+    }
+    for (const [id, rec] of Object.entries(sessionAnswersRef.current)) {
+      merged[id] = rec;
+    }
+    return { answeredQuestions: merged };
+  }, [remoteAnswered, progress.answeredQuestions]);
+
+  const pickNextForQueue = useCallback(
+    (currentQueue: Question[]): Question | null => {
+      if (!topicId || allQuestions.length === 0) return null;
+      const queueIds = new Set(currentQueue.map((q) => q.id));
+      const remaining = allQuestions.filter((q) => !queueIds.has(q.id));
+      if (remaining.length === 0) return null;
+      const pool = remaining as unknown as SelectableQuestion[];
+      const next = selectNextQuestion(pool, buildSelectionProgress(), topicId, {
+        globalWeakPatterns,
+      });
+      if (!next) return null;
+      return allQuestions.find((q) => q.id === next.id) ?? null;
+    },
+    [allQuestions, topicId, buildSelectionProgress, globalWeakPatterns]
+  );
+
+  // Seed the queue once all the inputs needed for adaptive selection are
+  // available (questions loaded). Re-seed when the topic or question set
+  // changes. We compute the seed synchronously during render using a
+  // ref-tracked key so `activeQuestions` is non-empty on the very first
+  // render after `allQuestions` loads — avoiding a flash of the empty
+  // "no questions at this difficulty" screen. React's set-state during
+  // render is safe here because the seededKeyRef guard makes it converge
+  // after one render.
+  let effectiveQueue = adaptiveQueue;
+  if (
+    topicId &&
+    allQuestions.length > 0 &&
+    !reviewMistakesMode &&
+    !difficultyFilter &&
+    seededKeyRef.current !== `${topicId}:${allQuestions.length}`
+  ) {
+    seededKeyRef.current = `${topicId}:${allQuestions.length}`;
+    sessionAnswersRef.current = {};
     const pool = allQuestions as unknown as SelectableQuestion[];
-    const progressForSelection =
-      Object.keys(remoteAnswered).length > 0
-        ? { answeredQuestions: remoteAnswered }
-        : progress;
-    const first = selectNextQuestion(pool, progressForSelection, topicId);
-    if (!first) return allQuestions;
-    return [
-      allQuestions.find((q) => q.id === first.id)!,
-      ...allQuestions.filter((q) => q.id !== first.id),
-    ];
-    // intentionally omit the local `progress` object so the order is stable
-    // mid-session; we re-run once when the remote answered set arrives so
-    // adaptive selection can use cross-device history.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allQuestions, topicId, remoteAnswered]);
+    const first = selectNextQuestion(pool, buildSelectionProgress(), topicId, {
+      globalWeakPatterns,
+    });
+    const seed = first
+      ? (allQuestions.find((q) => q.id === first.id) ?? allQuestions[0])
+      : allQuestions[0];
+    if (adaptiveQueue.length === 0 || adaptiveQueue[0].id !== seed.id) {
+      // Use the freshly-computed seed for this render and schedule the
+      // state update for subsequent renders.
+      effectiveQueue = [seed];
+      setAdaptiveQueue([seed]);
+      if (currentIndex !== 0) setCurrentIndex(0);
+    }
+  }
+
+  // Clear the seed key when the user enters a non-adaptive mode so that
+  // returning to the default flow re-seeds cleanly.
+  useEffect(() => {
+    if (reviewMistakesMode || difficultyFilter) {
+      seededKeyRef.current = null;
+    }
+  }, [reviewMistakesMode, difficultyFilter]);
 
   const filteredQuestions = useMemo(() => {
-    let qs = adaptiveQuestions;
     if (difficultyFilter) {
-      qs = qs.filter((q) => q.difficulty === difficultyFilter);
+      return allQuestions.filter((q) => q.difficulty === difficultyFilter);
     }
-    return qs;
-  }, [adaptiveQuestions, difficultyFilter]);
+    return effectiveQueue;
+    // effectiveQueue is derived from adaptiveQueue + seeding branch;
+    // re-memoising on each render is cheap and correct.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adaptiveQueue, allQuestions, difficultyFilter, effectiveQueue]);
 
   const [mistakeQuestions, setMistakeQuestions] = useState<Question[]>([]);
   const activeQuestions = reviewMistakesMode ? mistakeQuestions : filteredQuestions;
@@ -229,8 +304,16 @@ const PracticePage = () => {
 
   const current = activeQuestions[currentIndex];
   const answeredCount = Object.keys(answers).length;
-  const progressPct = activeQuestions.length > 0
-    ? Math.round((answeredCount / activeQuestions.length) * 100)
+  // In adaptive mode, the queue grows as the learner advances; use the
+  // total number of questions in the topic as the stable denominator so
+  // the counter doesn't jump (1/1 → 2/2 → …). In filter / mistakes mode
+  // we still know the full list up front.
+  const totalTarget =
+    reviewMistakesMode || difficultyFilter
+      ? activeQuestions.length
+      : allQuestions.length;
+  const progressPct = totalTarget > 0
+    ? Math.round((answeredCount / totalTarget) * 100)
     : 0;
 
   const handleAnswer = (questionId: string, answer: string, correct: boolean) => {
@@ -240,6 +323,13 @@ const PracticePage = () => {
       const q = allQuestions.find((q) => q.id === questionId);
       saveAnswer(questionId, topicId, correct, q?.patternFamily, q?.commonMistake);
     }
+    // Track the answer in session memory so the next adaptive pick sees
+    // the updated state immediately (no waiting for a Supabase round-trip).
+    const prevAttempts = sessionAnswersRef.current[questionId]?.attempts ?? 0;
+    sessionAnswersRef.current = {
+      ...sessionAnswersRef.current,
+      [questionId]: { correct, attempts: prevAttempts + 1 },
+    };
     setShowHint(false);
     if (correct) {
       setFeedbackMessage(getRandomEncouragement());
@@ -250,10 +340,33 @@ const PracticePage = () => {
   };
 
   const handleNext = () => {
-    if (currentIndex + 1 >= activeQuestions.length) {
+    // In review-mistakes or difficulty-filter modes the active list is
+    // pre-built, so we just walk it. In the default adaptive flow, grow
+    // the queue by picking the next best question given the latest answers.
+    if (reviewMistakesMode || difficultyFilter) {
+      if (currentIndex + 1 >= activeQuestions.length) {
+        setFinished(true);
+        return;
+      }
+      setCurrentIndex((i) => i + 1);
+      setShowHint(false);
+      setFeedbackMessage(null);
+      return;
+    }
+
+    if (currentIndex + 1 < adaptiveQueue.length) {
+      setCurrentIndex((i) => i + 1);
+      setShowHint(false);
+      setFeedbackMessage(null);
+      return;
+    }
+
+    const next = pickNextForQueue(adaptiveQueue);
+    if (!next) {
       setFinished(true);
       return;
     }
+    setAdaptiveQueue((q) => [...q, next]);
     setCurrentIndex((i) => i + 1);
     setShowHint(false);
     setFeedbackMessage(null);
@@ -273,6 +386,12 @@ const PracticePage = () => {
     setReviewMistakesMode(false);
     setShowHint(false);
     setFeedbackMessage(null);
+    // Clear session memory and force the seeding block to re-run next
+    // render, picking a fresh starting question based on the just-recorded
+    // answers.
+    sessionAnswersRef.current = {};
+    seededKeyRef.current = null;
+    setAdaptiveQueue([]);
   };
 
   const handleReviewMistakes = () => {
@@ -293,6 +412,10 @@ const PracticePage = () => {
     setAnswers({});
     setFinished(false);
     setReviewMistakesMode(false);
+    sessionAnswersRef.current = {};
+    // The seeding effect re-runs on filter change and rebuilds the queue
+    // when `d` is null; when `d` is non-null, `filteredQuestions` already
+    // returns the filtered list directly.
   };
 
   if (finished) {
@@ -455,7 +578,7 @@ const PracticePage = () => {
             ← חזרה
           </Button>
           <div className="text-sm text-muted-foreground font-medium font-mono">
-            שאלה {currentIndex + 1} מתוך {activeQuestions.length}
+            שאלה {currentIndex + 1} מתוך {totalTarget}
           </div>
         </div>
 
@@ -467,7 +590,7 @@ const PracticePage = () => {
                 <span className="text-destructive ms-2 text-xs">(חזרה על טעויות)</span>
               )}
             </p>
-            <p className="text-xs text-muted-foreground">{answeredCount}/{activeQuestions.length} נענו</p>
+            <p className="text-xs text-muted-foreground">{answeredCount}/{totalTarget} נענו</p>
           </div>
         )}
 
@@ -591,7 +714,7 @@ const PracticePage = () => {
             <ChevronRight className="h-4 w-4 me-1" />
             הקודם
             <span className="ms-1 text-xs opacity-70 font-mono">
-              {currentIndex + 1}/{activeQuestions.length}
+              {currentIndex + 1}/{totalTarget}
             </span>
           </Button>
 
@@ -600,9 +723,9 @@ const PracticePage = () => {
             onClick={handleNext}
             disabled={!answers[current.id]}
           >
-            {currentIndex + 1 === activeQuestions.length ? "סיום" : "הבא"}
+            {currentIndex + 1 >= totalTarget ? "סיום" : "הבא"}
             <span className="ms-1 text-xs opacity-70 font-mono">
-              {currentIndex + 1}/{activeQuestions.length}
+              {currentIndex + 1}/{totalTarget}
             </span>
             <ChevronLeft className="h-4 w-4 ms-1" />
           </Button>

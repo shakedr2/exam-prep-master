@@ -17,6 +17,12 @@ export interface TopicTutorial {
   commonMistakes: string[];
   quickTip: string;
   prepQuestions?: PrepQuestion[];
+  /**
+   * `pattern_family` keys (as defined in `src/lib/patternFamilyLabels.ts`)
+   * that this tutorial covers. Used by the progress page to link weak
+   * pattern cards back to a relevant tutorial.
+   */
+  patternFamilies?: string[];
 }
 
 export const topicTutorials: TopicTutorial[] = [
@@ -80,6 +86,13 @@ mystery("hello")`,
     ],
     quickTip:
       "תמיד בנו טבלת מעקב! רשמו עמודה לכל משתנה ושורה לכל איטרציה. זה ההבדל בין ניחוש לתשובה נכונה.",
+    patternFamilies: [
+      "type_conversion",
+      "input_conversion",
+      "multiple_assignment",
+      "print_sep",
+      "print_end",
+      "type_check",
     prepQuestions: [
       {
         question: "מה תדפיס הפונקציה mystery(3) אם היא מבצעת: result = \"\", ולאחר לולאה result += str(i*2)+\" \" עבור i ב-range(3)?",
@@ -153,6 +166,12 @@ else:
     ],
     quickTip:
       "כשמתבלבלים בתנאים מורכבים — שרטטו תרשים זרימה קצר על דף. זה עוזר לראות את כל המסלולים.",
+    patternFamilies: [
+      "comparison_operators",
+      "logical_operators",
+      "nested_conditions",
+      "elif_chain",
+      "short_circuit",
     prepQuestions: [
       {
         question: "מה יודפס עבור x = 15?\nif x > 10:\n    if x % 2 == 0:\n        print('A')\n    else:\n        print('B')\nelse:\n    print('C')",
@@ -214,12 +233,13 @@ print(digit_sum)`,
     ],
     quickTip:
       "לולאות מקוננות? חשבו על שעון — המחוג הקטן (חיצוני) זז לאט, הגדול (פנימי) רץ סיבוב שלם על כל צעד של הקטן.",
-    prepQuestions: [
-      {
-        question: "כמה פעמים תדפיס הלולאה: for i in range(2, 8, 2): print(i)?",
-        options: ["2", "3", "4", "6"],
-        correctAnswer: 1,
-      },
+    patternFamilies: [
+      "range_loop",
+      "range_step",
+      "while_counter",
+      "while_break",
+      "continue_statement",
+      "nested_loops",
     ],
   },
   {
@@ -275,6 +295,13 @@ print(result)`,
     ],
     quickTip:
       "שאלה שכיחה במבחן: כתוב פונקציה שמקבלת רשימה ומחזירה רשימה חדשה. תמיד חשבו — האם לשנות את המקור או ליצור חדש?",
+    patternFamilies: [
+      "list_append_pop",
+      "list_comprehension",
+      "list_methods",
+      "list_sort_vs_sorted",
+      "list_extend_vs_append",
+      "list_slicing",
     prepQuestions: [
       {
         question: "מה יודפס?\nlst = [3, 1, 4, 1, 5]\nlst.sort()\nprint(lst[-1])",
@@ -345,6 +372,13 @@ print(factorial(0))`,
     ],
     quickTip:
       "בשאלת כתיבת פונקציה במבחן: קראו את הדרישות, כתבו את החתימה (שם + פרמטרים), ודאו שיש return, ובדקו על דוגמת הקלט שנתנו.",
+    patternFamilies: [
+      "return_value_usage",
+      "return_none",
+      "default_parameters",
+      "local_scope",
+      "global_keyword",
+      "recursion",
     prepQuestions: [
       {
         question: "מה תחזיר הפונקציה greet('עמי') אם מוגדרת: def greet(name, greeting='שלום'): return f'{greeting}, {name}!'",
@@ -488,6 +522,13 @@ print(max(grades, key=grades.get))`,
     ],
     quickTip:
       "ספירת מופעים: השתמשו במילון עם d.get(key, 0) + 1 — זהו דפוס מאוד נפוץ בשאלות עיבוד מחרוזות ורשימות!",
+    patternFamilies: [
+      "tuple_immutability",
+      "set_operations",
+      "set_duplicates",
+      "dict_access",
+      "dict_iteration",
+      "dict_get_default",
     prepQuestions: [
       {
         question: "מה יחזיר: {1,2,3} & {2,3,4}?",
@@ -578,6 +619,7 @@ for _ in range(10):
     ],
     commonMistakes: ["שכחה ש-input() תמיד מחזיר מחרוזת — צריך להמיר עם int() או float()"],
     quickTip: "המר קלט מספרי מיד עם int(input(...)) או float(input(...)).",
+    patternFamilies: ["type_conversion", "input_conversion", "print_sep", "print_end"],
   },
   {
     topicId: "arithmetic",
@@ -593,6 +635,7 @@ for _ in range(10):
     ],
     commonMistakes: ["בלבול בין / ל-//", "שכחה לייבא את math לפני שימוש ב-math.sqrt"],
     quickTip: "שימוש ב-% הוא הדרך המהירה לבדוק התחלקות: x % 2 == 0 → זוגי.",
+    patternFamilies: ["integer_division_modulo", "float_division", "modulo", "power_operator", "math_functions"],
   },
   {
     topicId: "functions",
@@ -608,6 +651,7 @@ for _ in range(10):
     ],
     commonMistakes: ["שכחה ל-return — הפונקציה תחזיר None", "בלבול בין משתנה לוקלי לגלובלי"],
     quickTip: "כל פונקציה צריכה לעשות דבר אחד ברור — אם היא עושה שניים, פצל אותה.",
+    patternFamilies: ["return_value_usage", "return_none", "default_parameters", "local_scope", "global_keyword", "recursion"],
   },
   {
     topicId: "strings",
@@ -623,6 +667,7 @@ for _ in range(10):
     ],
     commonMistakes: ["שכחה שמחרוזות immutable — אי אפשר לשנות תו במקום"],
     quickTip: "להמיר מחרוזת לרשימת תווים: list(s). להמיר חזרה: \"\".join(lst).",
+    patternFamilies: ["string_slicing", "string_indexing", "string_methods", "string_find", "split_join", "for_string_loop"],
   },
   {
     topicId: "tuples_sets_dicts",
@@ -638,6 +683,7 @@ for _ in range(10):
     ],
     commonMistakes: ["ניסיון לשנות tuple", "שכחה ש-set לא שומר סדר"],
     quickTip: "set מצוין למחיקת כפילויות: list(set(my_list)).",
+    patternFamilies: ["tuple_immutability", "set_operations", "set_duplicates", "dict_access", "dict_iteration", "dict_get_default"],
   },
 ];
 

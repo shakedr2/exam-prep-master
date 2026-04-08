@@ -7,6 +7,7 @@ import { TracingView } from "@/components/TracingView";
 import { FillBlankView } from "@/components/FillBlankView";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
 import { Textarea } from "@/components/ui/textarea";
+import { CommonMistakeWarning } from "@/features/questions/components/CommonMistakeWarning";
 import type { Question, CodingQuestion } from "@/data/questions";
 
 interface Props {
@@ -82,6 +83,9 @@ function ExamCodingView({ q, currentAnswer, onAnswer }: { q: CodingQuestion; cur
             <div className={`rounded-xl p-3 text-center text-sm font-semibold ${selfAssessed ? "bg-success/10 text-success border border-success/30" : "bg-warning/10 text-warning border border-warning/30"}`}>
               {selfAssessed ? "✅ סימנת כנכון" : "📝 סימנת כלא נכון — חזור על הנושא אחרי המבחן"}
             </div>
+          )}
+          {selfAssessed === false && (
+            <CommonMistakeWarning mistake={q.commonMistake} />
           )}
         </motion.div>
       )}

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
 import { TraceTable } from "@/components/TraceTable";
+import { CommonMistakeWarning } from "@/features/questions/components/CommonMistakeWarning";
 import { gradeTracingAnswer, type GradeResult } from "@/lib/grading";
 import type { TracingQuestion } from "@/data/questions";
 
@@ -100,28 +101,33 @@ export function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (co
       )}
 
       {submitted && grade && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={`rounded-xl p-4 space-y-3 ${gradeColors[grade.score]}`}
-        >
-          <p className="text-sm font-semibold mb-1">{grade.message}</p>
-          {grade.score === "partial" && (
-            <div className="space-y-1">
-              <p className="text-sm font-mono">התשובה שלך: {answer}</p>
-              <p className="text-sm font-mono">תשובה מדויקת: {q.correctAnswer}</p>
-              <p className="text-xs text-muted-foreground">💡 קיבלת ציון חלקי — ההבנה הכללית נכונה</p>
-            </div>
+        <div className="space-y-3">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`rounded-xl p-4 space-y-3 ${gradeColors[grade.score]}`}
+          >
+            <p className="text-sm font-semibold mb-1">{grade.message}</p>
+            {grade.score === "partial" && (
+              <div className="space-y-1">
+                <p className="text-sm font-mono">התשובה שלך: {answer}</p>
+                <p className="text-sm font-mono">תשובה מדויקת: {q.correctAnswer}</p>
+                <p className="text-xs text-muted-foreground">💡 קיבלת ציון חלקי — ההבנה הכללית נכונה</p>
+              </div>
+            )}
+            {grade.score === "incorrect" && <p className="text-sm font-mono mb-2">תשובה נכונה: {q.correctAnswer}</p>}
+            <p className="text-sm text-muted-foreground">{q.explanation}</p>
+            {q.traceTable && (
+              <div className="mt-3">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">📊 טבלת מעקב שלב-אחר-שלב:</p>
+                <TraceTable headers={q.traceTable.headers} rows={q.traceTable.rows} />
+              </div>
+            )}
+          </motion.div>
+          {grade.score === "incorrect" && (
+            <CommonMistakeWarning mistake={q.commonMistake} />
           )}
-          {grade.score === "incorrect" && <p className="text-sm font-mono mb-2">תשובה נכונה: {q.correctAnswer}</p>}
-          <p className="text-sm text-muted-foreground">{q.explanation}</p>
-          {q.traceTable && (
-            <div className="mt-3">
-              <p className="text-xs font-semibold text-muted-foreground mb-2">📊 טבלת מעקב שלב-אחר-שלב:</p>
-              <TraceTable headers={q.traceTable.headers} rows={q.traceTable.rows} />
-            </div>
-          )}
-        </motion.div>
+        </div>
       )}
     </div>
   );
