@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Check, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CommonMistakeWarning } from "@/features/questions/components/CommonMistakeWarning";
 import { gradeBlankAnswer, type GradeResult } from "@/lib/grading";
 import type { FillBlankQuestion } from "@/data/questions";
 
@@ -170,6 +171,9 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
         </motion.div>
       )}
 
+      {submitted && grades.length > 0 && !grades.every(g => g.score === "correct") && (
+        <CommonMistakeWarning mistake={q.commonMistake} />
+      )}
       {submitted && grades.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
