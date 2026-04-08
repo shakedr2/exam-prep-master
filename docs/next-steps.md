@@ -97,33 +97,57 @@ Sprint 1 deliverables:
 
 ---
 
-## Sprint 2 — Priorities
+## Sprint 2 — Priorities *(complete — shipped to production)*
 
-Not yet scheduled — capture of direction only. Keep each item small and reviewable.
+### 1. Grow reviewed question bank to 150+ *(completed — PR #61)*
+- 80 reviewed questions from Sprint 1 + 72 new reviewed Hebrew questions landed via the batch2 migration.
+- All questions keep Hebrew text, source metadata, `pattern_family`, `common_mistake`.
+- Bank total: **152**.
 
-### 1. Grow reviewed question bank to 150+ *(in progress)*
-- 80 reviewed questions from Sprint 1 + 72 new in `scripts/insert-questions-batch2.sql` = **152 target**.
-- Batch script ready to run; see `docs/operations.md` for execution steps.
-- Continue the reviewed import pipeline, lecturer materials only.
-- Target gaps first: `loops`, `conditions`, `functions`, `tuples_sets_dicts`.
-- Every question keeps Hebrew text, source metadata, `pattern_family`, `common_mistake`.
-- No bulk AI dumps — every insert passes review.
-
-### 2. AI tutor with Gemini API *(completed)*
-- `supabase/functions/ai-explain` now calls Gemini as the primary provider and falls back to OpenAI on any error (including 429 rate limits).
+### 2. AI tutor with Gemini API *(completed — PR #62)*
+- `supabase/functions/ai-explain` calls Gemini as the primary provider and falls back to OpenAI on any error (including 429 rate limits).
 - Hint-ladder contract preserved (`hintLevel` 1/2/3); frontend untouched.
 - Hebrew-only responses, grounded prompts.
 - See `docs/operations.md` for `GEMINI_API_KEY` / `OPENAI_API_KEY` secret setup.
 
-### 3. Exam simulation improvements
-- Fidelity to real exam: 6 questions, 110 points, 3 hours, mix of tracing/coding/MCQ/fill-blank.
-- Better in-exam UX: navigation between questions, flag-for-review, time budget per question.
+### 3. Exam simulation improvements *(completed — PRs #63, #64)*
+- 6 questions, 110 points, 3 hours, mix of tracing/coding/MCQ/fill-blank.
+- In-exam navigation between questions, flag-for-review, and per-question time awareness.
 - Post-exam review with per-question explanation and mistake tagging feeding `useProgress`.
 
-### 4. Mobile polish
-- Audit RTL layout on small viewports (dashboard, practice, exam mode).
+### 4. Mobile polish *(completed — PR #67)*
+- Dashboard, practice and exam mode audited on small viewports.
 - Tap-target sizing, sticky action bars, keyboard handling for coding questions.
-- Verify `FloatingAIButton` placement does not overlap answer controls on mobile.
+- `FloatingAIButton` placement verified against answer controls on mobile.
+
+---
+
+## Sprint 3 — Persistence, docs, and adaptive polish
+
+### 3.1 Persist learner progress to Supabase *(completed — PR #69, issue #68)*
+- Anonymous stable UUID in `localStorage.anon_user_id` feeds `user_progress.user_id`.
+- `useSaveAnswer` reads the current `attempts` count and upserts an incremented value; offline fallback queue in `examprep_pending_answers`.
+- `useSupabaseProgress` works for anonymous learners via the same id.
+- New `useSupabaseAnsweredQuestions` feeds the `selectNextQuestion` adaptive selector with cross-device history.
+- One-time `useLocalProgressMigration` copies the legacy `examprep_progress` blob into Supabase.
+- Migration: `supabase/migrations/20260408_anon_user_progress.sql` drops the `auth.users` FK, adds `attempts` + `last_attempted_at`, relaxes RLS.
+
+### 3.2 Docs update + progress-count bug fix *(this issue — #70)*
+- Fix `ProgressPage` total-question count: read from Supabase `topicStats` instead of the static `questions.length` (showed `52 / 125` vs. the dashboard's `152`).
+- Mark Sprint 2 items 1–4 as completed with PR refs.
+- Add Sprint 3 plan to this document.
+- Verify Supabase progress persistence works end-to-end after #69.
+
+### 3.3 Grow question bank to 200+ with Gemini candidate pipeline *(planned)*
+- Add ~50 more reviewed questions via the pipeline in `docs/operations.md`.
+- Gemini produces candidates grounded in lecturer materials only; every candidate goes through the reviewed import flow before insertion.
+- Target gaps: `loops`, `conditions`, `functions`, `tuples_sets_dicts`.
+- Acceptance: bank ≥ 200, `pattern_family` + `common_mistake` populated.
+
+### 3.4 Enhanced adaptive learning *(planned)*
+- Use `pattern_family` / `common_mistake` signals in `selectNextQuestion` scoring so learners see more questions that hit their weak patterns.
+- Track per-pattern mastery and surface it on the progress page.
+- Foundation for the future spaced-repetition layer — still no SRS in this step.
 
 ### Hard rules still apply
 - No English in learner content
