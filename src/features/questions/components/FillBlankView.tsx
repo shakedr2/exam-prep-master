@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Check, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,11 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
   const [submitted, setSubmitted] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [grades, setGrades] = useState<GradeResult[]>([]);
+  const firstInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    firstInputRef.current?.focus();
+  }, [q.id]);
 
   const preGrades = answers.map((a, i) => gradeBlankAnswer(a.trim(), q.blanks[i].answer.trim()));
   const allCorrectPre = preGrades.every(g => g.score === "correct");
@@ -103,6 +108,7 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
                   </span>
                 ) : (
                   <Input
+                    ref={bi === 0 ? firstInputRef : undefined}
                     dir="ltr"
                     value={answers[bi]}
                     onChange={e => {
@@ -110,7 +116,7 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
                       newAnswers[bi] = e.target.value;
                       setAnswers(newAnswers);
                     }}
-                    placeholder={blank.hint || "___"}
+                    placeholder="הקלד תשובה"
                     className="inline-block w-28 h-9 text-sm font-mono font-semibold bg-background border-2 border-primary/60 text-center px-2 text-foreground focus-visible:ring-2 focus-visible:ring-primary"
                     disabled={submitted}
                   />

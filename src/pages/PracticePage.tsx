@@ -589,6 +589,9 @@ const PracticePage = () => {
           >
             <ChevronRight className="h-4 w-4 me-1" />
             הקודם
+            <span className="ms-1 text-xs opacity-70 font-mono">
+              {currentIndex + 1}/{activeQuestions.length}
+            </span>
           </Button>
 
           <Button
@@ -597,6 +600,9 @@ const PracticePage = () => {
             disabled={!answers[current.id]}
           >
             {currentIndex + 1 === activeQuestions.length ? "סיום" : "הבא"}
+            <span className="ms-1 text-xs opacity-70 font-mono">
+              {currentIndex + 1}/{activeQuestions.length}
+            </span>
             <ChevronLeft className="h-4 w-4 ms-1" />
           </Button>
         </div>
