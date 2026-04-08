@@ -1,160 +1,59 @@
-import { useState, useEffect, useCallback } from "react";
-import { Sparkles, Lightbulb, ChevronDown, BookOpen } from "lucide-react";
+import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import { Sparkles, Send, Lightbulb, ChevronDown, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/shared/integrations/supabase/client";
+import { Textarea } from "@/components/ui/textarea";
 import type { Question } from "@/data/questions";
-
-type HintLevel = 1 | 2 | 3;
-
-interface HintEntry {
-  level: HintLevel;
-  text: string;
-}
+import { useAIChat } from "./useAIChat";
 
 interface FloatingAIButtonProps {
   question: Question;
   userAnswer?: string;
 }
 
-function buildExplainBody(q: Question, userAnswer: string | undefined, hintLevel: HintLevel) {
-  if (q.type === "quiz") {
-    const userAnswerIndex =
-      userAnswer !== undefined ? q.options.indexOf(userAnswer) : undefined;
-    return {
-      type: "explain" as const,
-      questionText: q.question,
-      choices: q.options,
-      correctIndex: q.correctIndex,
-      userAnswerIndex: userAnswerIndex !== undefined && userAnswerIndex >= 0 ? userAnswerIndex : undefined,
-      topic: q.topic,
-      hintLevel,
-    };
-  }
+const QUICK_HINTS = [
+  { label: "💡 רמז כללי", message: "תן לי רמז כללי לשאלה" },
+  { label: "➕ רמז ספציפי", message: "תן לי רמז יותר ספציפי" },
+  { label: "📖 הסבר מפורט", message: "הסבר לי את הפתרון בפירוט" },
+] as const;
 
-  if (q.type === "tracing") {
-    const questionText = `${q.question}\n\nקוד:\n${q.code}`;
-    return {
-      type: "explain" as const,
-      questionText,
-      choices: [q.correctAnswer],
-      correctIndex: 0,
-      userAnswerIndex: userAnswer === q.correctAnswer ? 0 : undefined,
-      topic: q.topic,
-      hintLevel,
-    };
-  }
-
-  if (q.type === "coding") {
-    const questionText = `${q.title}\n\n${q.description}`;
-    return {
-      type: "explain" as const,
-      questionText,
-      choices: [q.solution],
-      correctIndex: 0,
-      userAnswerIndex: undefined,
-      topic: q.topic,
-      hintLevel,
-    };
-  }
-
-  // fill-blank
-  const correctAnswer = q.blanks.map((blank) => blank.answer).join(", ");
-  const questionText = `${q.title}\n\n${q.description}\n\nקוד:\n${q.code}`;
-  return {
-    type: "explain" as const,
-    questionText,
-    choices: [correctAnswer],
-    correctIndex: 0,
-    userAnswerIndex: undefined,
-    topic: q.topic,
-    hintLevel,
-  };
-}
-
-const HINT_LABELS: Record<HintLevel, string> = {
-  1: "💡 רמז",
-  2: "➕ עזרה נוספת",
-  3: "📖 הצג תשובה",
-};
-
-const HINT_LEVEL_LABELS: Record<HintLevel, string> = {
-  1: "רמז כללי",
-  2: "רמז ספציפי",
-  3: "הסבר מלא",
-};
-
-export function FloatingAIButton({ question, userAnswer }: FloatingAIButtonProps) {
+export function FloatingAIButton({ question }: FloatingAIButtonProps) {
   const [open, setOpen] = useState(false);
-  const [hints, setHints] = useState<HintEntry[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [input, setInput] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const questionId = question.id;
-  const currentLevel = Math.min(hints.length + 1, 3) as HintLevel;
-  const allLevelsShown = hints.length >= 3;
+  const { messages, streaming, error, sendMessage } = useAIChat(question);
 
-  // Reset hints when question changes
+  // Scroll to bottom when new messages arrive
   useEffect(() => {
-    setHints([]);
-    setError(null);
-    setLoading(false);
-  }, [questionId]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  const fetchHint = useCallback(async (level: HintLevel) => {
-    if (loading) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const body = buildExplainBody(question, userAnswer, level);
-      const { data, error: fnError } = await supabase.functions.invoke("ai-explain", {
-        body,
-      });
-
-      if (fnError) throw fnError;
-      if (data?.error) throw new Error(data.error);
-
-      let text: string;
-      if (level < 3) {
-        const hint = typeof data?.hint === "string" ? data.hint : "";
-        if (!hint) throw new Error("לא התקבל רמז מהשרת");
-        text = hint;
-      } else {
-        const explanation = typeof data?.explanation === "string" ? data.explanation : "";
-        if (!explanation) throw new Error("לא התקבל הסבר מהשרת");
-        const tip = typeof data?.tip === "string" && data.tip ? `\n\n💡 **טיפ לזכירה:** ${data.tip}` : "";
-        text = explanation + tip;
-      }
-
-      setHints((prev) => [...prev, { level, text }]);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "שגיאה בקבלת הרמז");
-    } finally {
-      setLoading(false);
-    }
-  }, [question, userAnswer, loading]);
-
-  const handleOpen = () => {
-    setOpen(true);
+  const handleSend = () => {
+    const text = input.trim();
+    if (!text || streaming) return;
+    setInput("");
+    sendMessage(text);
   };
 
-  const handleNextHint = () => {
-    if (!loading && currentLevel <= 3 && hints.length < 3) {
-      fetchHint(currentLevel);
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   };
 
-  const nextButtonLabel = HINT_LABELS[currentLevel];
+  const handleQuickHint = (message: string) => {
+    if (streaming) return;
+    sendMessage(message);
+  };
 
   return (
     <>
@@ -165,14 +64,14 @@ export function FloatingAIButton({ question, userAnswer }: FloatingAIButtonProps
           exit={{ scale: 0, opacity: 0 }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          onClick={handleOpen}
+          onClick={() => setOpen(true)}
           className="fixed bottom-32 end-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25 transition-shadow hover:shadow-xl hover:shadow-purple-500/30"
           aria-label="עזרת AI"
         >
           <Sparkles className="h-6 w-6" />
-          {hints.length > 0 && (
+          {messages.length > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-background text-[10px] font-bold text-foreground border border-border">
-              {hints.length}
+              {messages.filter((m) => m.role === "user").length}
             </span>
           )}
         </motion.button>
@@ -181,93 +80,110 @@ export function FloatingAIButton({ question, userAnswer }: FloatingAIButtonProps
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="bottom"
-          className="max-h-[85vh] overflow-y-auto rounded-t-2xl"
+          className="flex flex-col rounded-t-2xl p-0"
+          style={{ height: "85dvh" }}
           dir="rtl"
         >
-          <SheetHeader className="text-right">
+          <SheetHeader className="shrink-0 border-b px-4 py-3 text-right">
             <SheetTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-purple-500" />
-              מדריך AI
+              מדריך AI — פרופ׳ פייתון
             </SheetTitle>
-            <SheetDescription>
-              {allLevelsShown
-                ? "הסבר מלא"
-                : `רמה ${hints.length}/3 — לחץ/י על הכפתור לעזרה הדרגתית`}
-            </SheetDescription>
           </SheetHeader>
 
-          <div className="mt-4 space-y-3">
-            {/* Displayed hints */}
-            <AnimatePresence>
-              {hints.map((entry) => (
+          {/* Messages area */}
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+            {messages.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-full gap-3 text-center text-muted-foreground">
+                <Sparkles className="h-8 w-8 text-purple-400 opacity-50" />
+                <p className="text-sm">שלום! אני כאן לעזור לך עם השאלה.</p>
+                <p className="text-xs opacity-70">השתמש בכפתורי הרמזים למטה, או שאל אותי בחופשיות.</p>
+              </div>
+            )}
+
+            <AnimatePresence initial={false}>
+              {messages.map((msg, i) => (
                 <motion.div
-                  key={entry.level}
-                  initial={{ opacity: 0, y: 8 }}
+                  key={i}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`rounded-lg border p-4 ${
-                    entry.level === 1
-                      ? "border-yellow-300/40 bg-yellow-50 dark:bg-yellow-950/20"
-                      : entry.level === 2
-                      ? "border-orange-300/40 bg-orange-50 dark:bg-orange-950/20"
-                      : "border-blue-300/40 bg-blue-50 dark:bg-blue-950/20"
-                  }`}
+                  className={`flex ${msg.role === "user" ? "justify-start" : "justify-end"}`}
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    {entry.level === 1 && <Lightbulb className="h-4 w-4 text-yellow-600 dark:text-yellow-400 shrink-0" />}
-                    {entry.level === 2 && <ChevronDown className="h-4 w-4 text-orange-600 dark:text-orange-400 shrink-0" />}
-                    {entry.level === 3 && <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />}
-                    <span className={`text-xs font-semibold ${
-                      entry.level === 1
-                        ? "text-yellow-700 dark:text-yellow-300"
-                        : entry.level === 2
-                        ? "text-orange-700 dark:text-orange-300"
-                        : "text-blue-700 dark:text-blue-300"
-                    }`}>
-                      {HINT_LEVEL_LABELS[entry.level]}
-                    </span>
-                  </div>
                   <div
-                    className="prose prose-sm dark:prose-invert max-w-none text-right leading-relaxed"
+                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                      msg.role === "user"
+                        ? "bg-primary text-primary-foreground rounded-tr-sm"
+                        : "bg-muted text-foreground rounded-tl-sm"
+                    }`}
                     dir="rtl"
                   >
-                    <ExplanationRenderer text={entry.text} />
+                    {msg.role === "assistant" ? (
+                      <ExplanationRenderer text={msg.content} />
+                    ) : (
+                      <span className="whitespace-pre-wrap">{msg.content}</span>
+                    )}
+                    {msg.role === "assistant" && streaming && i === messages.length - 1 && (
+                      <span
+                        className="inline-block w-1.5 h-4 bg-current animate-pulse mr-0.5 align-middle"
+                        aria-label="מקליד תגובה"
+                      />
+                    )}
                   </div>
                 </motion.div>
               ))}
             </AnimatePresence>
 
-            {/* Loading skeleton */}
-            {loading && (
-              <div className="space-y-3">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-                <Skeleton className="h-4 w-4/6" />
-              </div>
-            )}
-
-            {/* Error */}
             {error && (
-              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive text-right">
                 {error}
               </div>
             )}
 
-            {/* Next hint button */}
-            {!allLevelsShown && !loading && (
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Quick hint buttons */}
+          <div className="shrink-0 border-t px-4 py-2 flex gap-2 overflow-x-auto">
+            {QUICK_HINTS.map(({ label, message }) => (
               <Button
-                onClick={handleNextHint}
+                key={label}
+                size="sm"
                 variant="outline"
-                className={`w-full gap-2 ${
-                  currentLevel === 1
-                    ? "border-yellow-300/50 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-950/20"
-                    : currentLevel === 2
-                    ? "border-orange-300/50 text-orange-700 dark:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950/20"
-                    : "border-blue-300/50 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/20"
-                }`}
+                className="shrink-0 text-xs h-7 px-2.5"
+                disabled={streaming}
+                onClick={() => handleQuickHint(message)}
               >
-                {nextButtonLabel}
+                {label === "💡 רמז כללי" && <Lightbulb className="h-3 w-3 ml-1 text-yellow-500" />}
+                {label === "➕ רמז ספציפי" && <ChevronDown className="h-3 w-3 ml-1 text-orange-500" />}
+                {label === "📖 הסבר מפורט" && <BookOpen className="h-3 w-3 ml-1 text-blue-500" />}
+                {label}
               </Button>
-            )}
+            ))}
+          </div>
+
+          {/* Input area */}
+          <div className="shrink-0 border-t px-4 py-3 flex gap-2 items-end">
+            <Textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="שאל/י שאלה..."
+              aria-label="הקלד שאלה למדריך AI"
+              className="resize-none text-sm min-h-[40px] max-h-[120px] text-right"
+              rows={1}
+              dir="rtl"
+              disabled={streaming}
+            />
+            <Button
+              size="icon"
+              className="shrink-0 h-10 w-10 bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+              disabled={!input.trim() || streaming}
+              onClick={handleSend}
+              aria-label="שלח"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
           </div>
         </SheetContent>
       </Sheet>
@@ -276,7 +192,6 @@ export function FloatingAIButton({ question, userAnswer }: FloatingAIButtonProps
 }
 
 function ExplanationRenderer({ text }: { text: string }) {
-  // Split text into segments: code blocks and regular text
   const segments = text.split(/(```[\s\S]*?```)/g);
 
   return (
@@ -289,19 +204,18 @@ function ExplanationRenderer({ text }: { text: string }) {
             <pre
               key={i}
               dir="ltr"
-              className="rounded-lg bg-secondary p-3 text-sm font-mono overflow-x-auto border border-border"
+              className="rounded-lg bg-secondary p-3 text-sm font-mono overflow-x-auto border border-border my-1"
             >
               <code>{code}</code>
             </pre>
           );
         }
-        // Render markdown-like bold and line breaks
         return (
           <div key={i} className="whitespace-pre-wrap">
             {segment.split("\n").map((line, j) => {
               const formatted = line.replace(
                 /\*\*(.*?)\*\*/g,
-                '<strong>$1</strong>'
+                "<strong>$1</strong>"
               );
               return (
                 <p
