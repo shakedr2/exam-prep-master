@@ -105,6 +105,8 @@ export type Database = {
           answered_at: string
           attempts: number
           last_attempted_at: string
+          pattern_family: string | null
+          common_mistake: string | null
         }
         Insert: {
           id?: string
@@ -115,6 +117,8 @@ export type Database = {
           answered_at?: string
           attempts?: number
           last_attempted_at?: string
+          pattern_family?: string | null
+          common_mistake?: string | null
         }
         Update: {
           id?: string
@@ -125,6 +129,8 @@ export type Database = {
           answered_at?: string
           attempts?: number
           last_attempted_at?: string
+          pattern_family?: string | null
+          common_mistake?: string | null
         }
         Relationships: [
           {

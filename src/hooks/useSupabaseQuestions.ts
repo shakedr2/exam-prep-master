@@ -33,6 +33,8 @@ function mapDbQuestion(row: DbQuestion): Question {
     topic: row.topic_id as Question["topic"],
     difficulty: (row.difficulty ?? "medium") as Question["difficulty"],
     explanation: row.explanation ?? "",
+    patternFamily: row.pattern_family ?? undefined,
+    commonMistake: row.common_mistake ?? undefined,
   };
 
   if (row.question_type === "multiple_choice") {

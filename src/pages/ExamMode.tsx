@@ -106,7 +106,7 @@ const ExamMode = () => {
     examQuestions.forEach((q, i) => {
       if (answers[i]) {
         answerQuestion(q.id, answers[i].correct);
-        saveAnswer(q.id, q.topic, answers[i].correct);
+        saveAnswer(q.id, q.topic, answers[i].correct, q.patternFamily, q.commonMistake);
       }
     });
   };

@@ -30,6 +30,8 @@ export interface QuizQuestion {
   warmupQuestions?: WarmupQuestion[];
   theoryIntro?: string;
   approachTip?: string;
+  patternFamily?: string;
+  commonMistake?: string;
 }
 
 export interface TracingQuestion {
@@ -46,6 +48,8 @@ export interface TracingQuestion {
   warmupQuestions?: WarmupQuestion[];
   theoryIntro?: string;
   approachTip?: string;
+  patternFamily?: string;
+  commonMistake?: string;
 }
 
 export interface CodingQuestion {
@@ -63,6 +67,8 @@ export interface CodingQuestion {
   warmupQuestions?: WarmupQuestion[];
   theoryIntro?: string;
   approachTip?: string;
+  patternFamily?: string;
+  commonMistake?: string;
 }
 
 export interface FillBlankQuestion {
@@ -79,6 +85,8 @@ export interface FillBlankQuestion {
   warmupQuestions?: WarmupQuestion[];
   theoryIntro?: string;
   approachTip?: string;
+  patternFamily?: string;
+  commonMistake?: string;
 }
 
 export type Question = QuizQuestion | TracingQuestion | CodingQuestion | FillBlankQuestion;

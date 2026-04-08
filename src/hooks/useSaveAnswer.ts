@@ -11,6 +11,8 @@ interface PendingAnswer {
   topicId: string;
   isCorrect: boolean;
   at: string;
+  patternFamily?: string;
+  commonMistake?: string;
 }
 const PENDING_KEY = "examprep_pending_answers";
 
@@ -38,7 +40,9 @@ async function upsertAnswer(
   questionId: string,
   topicId: string,
   isCorrect: boolean,
-  at: string
+  at: string,
+  patternFamily?: string,
+  commonMistake?: string
 ): Promise<boolean> {
   // Read existing row to compute the new attempts count. The table has a
   // unique constraint on (user_id, question_id); once we know the current
@@ -66,6 +70,8 @@ async function upsertAnswer(
       answered_at: at,
       attempts: nextAttempts,
       last_attempted_at: at,
+      pattern_family: patternFamily ?? null,
+      common_mistake: commonMistake ?? null,
     },
     { onConflict: "user_id,question_id" }
   );
@@ -95,7 +101,9 @@ export function useSaveAnswer() {
         item.questionId,
         item.topicId,
         item.isCorrect,
-        item.at
+        item.at,
+        item.patternFamily,
+        item.commonMistake
       );
       if (!ok) remaining.push(item);
     }
@@ -103,7 +111,7 @@ export function useSaveAnswer() {
   }, []);
 
   const saveAnswer = useCallback(
-    async (questionId: string, topicId: string, isCorrect: boolean) => {
+    async (questionId: string, topicId: string, isCorrect: boolean, patternFamily?: string, commonMistake?: string) => {
       const at = new Date().toISOString();
 
       // Try to flush any previously-queued answers first.
@@ -114,11 +122,13 @@ export function useSaveAnswer() {
         questionId,
         topicId,
         isCorrect,
-        at
+        at,
+        patternFamily,
+        commonMistake
       );
       if (!ok) {
         const queue = loadPending();
-        queue.push({ questionId, topicId, isCorrect, at });
+        queue.push({ questionId, topicId, isCorrect, at, patternFamily, commonMistake });
         savePending(queue);
       }
     },
