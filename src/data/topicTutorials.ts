@@ -93,6 +93,7 @@ mystery("hello")`,
       "print_sep",
       "print_end",
       "type_check",
+    ],
     prepQuestions: [
       {
         question: "מה תדפיס הפונקציה mystery(3) אם היא מבצעת: result = \"\", ולאחר לולאה result += str(i*2)+\" \" עבור i ב-range(3)?",
@@ -172,6 +173,7 @@ else:
       "nested_conditions",
       "elif_chain",
       "short_circuit",
+    ],
     prepQuestions: [
       {
         question: "מה יודפס עבור x = 15?\nif x > 10:\n    if x % 2 == 0:\n        print('A')\n    else:\n        print('B')\nelse:\n    print('C')",
@@ -302,6 +304,7 @@ print(result)`,
       "list_sort_vs_sorted",
       "list_extend_vs_append",
       "list_slicing",
+    ],
     prepQuestions: [
       {
         question: "מה יודפס?\nlst = [3, 1, 4, 1, 5]\nlst.sort()\nprint(lst[-1])",
@@ -379,6 +382,7 @@ print(factorial(0))`,
       "local_scope",
       "global_keyword",
       "recursion",
+    ],
     prepQuestions: [
       {
         question: "מה תחזיר הפונקציה greet('עמי') אם מוגדרת: def greet(name, greeting='שלום'): return f'{greeting}, {name}!'",
@@ -529,6 +533,7 @@ print(max(grades, key=grades.get))`,
       "dict_access",
       "dict_iteration",
       "dict_get_default",
+    ],
     prepQuestions: [
       {
         question: "מה יחזיר: {1,2,3} & {2,3,4}?",
