@@ -237,7 +237,8 @@ const PracticePage = () => {
     setAnswers((prev) => ({ ...prev, [questionId]: { answer, correct } }));
     answerQuestion(questionId, correct);
     if (topicId) {
-      saveAnswer(questionId, topicId, correct);
+      const q = allQuestions.find((q) => q.id === questionId);
+      saveAnswer(questionId, topicId, correct, q?.patternFamily, q?.commonMistake);
     }
     setShowHint(false);
     if (correct) {

@@ -1,0 +1,102 @@
+/**
+ * Hebrew display labels for each pattern_family used in the questions DB.
+ * Used on the Progress page and anywhere else pattern families are shown to the learner.
+ */
+export const PATTERN_FAMILY_LABELS: Record<string, string> = {
+  // variables_io
+  type_conversion: "המרת טיפוסים",
+  variable_naming: "שמות משתנים",
+  input_conversion: "קלט והמרה",
+  print_sep: "פרמטר sep של print",
+  print_end: "פרמטר end של print",
+  bool_type: "טיפוס bool",
+  type_check: "בדיקת טיפוס",
+  multiple_assignment: "השמה מרובה",
+  chained_assignment: "השמה משורשרת",
+  truthy_falsy: "ערכי אמת ושקר",
+  // arithmetic
+  integer_division_modulo: "חילוק שלם ושארית",
+  float_division: "חילוק עשרוני",
+  modulo: "שארית חלוקה (%)",
+  power_operator: "אופרטור חזקה",
+  operator_precedence: "סדר פעולות",
+  math_functions: "פונקציות math",
+  abs_function: "פונקציית abs()",
+  round_function: "פונקציית round()",
+  round: "עיגול מספרים",
+  mixed_type_arithmetic: "חשבון עם טיפוסים מעורבים",
+  negative_modulo: "שארית עם מספרים שליליים",
+  // conditions
+  comparison_operators: "אופרטורי השוואה",
+  logical_operators: "אופרטורים לוגיים",
+  nested_conditions: "תנאים מקוננים",
+  elif_chain: "שרשרת elif",
+  short_circuit: "קצר-חשמלי (short-circuit)",
+  not_operator: "אופרטור not",
+  chained_comparison: "השוואות משורשרות",
+  truthy_falsy_conditions: "ערכי אמת ושקר בתנאים",
+  or_return_value: "ערך החזרה של or",
+  pass_statement: "פקודת pass",
+  pass: "פקודת pass",
+  // loops
+  range_loop: "לולאת for עם range",
+  range_step: "range עם צעד",
+  range_len: "range ו-len",
+  while_counter: "לולאת while עם מונה",
+  while_break: "לולאת while עם break",
+  continue_statement: "פקודת continue",
+  nested_loops: "לולאות מקוננות",
+  loop_else: "else של לולאה",
+  for_string_loop: "לולאת for על מחרוזת",
+  // functions
+  return_value_usage: "שימוש בערך החזרה",
+  return_none: "return ללא ערך",
+  default_parameters: "פרמטרים עם ברירת מחדל",
+  local_scope: "scope מקומי",
+  global_keyword: "מילת המפתח global",
+  nonlocal: "מילת המפתח nonlocal",
+  recursion: "רקורסיה",
+  multiple_return: "החזרת מספר ערכים",
+  mutable_default_arg: "ארגומנט ברירת מחדל mutable",
+  closure_scope: "closure ו-scope",
+  function_call_order: "סדר קריאות לפונקציה",
+  // strings
+  string_slicing: "חיתוך מחרוזת (slicing)",
+  string_indexing: "אינדקס במחרוזת",
+  string_concat: "שרשור מחרוזות",
+  string_methods: "מתודות מחרוזת",
+  string_find: "string.find()",
+  split_join: "split() ו-join()",
+  string_len: "אורך מחרוזת",
+  string_multiply_join: "כפל וחיבור מחרוזות",
+  string_strip: "string.strip()",
+  string_count: "string.count()",
+  // lists
+  list_slicing: "חיתוך רשימה (slicing)",
+  list_append_pop: "append() ו-pop()",
+  list_comprehension: "list comprehension",
+  list_methods: "מתודות רשימה",
+  list_sort_vs_sorted: "sort() לעומת sorted()",
+  list_extend_vs_append: "extend() לעומת append()",
+  list_index_access: "גישה לאינדקס ברשימה",
+  list_multiplication_trap: "כפל רשימה — מלכודת",
+  list_len: "אורך רשימה",
+  nested_list: "רשימה מקוננת",
+  // tuples, sets, dicts
+  tuple_immutability: "אי-שינויות tuple",
+  tuple_single_element: "tuple עם איבר אחד",
+  set_duplicates: "הסרת כפילויות עם set",
+  set_operations: "פעולות על set",
+  difference: "הפרש קבוצות",
+  dict_access: "גישה למילון",
+  dict_iteration: "איטרציה על מילון",
+  dict_comprehension: "dict comprehension",
+  dict_get_default: "dict.get() עם ברירת מחדל",
+  dict_in_operator: "in על מילון",
+  dict_setdefault: "dict.setdefault()",
+};
+
+/** Returns a Hebrew label for a pattern family, or the raw key if unknown. */
+export function patternFamilyLabel(patternFamily: string): string {
+  return PATTERN_FAMILY_LABELS[patternFamily] ?? patternFamily;
+}

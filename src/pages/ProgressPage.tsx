@@ -1,17 +1,20 @@
 import { motion } from "framer-motion";
-import { Target, CheckCircle2, BarChart3, RotateCcw } from "lucide-react";
+import { Target, CheckCircle2, BarChart3, RotateCcw, AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProgress } from "@/hooks/useProgress";
 import { useSupabaseProgress } from "@/hooks/useSupabaseProgress";
+import { useWeakPatterns } from "@/hooks/useWeakPatterns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { patternFamilyLabel } from "@/lib/patternFamilyLabels";
 
 const ProgressPage = () => {
   const { progress, getIncorrectQuestions } = useProgress();
   const { user } = useAuth();
   const supabaseProgress = useSupabaseProgress();
+  const weakPatterns = useWeakPatterns();
   const navigate = useNavigate();
 
   const isAuthenticated = !!user;
@@ -98,6 +101,32 @@ const ProgressPage = () => {
             {displayTotalCorrect} נכונות מתוך {totalQuestions} שאלות
           </p>
         </div>
+
+        {/* Weak Pattern Families */}
+        {!weakPatterns.loading && weakPatterns.weak.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <h2 className="font-bold text-foreground mb-3 flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-destructive" />
+              נושאים הדורשים תשומת לב
+            </h2>
+            <div className="space-y-2">
+              {weakPatterns.weak.slice(0, 5).map((stat) => (
+                <div key={stat.patternFamily} className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-medium text-foreground">
+                      {patternFamilyLabel(stat.patternFamily)}
+                    </span>
+                    <span className="text-xs font-bold text-destructive">{stat.accuracy}%</span>
+                  </div>
+                  <Progress value={stat.accuracy} className="h-1.5 bg-destructive/20 [&>div]:bg-destructive" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {stat.correct} נכונות מתוך {stat.total} ניסיונות
+                  </p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Per topic — Supabase data */}
         <div>
