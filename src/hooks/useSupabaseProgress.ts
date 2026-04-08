@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getAnonUserId } from "@/lib/anonUserId";
 
 export interface TopicStats {
   topicId: string;
@@ -29,21 +30,14 @@ export function useSupabaseProgress(): SupabaseProgress {
   const [loading, setLoading] = useState(true);
 
   const fetchProgress = useCallback(async () => {
-    if (!user) {
-      setTotalAnswered(0);
-      setTotalCorrect(0);
-      setTopicStats([]);
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
+    const effectiveUserId = user?.id ?? getAnonUserId();
 
     const [progressResult, topicsResult, questionCountResult] = await Promise.all([
       supabase
         .from("user_progress")
         .select("question_id, topic_id, is_correct")
-        .eq("user_id", user.id),
+        .eq("user_id", effectiveUserId),
       supabase.from("topics").select("id, name, icon"),
       supabase.from("questions").select("topic_id"),
     ]);
