@@ -428,7 +428,7 @@ const PracticePage = () => {
   const hint = getHintForQuestion(current);
 
   return (
-    <div className="min-h-screen bg-background pb-24 pt-4">
+    <div className="min-h-screen bg-background pb-40 pt-4">
       <div className="mx-auto max-w-2xl px-4 space-y-4">
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
@@ -557,11 +557,14 @@ const PracticePage = () => {
             )}
           </div>
         )}
+      </div>
 
-        <div className="flex gap-3">
+      {/* Sticky navigation bar */}
+      <div className="fixed bottom-0 inset-x-0 z-30 border-t border-foreground/10 bg-background/95 backdrop-blur-sm pb-16">
+        <div className="mx-auto max-w-2xl px-4 py-2 flex gap-3">
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 min-h-[44px] touch-manipulation"
             onClick={handlePrev}
             disabled={currentIndex === 0}
           >
@@ -569,7 +572,11 @@ const PracticePage = () => {
             הקודם
           </Button>
 
-          <Button className="flex-1" onClick={handleNext} disabled={!answers[current.id]}>
+          <Button
+            className="flex-1 min-h-[44px] touch-manipulation"
+            onClick={handleNext}
+            disabled={!answers[current.id]}
+          >
             {currentIndex + 1 === activeQuestions.length ? "סיום" : "הבא"}
             <ChevronLeft className="h-4 w-4 ms-1" />
           </Button>

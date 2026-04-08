@@ -108,34 +108,33 @@ const DashboardPage = () => {
           <p className="text-muted-foreground mt-1">הנה סקירת הלימודים שלך.</p>
         </div>
 
-        {/* Global stats bar */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <Card className="bg-card border border-foreground/10">
-            <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-foreground font-mono">{totalCorrect}</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">שאלות נכונות</p>
+            <CardContent className="p-2 sm:p-3 text-center">
+              <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{totalCorrect}</p>
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">שאלות נכונות</p>
             </CardContent>
           </Card>
           <Card className="bg-card border border-foreground/10">
-            <CardContent className="p-3 text-center">
-              <p className="text-2xl font-bold text-foreground font-mono">{totalAnswered}</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">סה״כ נפתרו</p>
+            <CardContent className="p-2 sm:p-3 text-center">
+              <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{totalAnswered}</p>
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">סה״כ נפתרו</p>
             </CardContent>
           </Card>
           <Card className="bg-card border border-foreground/10">
-            <CardContent className="p-3 text-center flex flex-col items-center">
+            <CardContent className="p-2 sm:p-3 text-center flex flex-col items-center">
               {progress.streak > 0 ? (
                 <>
                   <div className="flex items-center gap-1">
-                    <Flame className="h-5 w-5 text-orange-500" />
-                    <p className="text-2xl font-bold text-foreground font-mono">{progress.streak}</p>
+                    <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+                    <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{progress.streak}</p>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">ימים רצופים</p>
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">ימים רצופים</p>
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="h-5 w-5 text-muted-foreground mb-0.5" />
-                  <p className="text-[11px] text-muted-foreground">
+                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mb-0.5" />
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground">
                     {lastActiveLabel ? `פעיל ${lastActiveLabel}` : "התחל לתרגל!"}
                   </p>
                 </>
@@ -149,25 +148,25 @@ const DashboardPage = () => {
           className="bg-card border border-foreground/10 cursor-pointer hover:border-primary/40 transition-colors"
           onClick={() => navigate("/exam")}
         >
-          <CardContent className="p-5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+          <CardContent className="p-4 sm:p-5 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                 <GraduationCap className="h-5 w-5 text-primary" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="font-bold text-foreground">מבחן סימולציה</p>
                 <p className="text-xs text-muted-foreground">
                   6 שאלות, 3 שעות — כמו במבחן האמיתי
                 </p>
               </div>
             </div>
-            <div className="text-left">
+            <div className="text-right shrink-0">
               {lastExam ? (
                 <p className="text-xs text-muted-foreground">
                   אחרון: {Math.round((lastExam.score / lastExam.total) * 100)}%
                 </p>
               ) : null}
-              <Button size="sm" variant="outline" className="text-xs h-7 mt-1">
+              <Button size="sm" variant="outline" className="text-xs h-8 mt-1 min-w-[60px] touch-manipulation">
                 התחל
               </Button>
             </div>
