@@ -80,6 +80,13 @@ mystery("hello")`,
     ],
     quickTip:
       "תמיד בנו טבלת מעקב! רשמו עמודה לכל משתנה ושורה לכל איטרציה. זה ההבדל בין ניחוש לתשובה נכונה.",
+    prepQuestions: [
+      {
+        question: "מה תדפיס הפונקציה mystery(3) אם היא מבצעת: result = \"\", ולאחר לולאה result += str(i*2)+\" \" עבור i ב-range(3)?",
+        options: ["0 2 4 ", "1 3 5 ", "2 4 6 ", "0 1 2 "],
+        correctAnswer: 0,
+      },
+    ],
   },
   {
     topicId: "11111111-0003-0000-0000-000000000000",
@@ -146,6 +153,13 @@ else:
     ],
     quickTip:
       "כשמתבלבלים בתנאים מורכבים — שרטטו תרשים זרימה קצר על דף. זה עוזר לראות את כל המסלולים.",
+    prepQuestions: [
+      {
+        question: "מה יודפס עבור x = 15?\nif x > 10:\n    if x % 2 == 0:\n        print('A')\n    else:\n        print('B')\nelse:\n    print('C')",
+        options: ["A", "B", "C", "שגיאה"],
+        correctAnswer: 1,
+      },
+    ],
   },
   {
     topicId: "11111111-0004-0000-0000-000000000000",
@@ -200,6 +214,13 @@ print(digit_sum)`,
     ],
     quickTip:
       "לולאות מקוננות? חשבו על שעון — המחוג הקטן (חיצוני) זז לאט, הגדול (פנימי) רץ סיבוב שלם על כל צעד של הקטן.",
+    prepQuestions: [
+      {
+        question: "כמה פעמים תדפיס הלולאה: for i in range(2, 8, 2): print(i)?",
+        options: ["2", "3", "4", "6"],
+        correctAnswer: 1,
+      },
+    ],
   },
   {
     topicId: "11111111-0007-0000-0000-000000000000",
@@ -254,6 +275,13 @@ print(result)`,
     ],
     quickTip:
       "שאלה שכיחה במבחן: כתוב פונקציה שמקבלת רשימה ומחזירה רשימה חדשה. תמיד חשבו — האם לשנות את המקור או ליצור חדש?",
+    prepQuestions: [
+      {
+        question: "מה יודפס?\nlst = [3, 1, 4, 1, 5]\nlst.sort()\nprint(lst[-1])",
+        options: ["5", "3", "None", "שגיאה"],
+        correctAnswer: 0,
+      },
+    ],
   },
   {
     topicId: "11111111-0005-0000-0000-000000000000",
@@ -317,6 +345,13 @@ print(factorial(0))`,
     ],
     quickTip:
       "בשאלת כתיבת פונקציה במבחן: קראו את הדרישות, כתבו את החתימה (שם + פרמטרים), ודאו שיש return, ובדקו על דוגמת הקלט שנתנו.",
+    prepQuestions: [
+      {
+        question: "מה תחזיר הפונקציה greet('עמי') אם מוגדרת: def greet(name, greeting='שלום'): return f'{greeting}, {name}!'",
+        options: ["שלום, עמי!", "עמי, שלום!", "None", "שגיאה"],
+        correctAnswer: 0,
+      },
+    ],
   },
   {
     topicId: "11111111-0006-0000-0000-000000000000",
@@ -381,6 +416,13 @@ print(len("Python"))`,
     ],
     quickTip:
       "לבנות מחרוזת חדשה בלולאה: התחילו עם result = \"\" ואז result += בכל איטרציה. זהו הדפוס הנפוץ ביותר בשאלות מחרוזות במבחן!",
+    prepQuestions: [
+      {
+        question: "מה יחזיר הביטוי: 'Python'[::-1]?",
+        options: ["nohtyP", "Python", "P", "שגיאה"],
+        correctAnswer: 0,
+      },
+    ],
   },
   {
     topicId: "11111111-0008-0000-0000-000000000000",
@@ -446,6 +488,13 @@ print(max(grades, key=grades.get))`,
     ],
     quickTip:
       "ספירת מופעים: השתמשו במילון עם d.get(key, 0) + 1 — זהו דפוס מאוד נפוץ בשאלות עיבוד מחרוזות ורשימות!",
+    prepQuestions: [
+      {
+        question: "מה יחזיר: {1,2,3} & {2,3,4}?",
+        options: ["{2, 3}", "{1, 2, 3, 4}", "{1, 4}", "שגיאה"],
+        correctAnswer: 0,
+      },
+    ],
   },
   {
     topicId: "11111111-0002-0000-0000-000000000000",
@@ -506,6 +555,13 @@ for _ in range(10):
     ],
     quickTip:
       "לפרק מספר לספרותיו: loop עם % 10 (קבל ספרה) ו-// 10 (הסר ספרה). זה דפוס שחוזר בהרבה שאלות!",
+    prepQuestions: [
+      {
+        question: "מה יחזיר: 17 % 5?",
+        options: ["3", "2", "1", "0"],
+        correctAnswer: 1,
+      },
+    ],
   },
   // === PR 1A placeholder tutorials for the 5 new syllabus topics. Full content lands in PR 3. ===
   {
