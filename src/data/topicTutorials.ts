@@ -93,6 +93,12 @@ mystery("hello")`,
       "print_sep",
       "print_end",
       "type_check",
+    prepQuestions: [
+      {
+        question: "מה תדפיס הפונקציה mystery(3) אם היא מבצעת: result = \"\", ולאחר לולאה result += str(i*2)+\" \" עבור i ב-range(3)?",
+        options: ["0 2 4 ", "1 3 5 ", "2 4 6 ", "0 1 2 "],
+        correctAnswer: 0,
+      },
     ],
   },
   {
@@ -166,6 +172,12 @@ else:
       "nested_conditions",
       "elif_chain",
       "short_circuit",
+    prepQuestions: [
+      {
+        question: "מה יודפס עבור x = 15?\nif x > 10:\n    if x % 2 == 0:\n        print('A')\n    else:\n        print('B')\nelse:\n    print('C')",
+        options: ["A", "B", "C", "שגיאה"],
+        correctAnswer: 1,
+      },
     ],
   },
   {
@@ -290,6 +302,12 @@ print(result)`,
       "list_sort_vs_sorted",
       "list_extend_vs_append",
       "list_slicing",
+    prepQuestions: [
+      {
+        question: "מה יודפס?\nlst = [3, 1, 4, 1, 5]\nlst.sort()\nprint(lst[-1])",
+        options: ["5", "3", "None", "שגיאה"],
+        correctAnswer: 0,
+      },
     ],
   },
   {
@@ -361,6 +379,12 @@ print(factorial(0))`,
       "local_scope",
       "global_keyword",
       "recursion",
+    prepQuestions: [
+      {
+        question: "מה תחזיר הפונקציה greet('עמי') אם מוגדרת: def greet(name, greeting='שלום'): return f'{greeting}, {name}!'",
+        options: ["שלום, עמי!", "עמי, שלום!", "None", "שגיאה"],
+        correctAnswer: 0,
+      },
     ],
   },
   {
@@ -426,13 +450,12 @@ print(len("Python"))`,
     ],
     quickTip:
       "לבנות מחרוזת חדשה בלולאה: התחילו עם result = \"\" ואז result += בכל איטרציה. זהו הדפוס הנפוץ ביותר בשאלות מחרוזות במבחן!",
-    patternFamilies: [
-      "string_slicing",
-      "string_indexing",
-      "string_methods",
-      "string_find",
-      "split_join",
-      "for_string_loop",
+    prepQuestions: [
+      {
+        question: "מה יחזיר הביטוי: 'Python'[::-1]?",
+        options: ["nohtyP", "Python", "P", "שגיאה"],
+        correctAnswer: 0,
+      },
     ],
   },
   {
@@ -506,6 +529,12 @@ print(max(grades, key=grades.get))`,
       "dict_access",
       "dict_iteration",
       "dict_get_default",
+    prepQuestions: [
+      {
+        question: "מה יחזיר: {1,2,3} & {2,3,4}?",
+        options: ["{2, 3}", "{1, 2, 3, 4}", "{1, 4}", "שגיאה"],
+        correctAnswer: 0,
+      },
     ],
   },
   {
@@ -567,13 +596,12 @@ for _ in range(10):
     ],
     quickTip:
       "לפרק מספר לספרותיו: loop עם % 10 (קבל ספרה) ו-// 10 (הסר ספרה). זה דפוס שחוזר בהרבה שאלות!",
-    patternFamilies: [
-      "integer_division_modulo",
-      "float_division",
-      "modulo",
-      "power_operator",
-      "operator_precedence",
-      "math_functions",
+    prepQuestions: [
+      {
+        question: "מה יחזיר: 17 % 5?",
+        options: ["3", "2", "1", "0"],
+        correctAnswer: 1,
+      },
     ],
   },
   // === PR 1A placeholder tutorials for the 5 new syllabus topics. Full content lands in PR 3. ===
