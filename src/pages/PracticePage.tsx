@@ -13,6 +13,8 @@ import { useProgress } from "@/features/progress/hooks/useProgress";
 import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
 import { useSupabaseQuestionsByTopic, useSupabaseQuestionCount } from "@/hooks/useSupabaseQuestions";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
+import { useSupabaseAnsweredQuestions } from "@/hooks/useSupabaseAnsweredQuestions";
+import { useLocalProgressMigration } from "@/hooks/useLocalProgressMigration";
 import { useSaveAnswer } from "@/hooks/useSaveAnswer";
 import { getTutorialByTopicId } from "@/data/topicTutorials";
 import {
@@ -83,6 +85,13 @@ const PracticePage = () => {
   const { answerQuestion, getWeakTopics, progress } = useProgress();
   const { saveAnswer } = useSaveAnswer();
 
+  // One-time: copy any legacy localStorage progress into Supabase.
+  useLocalProgressMigration();
+
+  // Remote source of truth for adaptive selection. Falls back to the
+  // local `progress` object when Supabase has nothing for this topic yet.
+  const { answeredQuestions: remoteAnswered } = useSupabaseAnsweredQuestions(topicId);
+
   const { questions: allQuestions, loading: questionsLoading } = useSupabaseQuestionsByTopic(topicId);
   const { topics } = useSupabaseTopics();
   const topic = topics.find((t) => t.id === topicId);
@@ -103,18 +112,28 @@ const PracticePage = () => {
   // based on the learner's current progress, then keep the rest in the
   // existing order. Computed once per topic load so it doesn't shuffle on
   // every answer.
+  //
+  // Progress source: prefer Supabase answers (survives across devices);
+  // fall back to the local progress hook when the remote set is empty
+  // (e.g. offline / first load before the migration runs).
   const adaptiveQuestions = useMemo(() => {
     if (!topicId || allQuestions.length === 0) return allQuestions;
     const pool = allQuestions as unknown as SelectableQuestion[];
-    const first = selectNextQuestion(pool, progress, topicId);
+    const progressForSelection =
+      Object.keys(remoteAnswered).length > 0
+        ? { answeredQuestions: remoteAnswered }
+        : progress;
+    const first = selectNextQuestion(pool, progressForSelection, topicId);
     if (!first) return allQuestions;
     return [
       allQuestions.find((q) => q.id === first.id)!,
       ...allQuestions.filter((q) => q.id !== first.id),
     ];
-    // intentionally omit `progress` so the order is stable mid-session
+    // intentionally omit the local `progress` object so the order is stable
+    // mid-session; we re-run once when the remote answered set arrives so
+    // adaptive selection can use cross-device history.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allQuestions, topicId]);
+  }, [allQuestions, topicId, remoteAnswered]);
 
   const filteredQuestions = useMemo(() => {
     let qs = adaptiveQuestions;
