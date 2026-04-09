@@ -21,6 +21,7 @@ import NotFound from "./pages/NotFound";
 import LearnPage from "./pages/LearnPage";
 
 const ReviewMistakes = lazy(() => import("./pages/ReviewMistakes"));
+const LearnPage = lazy(() => import("./pages/LearnPage"));
 
 const LazyFallback = () => (
   <div className="flex items-center justify-center min-h-[50vh]">
@@ -81,6 +82,7 @@ const AppContent = () => {
           <Route path="/learn/:topicId" element={<AuthGuard><LearnPage /></AuthGuard>} />
           <Route path="/exam" element={<AuthGuard><ExamMode /></AuthGuard>} />
           <Route path="/progress" element={<AuthGuard><ProgressPage /></AuthGuard>} />
+          <Route path="/learn/:topicId" element={<AuthGuard><Suspense fallback={<LazyFallback />}><LearnPage /></Suspense></AuthGuard>} />
           <Route path="/review-mistakes" element={<AuthGuard><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></AuthGuard>} />
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -4,6 +4,11 @@ export interface PrepQuestion {
   correctAnswer: number;
 }
 
+export interface SymbolExplainer {
+  symbol: string;
+  meaning: string;
+}
+
 export interface TopicTutorial {
   topicId: string;
   title: string;
@@ -23,6 +28,8 @@ export interface TopicTutorial {
    * pattern cards back to a relevant tutorial.
    */
   patternFamilies?: string[];
+  /** Short symbol/syntax explainers aimed at 9th graders. */
+  symbolExplainers?: SymbolExplainer[];
 }
 
 export const topicTutorials: TopicTutorial[] = [
@@ -625,6 +632,13 @@ for _ in range(10):
     commonMistakes: ["שכחה ש-input() תמיד מחזיר מחרוזת — צריך להמיר עם int() או float()"],
     quickTip: "המר קלט מספרי מיד עם int(input(...)) או float(input(...)).",
     patternFamilies: ["type_conversion", "input_conversion", "print_sep", "print_end"],
+    symbolExplainers: [
+      { symbol: "=", meaning: "השמה — שומר ערך במשתנה" },
+      { symbol: "print()", meaning: "מדפיס טקסט למסך" },
+      { symbol: "input()", meaning: "קולט קלט מהמשתמש (תמיד מחרוזת)" },
+      { symbol: "type()", meaning: "מחזיר את סוג המשתנה" },
+      { symbol: "int(), float(), str()", meaning: "המרת טיפוס — הופך ערך לסוג אחר" },
+    ],
   },
   {
     topicId: "arithmetic",
@@ -641,6 +655,13 @@ for _ in range(10):
     commonMistakes: ["בלבול בין / ל-//", "שכחה לייבא את math לפני שימוש ב-math.sqrt"],
     quickTip: "שימוש ב-% הוא הדרך המהירה לבדוק התחלקות: x % 2 == 0 → זוגי.",
     patternFamilies: ["integer_division_modulo", "float_division", "modulo", "power_operator", "math_functions"],
+    symbolExplainers: [
+      { symbol: "/", meaning: "חילוק רגיל — תמיד מחזיר float" },
+      { symbol: "//", meaning: "חילוק שלם — מחזיר רק את החלק השלם" },
+      { symbol: "%", meaning: "מודולו (שארית) — השארית מחלוקה" },
+      { symbol: "**", meaning: "חזקה — למשל 2**3 = 8" },
+      { symbol: "abs()", meaning: "ערך מוחלט — תמיד חיובי" },
+    ],
   },
   {
     topicId: "functions",
@@ -657,6 +678,12 @@ for _ in range(10):
     commonMistakes: ["שכחה ל-return — הפונקציה תחזיר None", "בלבול בין משתנה לוקלי לגלובלי"],
     quickTip: "כל פונקציה צריכה לעשות דבר אחד ברור — אם היא עושה שניים, פצל אותה.",
     patternFamilies: ["return_value_usage", "return_none", "default_parameters", "local_scope", "global_keyword", "recursion"],
+    symbolExplainers: [
+      { symbol: "def", meaning: "מגדיר פונקציה חדשה" },
+      { symbol: "return", meaning: "מחזיר ערך מהפונקציה לקוד שקרא לה" },
+      { symbol: "פרמטר", meaning: "משתנה שהפונקציה מקבלת בסוגריים" },
+      { symbol: "global", meaning: "מאפשר לפונקציה לשנות משתנה גלובלי" },
+    ],
   },
   {
     topicId: "strings",
@@ -673,6 +700,13 @@ for _ in range(10):
     commonMistakes: ["שכחה שמחרוזות immutable — אי אפשר לשנות תו במקום"],
     quickTip: "להמיר מחרוזת לרשימת תווים: list(s). להמיר חזרה: \"\".join(lst).",
     patternFamilies: ["string_slicing", "string_indexing", "string_methods", "string_find", "split_join", "for_string_loop"],
+    symbolExplainers: [
+      { symbol: "s[0]", meaning: "התו הראשון במחרוזת (אינדקס מתחיל מ-0)" },
+      { symbol: "s[-1]", meaning: "התו האחרון במחרוזת" },
+      { symbol: "s[1:4]", meaning: "חיתוך — תווים מאינדקס 1 עד 3" },
+      { symbol: ".upper() / .lower()", meaning: "הופך לאותיות גדולות / קטנות" },
+      { symbol: ".split() / .join()", meaning: "פיצול מחרוזת לרשימה / חיבור רשימה למחרוזת" },
+    ],
   },
   {
     topicId: "tuples_sets_dicts",
@@ -689,6 +723,13 @@ for _ in range(10):
     commonMistakes: ["ניסיון לשנות tuple", "שכחה ש-set לא שומר סדר"],
     quickTip: "set מצוין למחיקת כפילויות: list(set(my_list)).",
     patternFamilies: ["tuple_immutability", "set_operations", "set_duplicates", "dict_access", "dict_iteration", "dict_get_default"],
+    symbolExplainers: [
+      { symbol: "(1, 2, 3)", meaning: "tuple — אוסף מסודר שלא ניתן לשנות" },
+      { symbol: "{1, 2, 3}", meaning: "set — אוסף ללא כפילויות וללא סדר" },
+      { symbol: '{"a": 1}', meaning: "dict — מילון של מפתח→ערך" },
+      { symbol: ".items()", meaning: "מחזיר את כל זוגות מפתח-ערך במילון" },
+      { symbol: ".get(key, default)", meaning: "גישה בטוחה למילון — מחזיר ברירת מחדל אם המפתח לא קיים" },
+    ],
   },
 ];
 
