@@ -1,45 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/features/progress/hooks/useProgress";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
-import { useSupabaseQuestionCount } from "@/hooks/useSupabaseQuestions";
+import { MODULES, type Module } from "@/data/modules";
+import { XpBadge } from "@/components/XpBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Flame, CheckCircle2, GraduationCap, BookOpen, Brain, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+import { Flame, CheckCircle2, GraduationCap, BookOpen, Brain, X, Lock } from "lucide-react";
 import { questions as staticQuestions } from "@/data/questions";
+import { supabase } from "@/shared/integrations/supabase/client";
 
-const TOPIC_ORDER: Record<string, number> = {
-  variables_io: 1,
-  arithmetic: 2,
-  conditions: 3,
-  loops: 4,
-  functions: 5,
-  strings: 6,
-  lists: 7,
-  tuples_sets_dicts: 8,
-};
+function useTopicQuestionCounts() {
+  const [counts, setCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    async function fetch() {
+      const { data } = await supabase
+        .from("questions")
+        .select("topic_id");
+      if (cancelled || !data) return;
+      const map: Record<string, number> = {};
+      data.forEach((q) => {
+        map[q.topic_id] = (map[q.topic_id] || 0) + 1;
+      });
+      setCounts(map);
+    }
+    fetch();
+    return () => { cancelled = true; };
+  }, []);
+
+  return counts;
+}
 
 function TopicCard({
   topic,
-  order,
+  questionCount,
   progress,
   getTopicCompletion,
   onLearn,
   onPractice,
 }: {
   topic: { id: string; name: string; icon: string | null; description: string | null };
-  order: number;
+  questionCount: number;
   progress: ReturnType<typeof useProgress>["progress"];
   getTopicCompletion: ReturnType<typeof useProgress>["getTopicCompletion"];
   onLearn: () => void;
   onPractice: () => void;
 }) {
-  const count = useSupabaseQuestionCount(topic.id);
-  const completion = getTopicCompletion(topic.id, count);
+  const completion = getTopicCompletion(topic.id, questionCount);
 
-  // Count questions correctly answered for this topic using static question IDs
   const topicQuestionIds = new Set(
     staticQuestions.filter((q) => q.topic === topic.id).map((q) => q.id)
   );
@@ -49,17 +68,14 @@ function TopicCard({
 
   return (
     <Card className="bg-card border border-foreground/10 hover:border-primary/40 hover:shadow-md transition-all group relative">
-      <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
-        {order}
-      </span>
       {completion === 100 && (
         <span className="absolute top-2 left-2 text-base" title="הושלם">✅</span>
       )}
       <CardContent className="p-4 space-y-3">
-        <div className="flex items-center justify-between pt-3">
+        <div className="flex items-center justify-between">
           <span className="text-2xl">{topic.icon ?? "📖"}</span>
           <span className="text-[11px] text-muted-foreground font-mono">
-            {count} שאלות
+            {questionCount} שאלות
           </span>
         </div>
         <div>
@@ -102,25 +118,120 @@ function TopicCard({
   );
 }
 
+function ModuleSection({
+  module,
+  topics,
+  questionCounts,
+  progress,
+  getTopicCompletion,
+  onLearn,
+  onPractice,
+  onShowPracticeTip,
+}: {
+  module: Module;
+  topics: { id: string; name: string; icon: string | null; description: string | null }[];
+  questionCounts: Record<string, number>;
+  progress: ReturnType<typeof useProgress>["progress"];
+  getTopicCompletion: ReturnType<typeof useProgress>["getTopicCompletion"];
+  onLearn: (topicId: string) => void;
+  onPractice: (topicId: string) => void;
+  onShowPracticeTip: () => void;
+}) {
+  const moduleTopics = module.topicIds
+    .map((tid) => topics.find((t) => t.id === tid))
+    .filter(Boolean) as typeof topics;
+
+  const moduleCompletion = moduleTopics.length > 0
+    ? Math.round(
+        moduleTopics.reduce(
+          (sum, t) => sum + getTopicCompletion(t.id, questionCounts[t.id] ?? 0),
+          0
+        ) / moduleTopics.length
+      )
+    : 0;
+
+  const topicQuestionIdsByTopic = Object.fromEntries(
+    moduleTopics.map((t) => [
+      t.id,
+      new Set(staticQuestions.filter((q) => q.topic === t.id).map((q) => q.id)),
+    ])
+  );
+
+  if (moduleTopics.length === 0) return null;
+
+  return (
+    <AccordionItem value={module.id} className="border-b-0 mb-4">
+      <AccordionTrigger className="hover:no-underline py-3 px-0">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <span className="text-2xl shrink-0">{module.icon}</span>
+          <div className="flex-1 min-w-0 text-right">
+            <p className="font-bold text-foreground text-base">{module.title}</p>
+            <p className="text-xs text-muted-foreground truncate">{module.description}</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs font-mono text-muted-foreground">{moduleCompletion}%</span>
+            <Progress value={moduleCompletion} className="h-1.5 w-16" />
+          </div>
+        </div>
+      </AccordionTrigger>
+      <AccordionContent>
+        <div className="grid grid-cols-2 gap-3">
+          {moduleTopics.map((topic) => {
+            const topicQIds = topicQuestionIdsByTopic[topic.id] ?? new Set<string>();
+            const hasPracticed = Object.keys(progress.answeredQuestions).some(
+              (id) => topicQIds.has(id)
+            );
+            return (
+              <TopicCard
+                key={topic.id}
+                topic={topic}
+                questionCount={questionCounts[topic.id] ?? 0}
+                progress={progress}
+                getTopicCompletion={getTopicCompletion}
+                onLearn={() => onLearn(topic.id)}
+                onPractice={() => {
+                  if (!hasPracticed) onShowPracticeTip();
+                  onPractice(topic.id);
+                }}
+              />
+            );
+          })}
+        </div>
+      </AccordionContent>
+    </AccordionItem>
+  );
+}
+
 const DashboardPage = () => {
   const navigate = useNavigate();
   const { progress, getTopicCompletion, totalCorrect, totalAnswered } = useProgress();
   const { topics, loading } = useSupabaseTopics();
+  const questionCounts = useTopicQuestionCounts();
   const [showPracticeTip, setShowPracticeTip] = useState(false);
 
-  // Sort topics by recommended learning order; unknown topics go last
-  const sortedTopics = [...topics].sort((a, b) => {
-    const orderA = TOPIC_ORDER[a.id] ?? 99;
-    const orderB = TOPIC_ORDER[b.id] ?? 99;
-    return orderA - orderB;
-  });
+  const activeModules = useMemo(
+    () => MODULES.filter((m) => !m.comingSoon).sort((a, b) => a.order - b.order),
+    []
+  );
 
-  // Pre-build a map of topicId → Set<questionId> to avoid recalculating per render
-  const topicQuestionIdsByTopic = Object.fromEntries(
-    topics.map((t) => [
-      t.id,
-      new Set(staticQuestions.filter((q) => q.topic === t.id).map((q) => q.id)),
-    ])
+  const comingSoonModules = useMemo(
+    () => MODULES.filter((m) => m.comingSoon).sort((a, b) => a.order - b.order),
+    []
+  );
+
+  const allModuleTopicIds = useMemo(
+    () => new Set(MODULES.flatMap((m) => m.topicIds)),
+    []
+  );
+
+  const ungroupedTopics = useMemo(
+    () => topics.filter((t) => !allModuleTopicIds.has(t.id)),
+    [topics, allModuleTopicIds]
+  );
+
+  const defaultExpanded = useMemo(
+    () => activeModules.map((m) => m.id),
+    [activeModules]
   );
 
   const lastExam = progress.examHistory.length > 0
@@ -153,11 +264,14 @@ const DashboardPage = () => {
   return (
     <div className="min-h-screen bg-background pb-24 pt-4">
       <div className="mx-auto max-w-2xl px-4 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono">
-            שלום, {progress.username}
-          </h1>
-          <p className="text-muted-foreground mt-1">הנה סקירת הלימודים שלך.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono">
+              שלום, {progress.username}
+            </h1>
+            <p className="text-muted-foreground mt-1">הנה סקירת הלימודים שלך.</p>
+          </div>
+          <XpBadge xp={progress.xp} level={progress.level} />
         </div>
 
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -240,31 +354,61 @@ const DashboardPage = () => {
           </div>
         )}
 
-        {/* Topic grid */}
+        {/* Module sections */}
         <div>
-          <h2 className="text-lg font-bold text-foreground mb-3">כל הנושאים</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {sortedTopics.map((topic) => {
-              const topicQuestionIds = topicQuestionIdsByTopic[topic.id] ?? new Set<string>();
-              const hasPracticed = Object.keys(progress.answeredQuestions).some(
-                (id) => topicQuestionIds.has(id)
-              );
-              return (
-                <TopicCard
-                  key={topic.id}
-                  topic={topic}
-                  order={TOPIC_ORDER[topic.id] ?? 0}
-                  progress={progress}
-                  getTopicCompletion={getTopicCompletion}
-                  onLearn={() => navigate(`/learn/${topic.id}`)}
-                  onPractice={() => {
-                    if (!hasPracticed) setShowPracticeTip(true);
-                    navigate(`/practice/${topic.id}`);
-                  }}
-                />
-              );
-            })}
-          </div>
+          <h2 className="text-lg font-bold text-foreground mb-3">מסלול הלמידה</h2>
+          <Accordion type="multiple" defaultValue={defaultExpanded}>
+            {activeModules.map((module) => (
+              <ModuleSection
+                key={module.id}
+                module={module}
+                topics={topics}
+                questionCounts={questionCounts}
+                progress={progress}
+                getTopicCompletion={getTopicCompletion}
+                onLearn={(topicId) => navigate(`/learn/${topicId}`)}
+                onPractice={(topicId) => navigate(`/practice/${topicId}`)}
+                onShowPracticeTip={() => setShowPracticeTip(true)}
+              />
+            ))}
+          </Accordion>
+
+          {/* Coming soon modules */}
+          {comingSoonModules.map((module) => (
+            <Card key={module.id} className="bg-card/50 border border-dashed border-foreground/10 opacity-60 mt-4">
+              <CardContent className="p-4 flex items-center gap-3">
+                <span className="text-2xl">{module.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-foreground text-sm">{module.title}</p>
+                  <p className="text-xs text-muted-foreground">{module.description}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <Badge variant="secondary" className="text-xs">בקרוב</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+
+          {/* Ungrouped topics fallback */}
+          {ungroupedTopics.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-sm font-bold text-muted-foreground mb-3">אחר</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {ungroupedTopics.map((topic) => (
+                  <TopicCard
+                    key={topic.id}
+                    topic={topic}
+                    questionCount={questionCounts[topic.id] ?? 0}
+                    progress={progress}
+                    getTopicCompletion={getTopicCompletion}
+                    onLearn={() => navigate(`/learn/${topic.id}`)}
+                    onPractice={() => navigate(`/practice/${topic.id}`)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
