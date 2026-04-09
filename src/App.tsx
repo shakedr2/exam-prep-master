@@ -18,6 +18,7 @@ import ProgressPage from "./pages/ProgressPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import NotFound from "./pages/NotFound";
+import LearnPage from "./pages/LearnPage";
 
 const ReviewMistakes = lazy(() => import("./pages/ReviewMistakes"));
 
@@ -77,6 +78,7 @@ const AppContent = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<AuthGuard><DashboardPage /></AuthGuard>} />
           <Route path="/practice/:topicId" element={<AuthGuard><PracticePage /></AuthGuard>} />
+          <Route path="/learn/:topicId" element={<AuthGuard><LearnPage /></AuthGuard>} />
           <Route path="/exam" element={<AuthGuard><ExamMode /></AuthGuard>} />
           <Route path="/progress" element={<AuthGuard><ProgressPage /></AuthGuard>} />
           <Route path="/review-mistakes" element={<AuthGuard><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></AuthGuard>} />
