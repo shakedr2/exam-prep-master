@@ -16,6 +16,12 @@ export function Navbar() {
     navigate("/dashboard");
   };
 
+  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
+  const displayName =
+    (user?.user_metadata?.full_name as string | undefined) ??
+    (user?.user_metadata?.name as string | undefined) ??
+    user?.email;
+
   return (
     <nav className="sticky top-0 z-50 border-b border-foreground/20 bg-background/95 backdrop-blur-sm">
       <div className="mx-auto max-w-5xl px-4 h-14 flex items-center justify-between">
@@ -27,8 +33,20 @@ export function Navbar() {
           <ThemeToggle />
           {user ? (
             <>
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName ?? ""}
+                  className="h-8 w-8 rounded-full object-cover border border-foreground/20"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-8 w-8 rounded-full border border-foreground/20 bg-foreground text-background text-sm font-bold font-mono">
+                  {(displayName ?? "?").charAt(0).toUpperCase()}
+                </div>
+              )}
               <span className="text-xs text-muted-foreground hidden sm:inline truncate max-w-[120px]">
-                {user.email}
+                {displayName}
               </span>
               <Button
                 variant="ghost"

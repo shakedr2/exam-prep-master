@@ -1,4 +1,5 @@
 import { Navigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { useProgress } from "@/features/progress/hooks/useProgress";
 
 interface AuthGuardProps {
@@ -6,9 +7,20 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
+  const { user, loading } = useAuth();
   const { progress } = useProgress();
-  if (!progress.username) {
-    return <Navigate to="/" replace />;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="text-muted-foreground">טוען...</div>
+      </div>
+    );
   }
+
+  if (!user && !progress.username) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <>{children}</>;
 }
