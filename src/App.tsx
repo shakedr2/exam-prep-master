@@ -1,10 +1,12 @@
-import { Component, lazy, Suspense } from "react";
-import type { ErrorInfo, ReactNode } from "react";
+import { lazy, Suspense, useEffect } from "react";
+import * as Sentry from "@sentry/react";
+import { PostHogProvider } from "posthog-js/react";
+import { posthog } from "@/lib/posthog";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useTheme } from "@/hooks/useTheme";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/shared/components/AuthGuard";
@@ -28,37 +30,27 @@ const LazyFallback = () => (
   </div>
 );
 
-class ErrorBoundary extends Component<
-  { children: ReactNode },
-  { hasError: boolean }
-> {
-  state = { hasError: false };
+const SentryErrorFallback = () => (
+  <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center" dir="rtl">
+    <h1 className="text-2xl font-bold mb-2">משהו השתבש</h1>
+    <p className="text-muted-foreground mb-4">אירעה שגיאה בלתי צפויה. נסה לרענן את הדף.</p>
+    <button
+      onClick={() => window.location.reload()}
+      className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+    >
+      רענן דף
+    </button>
+  </div>
+);
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
+function PostHogPageviewTracker() {
+  const location = useLocation();
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("App error:", error, info);
-  }
+  useEffect(() => {
+    posthog.capture("$pageview");
+  }, [location.pathname]);
 
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center" dir="rtl">
-          <h1 className="text-2xl font-bold mb-2">משהו השתבש</h1>
-          <p className="text-muted-foreground mb-4">אירעה שגיאה בלתי צפויה. נסה לרענן את הדף.</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
-          >
-            רענן דף
-          </button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
+  return null;
 }
 
 const queryClient = new QueryClient();
@@ -71,6 +63,7 @@ const AppContent = () => {
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <PostHogPageviewTracker />
         <Navbar />
         <Routes>
           <Route path="/" element={<OnboardingPage />} />
@@ -91,15 +84,17 @@ const AppContent = () => {
 };
 
 const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
+  <Sentry.ErrorBoundary fallback={<SentryErrorFallback />}>
+    <PostHogProvider client={posthog}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </PostHogProvider>
+  </Sentry.ErrorBoundary>
 );
 
 export default App;

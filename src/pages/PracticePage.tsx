@@ -23,6 +23,7 @@ import {
   type ProgressLike,
   type SelectableQuestion,
 } from "@/features/progress/lib/adaptiveSelection";
+import posthog from "posthog-js";
 import type { Difficulty, Question } from "@/data/questions";
 
 const difficultyLabels: Record<Difficulty, string> = {
@@ -208,6 +209,32 @@ const PracticePage = () => {
     }
   }, [reviewMistakesMode, difficultyFilter]);
 
+  // Track quiz_start when practice begins without a tutorial
+  const trackedStartRef = useRef(false);
+  useEffect(() => {
+    if (!showTutorial && !questionsLoading && allQuestions.length > 0 && !trackedStartRef.current) {
+      if (!tutorial) {
+        posthog.capture("quiz_start", { topic_id: topicId, topic_name: topic?.name });
+      }
+      trackedStartRef.current = true;
+    }
+  }, [showTutorial, questionsLoading, allQuestions.length, tutorial, topicId, topic?.name]);
+
+  // Track quiz_completion when a session finishes
+  useEffect(() => {
+    if (finished && Object.keys(answers).length > 0) {
+      const correct = Object.values(answers).filter((a) => a.correct).length;
+      const total = activeQuestions.length;
+      posthog.capture("quiz_completion", {
+        topic_id: topicId,
+        correct,
+        total,
+        score_pct: total > 0 ? Math.round((correct / total) * 100) : 0,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finished]);
+
   const filteredQuestions = useMemo(() => {
     if (difficultyFilter) {
       return allQuestions.filter((q) => q.difficulty === difficultyFilter);
@@ -243,7 +270,10 @@ const PracticePage = () => {
             topicName={topic?.name ?? ""}
             topicIcon={topic?.icon ?? "📖"}
             questionCount={questionCount}
-            onStartPractice={() => setShowTutorial(false)}
+            onStartPractice={() => {
+              posthog.capture("quiz_start", { topic_id: topicId, topic_name: topic?.name });
+              setShowTutorial(false);
+            }}
           />
         </div>
       </div>

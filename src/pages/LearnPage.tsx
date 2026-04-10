@@ -11,6 +11,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import posthog from "posthog-js";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
 import { getTutorialByTopicId } from "@/data/topicTutorials";
 import { topics } from "@/data/questions";
@@ -50,7 +51,16 @@ export default function LearnPage() {
 
   function goNext() {
     markConceptComplete(currentIndex);
+    posthog.capture("lesson_progress", {
+      topic_id: topicId,
+      concept_index: currentIndex,
+      total_concepts: totalConcepts,
+    });
     if (isLast) {
+      posthog.capture("lesson_completed", {
+        topic_id: topicId,
+        topic_name: topic?.name,
+      });
       navigate(`/practice/${topicId}`);
     } else {
       setCurrentIndex((i) => i + 1);

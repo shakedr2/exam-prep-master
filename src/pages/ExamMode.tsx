@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import posthog from "posthog-js";
 import type { Question } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
@@ -102,6 +103,12 @@ const ExamMode = () => {
 
   const handleFinish = () => {
     setFinished(true);
+    posthog.capture("exam_completion", {
+      earned_points: earnedPoints,
+      total_points: EXAM_TOTAL_POINTS,
+      correct: score,
+      total: totalQuestions,
+    });
     addExamResult(earnedPoints, EXAM_TOTAL_POINTS);
     examQuestions.forEach((q, i) => {
       if (answers[i]) {
@@ -128,7 +135,10 @@ const ExamMode = () => {
             <p>🎯 ציון מפורט בסוף המבחן</p>
             <p>🚩 אפשר לסמן שאלות לחזרה</p>
           </div>
-          <Button onClick={() => setStarted(true)} className="w-full text-lg py-6 rounded-lg">
+          <Button onClick={() => {
+            posthog.capture("exam_start", { question_count: EXAM_QUESTIONS });
+            setStarted(true);
+          }} className="w-full text-lg py-6 rounded-lg">
             התחל מבחן
           </Button>
           <Button variant="outline" className="w-full" onClick={() => navigate("/dashboard")}>
