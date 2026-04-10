@@ -59,5 +59,111 @@ This is not a nice-to-have; it is the product.
 - No immediate-answer chat behavior by default
 - No giant all-in-one rewrites; prefer small, verifiable steps
 
+- ---
+
+## Updated Vision — Platform Evolution (April 2026)
+
+ExamPrep is evolving from a Hebrew Python exam-prep app into a **structured multilingual technical learning platform**.
+
+**Product identity:** Python-first, DevOps-next, multilingual-ready.
+
+- **Hebrew** is current launch language
+- **English** is next strategic target
+- **Multilingual** is a future platform capability
+- **Python Fundamentals** is the foundation track (current)
+- **DevOps Engineer** is the next learning track (planned)
+
+The existing Python exam prep content and 8-topic taxonomy remain the **active production content**. Everything below is additive direction, not a replacement.
+
+---
+
+## Platform Phases
+
+| Phase | Focus | Status |
+|---|---|---|
+| Phase 0 | Stabilization, audit, verify issues/PRs, protect existing UX | Done |
+| Phase 1 | Identity foundation: Supabase auth, Google OAuth, callback, profiles, session persistence | In progress |
+| Phase 2 | Guest-to-user conversion: threshold, signup wall, merge progress, resume exact point | Next |
+| Phase 3 | Real learning memory: attempts, weak topics, last position, dashboard memory | Next |
+| Phase 4 | Curriculum foundation: tracks, phases, modules, lessons, quizzes | Next |
+| Phase 5 | Multilingual foundation: Hebrew launch, English next, i18n-ready architecture | Next |
+| Phase 6 | DevOps Track A: Linux/Bash + Git | Later |
+| Phase 7 | DevOps Track B: Networking + Docker + CI/CD | Later |
+| Phase 8 | DevOps Track C: Cloud + Terraform | Later |
+| Phase 9 | Monetization readiness + growth operations | Later |
+
+---
+
+## DevOps Engineer Track (planned)
+
+```
+Track: DevOps Engineer
+|- Foundation Block
+|  |- Phase 1: Python Fundamentals (current content)
+|  |- Phase 2: Linux & Bash (cd, ls, grep, pipes, scripting)
+|  |- Phase 3: Git & Version Control
+|- Core Block
+|  |- Phase 4: Networking Basics (TCP/IP, DNS, HTTP)
+|  |- Phase 5: Docker & Containers
+|  |- Phase 6: CI/CD (GitHub Actions, Jenkins)
+|- Advanced Block
+|  |- Phase 7: Cloud (AWS/GCP basics)
+|  |- Phase 8: Infrastructure as Code (Terraform)
+```
+
+Each phase = set of modules with the same flow: Lesson > Practice > Quiz > Progress.
+
+Python is the foundation because DevOps engineers need scripting. Then tools follow.
+
+---
+
+## Curriculum Domain Model
+
+```
+Track > Phase > Module > Lesson > Practice > Quiz
+```
+
+- **Track:** e.g., DevOps Engineer
+- **Phase:** e.g., Python Fundamentals, Linux & Bash
+- **Module:** e.g., Variables & IO, File Permissions
+- **Lesson:** Teaching content
+- **Practice:** Questions for a module
+- **Quiz:** Assessment for a module
+
+The current 8-topic Python content maps to Phase 1 modules.
+
+---
+
+## Multilingual Strategy
+
+- Hebrew remains default launch locale
+- All new UI text should use translation keys
+- All new content should have stable content IDs with a translations layer
+- RTL/LTR must be locale-driven
+- Do NOT refactor existing Hebrew content to i18n yet
+- English is the first expansion target
+
+---
+
+## Priority Order
+
+1. Auth + callback + profile bootstrap
+2. Guest merge + real progress persistence
+3. Curriculum/domain model
+4. i18n foundation
+5. DevOps Track A content
+6. DevOps Track B content
+7. Growth + monetization readiness
+
+---
+
+## Dependencies
+
+- Phases 2-3 depend on Phase 1 (auth must work before progress persistence)
+- Phase 4 depends on Phase 3 (curriculum model needs working progress)
+- Phase 5 depends on Phase 4 (i18n needs curriculum structure)
+- Phases 6-8 depend on Phase 4 (DevOps content needs curriculum model)
+- Phase 9 depends on Phases 1-5 (monetization needs identity + content platform)
+
 ## Execution
 Implementation follows the locked 7-step order in `docs/next-steps.md`. No step begins until the prior one is verified and reported.
