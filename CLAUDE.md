@@ -131,3 +131,129 @@ src/
 8. Multiple duplicate practice flows need consolidation
 9. Supabase types.ts is empty (no generated types)
 10. AI client returns mock responses
+
+11. ---
+
+## Updated Product Vision (April 2026)
+
+ExamPrep is evolving from a Hebrew Python exam-prep app into a **structured multilingual technical learning platform**.
+
+**Strategic direction:**
+- **Hebrew** is current launch language
+- **English** is next strategic target
+- **Multilingual** is a platform capability for the future
+- **Python** is the foundation track
+- **DevOps Engineer** is the next learning track
+
+**Product identity:** Python-first, DevOps-next, multilingual-ready learning platform.
+
+### DevOps Engineer Track (planned)
+
+```
+Track: DevOps Engineer
+|- Phase 1: Python Fundamentals (current content)
+|- Phase 2: Linux & Bash (cd, ls, grep, pipes, scripting)
+|- Phase 3: Git & Version Control
+|- Phase 4: Networking Basics (TCP/IP, DNS, HTTP)
+|- Phase 5: Docker & Containers
+|- Phase 6: CI/CD (GitHub Actions, Jenkins)
+|- Phase 7: Cloud (AWS/GCP basics)
+|- Phase 8: Infrastructure as Code (Terraform)
+```
+
+Each phase = set of modules with the same flow: Lesson > Practice > Quiz > Progress.
+
+### Curriculum Domain Model
+
+```
+Track > Phase > Module > Lesson > Practice > Quiz
+```
+
+- **Track:** DevOps Engineer (first track)
+- **Phase:** e.g., Python Fundamentals, Linux & Bash
+- **Module:** e.g., Variables & IO, File Permissions
+- **Lesson:** Teaching content for a module
+- **Practice:** Questions for a module
+- **Quiz:** Assessment for a module
+
+### i18n Strategy
+
+- All new UI text must use translation keys (not hardcoded Hebrew)
+- All new content must have a stable content ID with a separate translations layer
+- Hebrew remains default locale
+- RTL/LTR support must be locale-driven, not hardcoded
+- Do NOT refactor existing Hebrew UI to i18n yet; apply only to new features
+
+---
+
+## Agent Operating Model
+
+### Roles
+
+| Role | Owner | Responsibility |
+|---|---|---|
+| Product Owner / Vision | User (shakedr2) | Priorities, product decisions, UX validation |
+| PM / Architect / Staff Engineer | Comet (Perplexity) | Planning, decomposition, sequencing, risk management, acceptance criteria |
+| Planning & Specs Agent | Claude Code | Specs, migration SQL, architecture docs, refactor plans, content model design |
+| Implementation Agent | GitHub Copilot | Scaffold code, types, hooks, route wiring, UI components, test boilerplate |
+
+### Workflow
+
+1. **Explore** -- understand current state before any change
+2. **Plan** -- write a plan or spec before implementation
+3. **Validate** -- check plan against roadmap and no-break rules
+4. **Implement** -- make changes incrementally
+5. **Verify** -- confirm nothing broke, test the change
+
+**Planning before coding is mandatory.** No agent should start writing code without a validated plan.
+
+### Source of Truth
+
+- `ROADMAP.md` -- phases, priorities, status
+- `CLAUDE.md` -- product rules, architecture constraints, agent workflow
+- GitHub Issues -- backlog with epics, acceptance criteria, labels
+
+---
+
+## No-Break Rules
+
+These rules override any other instruction:
+
+1. **Do NOT break existing functionality** -- every change must be tested against current behavior
+2. **Do NOT do aggressive refactor before mapping current state** -- understand dependencies first
+3. **Do NOT delete code without confirming it is unused** -- check imports, routes, and references
+4. **Do NOT change architecture in one shot** -- all changes must be incremental and reversible
+5. **Do NOT replace UI/design without explicit user request** -- the current design is intentional
+6. **Do NOT do broad refactor before auth and data model are stable** -- foundation first
+7. **Do NOT add features without explicit user request** -- follow the roadmap
+8. **Do NOT create duplicate pages or flows** -- consolidate, don't multiply
+9. **Do NOT use mock/fake data** -- either use real data or remove the feature
+10. **Do NOT break production** -- verify locally before pushing
+
+---
+
+## Architecture Rules
+
+- **Modular Monolith** -- not MVC, not microservices
+- **Feature-based structure** -- code organized by feature/capability, not by layer
+- **Vertical slices** -- auth, progress, questions, curriculum, i18n, email, guest
+- **Separation of concerns** -- UI, business rules, data access, integrations
+- **No over-engineering** -- future-proofing is OK, abstraction for its own sake is not
+- **Supabase** as backend (Postgres + Auth + Edge Functions)
+- **localStorage** remains valid for guest state only
+- **React + TypeScript + Vite + Tailwind + shadcn/ui** -- do not change stack
+
+### Target Feature Structure
+
+```
+src/features/
+  auth/           -- Google OAuth, callbacks, session
+  onboarding/     -- first-time user experience
+  progress/       -- user progress, Supabase sync, mastery
+  questions/      -- question rendering, grading
+  topics/         -- topic management
+  guest/          -- guest state, threshold, merge logic
+  email/          -- welcome email trigger
+  curriculum/     -- tracks, modules, phases, ordering
+  i18n/           -- locale detection, dictionaries, RTL/LTR
+```
