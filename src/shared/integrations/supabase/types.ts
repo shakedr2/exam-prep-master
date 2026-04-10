@@ -95,6 +95,51 @@ export type Database = {
           }
         ]
       }
+      user_profiles: {
+        Row: {
+          id: string
+          display_name: string | null
+          email: string | null
+          onboarding_completed: boolean
+          last_topic_id: string | null
+          last_question_index: number
+          streak: number
+          xp: number
+          level: number
+          welcome_email_sent: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          display_name?: string | null
+          email?: string | null
+          onboarding_completed?: boolean
+          last_topic_id?: string | null
+          last_question_index?: number
+          streak?: number
+          xp?: number
+          level?: number
+          welcome_email_sent?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          display_name?: string | null
+          email?: string | null
+          onboarding_completed?: boolean
+          last_topic_id?: string | null
+          last_question_index?: number
+          streak?: number
+          xp?: number
+          level?: number
+          welcome_email_sent?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           id: string
