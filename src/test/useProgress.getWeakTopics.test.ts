@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useProgress } from "@/features/progress/hooks/useProgress";
+import { useLocalProgress as useProgress } from "@/features/progress/hooks/useLocalProgress";
 import { questions } from "@/data/questions";
 import type { QuizQuestion } from "@/data/questions";
 
