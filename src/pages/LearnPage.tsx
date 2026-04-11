@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Lightbulb, BookOpen, Rocket, CheckCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lightbulb, BookOpen, Rocket, CheckCircle, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -32,6 +32,8 @@ export default function LearnPage() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hintOpen, setHintOpen] = useState(false);
+  const [quizSelected, setQuizSelected] = useState<number | null>(null);
+  const [quizSkipped, setQuizSkipped] = useState(false);
 
   if (!tutorial || !topicId) {
     return (
@@ -48,6 +50,20 @@ export default function LearnPage() {
   const concept = conceptsList[currentIndex];
   const isLast = currentIndex === totalConcepts - 1;
   const progressPct = Math.round(((currentIndex + 1) / totalConcepts) * 100);
+  const currentPrepQ = tutorial.prepQuestions?.[currentIndex] ?? null;
+  const quizAnswered = quizSelected !== null || quizSkipped;
+  const nextLocked = currentPrepQ !== null && !quizAnswered;
+
+  function handleQuizAnswer(optionIndex: number) {
+    if (quizSelected !== null || !currentPrepQ) return;
+    const correct = optionIndex === currentPrepQ.correctAnswer;
+    setQuizSelected(optionIndex);
+    posthog.capture("lesson_quiz_answered", {
+      topic_id: topicId,
+      concept_index: currentIndex,
+      correct,
+    });
+  }
 
   function goNext() {
     markConceptComplete(currentIndex);
@@ -65,6 +81,8 @@ export default function LearnPage() {
     } else {
       setCurrentIndex((i) => i + 1);
       setHintOpen(false);
+      setQuizSelected(null);
+      setQuizSkipped(false);
     }
   }
 
@@ -72,6 +90,8 @@ export default function LearnPage() {
     if (currentIndex > 0) {
       setCurrentIndex((i) => i - 1);
       setHintOpen(false);
+      setQuizSelected(null);
+      setQuizSkipped(false);
     }
   }
 
@@ -184,8 +204,79 @@ export default function LearnPage() {
               </CollapsibleContent>
             </Collapsible>
           )}
+
+          {/* Mini-quiz */}
+          {currentPrepQ && (
+            <div className="mt-4 space-y-2">
+              <p className="text-sm font-semibold text-foreground">{currentPrepQ.question}</p>
+              <ul className="space-y-2">
+                {currentPrepQ.options.map((option, idx) => {
+                  const isSelected = quizSelected === idx;
+                  const isCorrect = idx === currentPrepQ.correctAnswer;
+                  let optionClass =
+                    "w-full text-right rounded-lg border px-4 py-2.5 text-sm transition-colors cursor-pointer ";
+                  if (quizSelected !== null) {
+                    if (isCorrect) {
+                      optionClass += "border-green-400 bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-200";
+                    } else if (isSelected) {
+                      optionClass += "border-red-400 bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-200";
+                    } else {
+                      optionClass += "border-border bg-muted/30 text-muted-foreground";
+                    }
+                  } else {
+                    optionClass += "border-border bg-background hover:border-primary/50 hover:bg-primary/5";
+                  }
+                  return (
+                    <li key={idx}>
+                      <button
+                        className={optionClass}
+                        onClick={() => handleQuizAnswer(idx)}
+                        disabled={quizSelected !== null}
+                        aria-pressed={isSelected}
+                      >
+                        {option}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              {quizSelected !== null && (
+                <p className={`text-sm font-medium ${quizSelected === currentPrepQ.correctAnswer ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                  {quizSelected === currentPrepQ.correctAnswer ? "נכון! 🎉" : "לא נכון — התשובה הנכונה מסומנת בירוק"}
+                </p>
+              )}
+              {quizSelected === null && (
+                <button
+                  className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 mt-1"
+                  onClick={() => setQuizSkipped(true)}
+                >
+                  דלג על השאלה
+                </button>
+              )}
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
+
+      {/* Common mistakes — last card only */}
+      {isLast && tutorial.commonMistakes.length > 0 && (
+        <Card className="border-yellow-300/50 bg-yellow-50 dark:bg-yellow-950/20">
+          <CardContent className="pt-4 pb-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 shrink-0" />
+              <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">טעויות נפוצות</p>
+            </div>
+            <ul className="space-y-1.5">
+              {tutorial.commonMistakes.map((mistake, idx) => (
+                <li key={idx} className="flex items-start gap-2 text-sm text-yellow-900 dark:text-yellow-100">
+                  <span className="mt-0.5 shrink-0">•</span>
+                  {mistake}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Navigation */}
       <div className="flex gap-3 pt-2 pb-6">
@@ -195,7 +286,7 @@ export default function LearnPage() {
             הקודם
           </Button>
         )}
-        <Button size="lg" className="flex-1 text-base gap-2" onClick={goNext}>
+        <Button size="lg" className="flex-1 text-base gap-2" onClick={goNext} disabled={nextLocked}>
           {isLast ? (
             <>
               <Rocket className="h-5 w-5" />
