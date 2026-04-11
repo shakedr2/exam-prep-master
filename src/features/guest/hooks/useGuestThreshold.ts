@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const STORAGE_KEY = "examprep_progress";
 const GUEST_THRESHOLD = 5;
+const DISMISSED_KEY = "examprep_signup_wall_dismissed";
 
 interface GuestProgress {
   answeredQuestions?: Record<string, unknown>;
@@ -27,17 +28,21 @@ function countAnsweredQuestions(): number {
 export function useGuestThreshold() {
   const { user } = useAuth();
   const [answeredCount, setAnsweredCount] = useState(0);
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(
+    () => localStorage.getItem(DISMISSED_KEY) === "1"
+  );
 
   useEffect(() => {
     setAnsweredCount(countAnsweredQuestions());
   }, []);
 
   const increment = () => {
+    if (user) return;
     setAnsweredCount((c) => c + 1);
   };
 
   const dismiss = () => {
+    localStorage.setItem(DISMISSED_KEY, "1");
     setDismissed(true);
   };
 
