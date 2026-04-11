@@ -183,11 +183,11 @@ Implementation follows the locked 7-step order in `docs/next-steps.md`. No step 
 - [x] Vercel env vars configured for production
 - [x] Guest-to-user progress merge + signup wall (PR #101, Issue #94)
 - [x] Curriculum domain model: Track > Phase > Module (PR #102, Issue #96)
+  - [x] Supabase-backed progress persistence (PR #103, Issue #95)
 
 ### In Progress
-- [ ] Move progress from localStorage to Supabase (Issue #95, Claude Code)
+  - [ ] Multilingual strategy + i18n foundation (Issue #97, Copilot)
+  - [ ] Welcome email via Edge Function + Resend (Issue #98, Copilot)
 
 ### Remaining
-- [ ] Multilingual strategy + i18n foundation (Issue #97)
-- [ ] Welcome email via Edge Function + Resend (Issue #98)
-- [ ] NeetCode-style guided learning flow (Issue #84)
+  - [ ] NeetCode-style guided learning flow (Issue #84)
