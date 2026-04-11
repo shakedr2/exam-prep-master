@@ -112,7 +112,7 @@ const ExamMode = () => {
     addExamResult(earnedPoints, EXAM_TOTAL_POINTS);
     examQuestions.forEach((q, i) => {
       if (answers[i]) {
-        answerQuestion(q.id, answers[i].correct);
+        answerQuestion(q.id, q.topic, answers[i].correct);
         saveAnswer(q.id, q.topic, answers[i].correct, q.patternFamily, q.commonMistake);
       }
     });

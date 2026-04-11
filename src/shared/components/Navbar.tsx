@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { GraduationCap, LogIn, LogOut } from "lucide-react";
-import { useProgress } from "@/features/progress/hooks/useProgress";
+import { useProgress } from "@/hooks/useProgress";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";

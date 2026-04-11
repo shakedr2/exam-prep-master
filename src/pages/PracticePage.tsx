@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useProgress } from "@/features/progress/hooks/useProgress";
+import { useProgress } from "@/hooks/useProgress";
 import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
 import { useSupabaseQuestionsByTopic, useSupabaseQuestionCount } from "@/hooks/useSupabaseQuestions";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
@@ -87,7 +87,7 @@ function getHintForQuestion(q: Question): string | null {
 const PracticePage = () => {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
-  const { answerQuestion, getWeakTopics, progress } = useProgress();
+  const { answerQuestion, getWeakTopics, progress, updateLastPosition } = useProgress();
   const { saveAnswer } = useSaveAnswer();
   const { showWall, increment: incrementGuestCount, dismiss: dismissWall } = useGuestThreshold();
 
@@ -178,6 +178,13 @@ const PracticePage = () => {
   // "no questions at this difficulty" screen. React's set-state during
   // render is safe here because the seededKeyRef guard makes it converge
   // after one render.
+  //
+  // Issue #95: if the user has a saved `lastPosition` for this topic
+  // (from user_profiles for authed users, or localStorage for guests),
+  // build the adaptive queue out to that index so they resume on the
+  // exact question they were on. The adaptive selection is deterministic
+  // given the same answer history, so iteratively picking N questions
+  // reproduces the same sequence as the original session.
   let effectiveQueue = adaptiveQueue;
   if (
     topicId &&
@@ -188,19 +195,32 @@ const PracticePage = () => {
   ) {
     seededKeyRef.current = `${topicId}:${allQuestions.length}`;
     sessionAnswersRef.current = {};
-    const pool = allQuestions as unknown as SelectableQuestion[];
-    const first = selectNextQuestion(pool, buildSelectionProgress(), topicId, {
-      globalWeakPatterns,
-    });
-    const seed = first
-      ? (allQuestions.find((q) => q.id === first.id) ?? allQuestions[0])
-      : allQuestions[0];
-    if (adaptiveQueue.length === 0 || adaptiveQueue[0].id !== seed.id) {
-      // Use the freshly-computed seed for this render and schedule the
-      // state update for subsequent renders.
-      effectiveQueue = [seed];
-      setAdaptiveQueue([seed]);
-      if (currentIndex !== 0) setCurrentIndex(0);
+    const savedIdx = Math.min(
+      Math.max(progress.lastPosition?.[topicId] ?? 0, 0),
+      allQuestions.length - 1
+    );
+    const queue: Question[] = [];
+    while (queue.length <= savedIdx) {
+      const queueIds = new Set(queue.map((q) => q.id));
+      const remaining = allQuestions.filter((q) => !queueIds.has(q.id));
+      if (remaining.length === 0) break;
+      const pool = remaining as unknown as SelectableQuestion[];
+      const next = selectNextQuestion(pool, buildSelectionProgress(), topicId, {
+        globalWeakPatterns,
+      });
+      const picked = next
+        ? (allQuestions.find((q) => q.id === next.id) ?? remaining[0])
+        : remaining[0];
+      queue.push(picked);
+    }
+    if (
+      adaptiveQueue.length !== queue.length ||
+      (queue.length > 0 && adaptiveQueue[0]?.id !== queue[0].id)
+    ) {
+      effectiveQueue = queue;
+      setAdaptiveQueue(queue);
+      const targetIdx = Math.min(savedIdx, queue.length - 1);
+      if (currentIndex !== targetIdx) setCurrentIndex(targetIdx);
     }
   }
 
@@ -351,9 +371,10 @@ const PracticePage = () => {
 
   const handleAnswer = (questionId: string, answer: string, correct: boolean) => {
     setAnswers((prev) => ({ ...prev, [questionId]: { answer, correct } }));
-    answerQuestion(questionId, correct);
+   
     incrementGuestCount();
     if (topicId) {
+      answerQuestion(questionId, topicId, correct);
       const q = allQuestions.find((q) => q.id === questionId);
       saveAnswer(questionId, topicId, correct, q?.patternFamily, q?.commonMistake);
     }
@@ -389,7 +410,9 @@ const PracticePage = () => {
     }
 
     if (currentIndex + 1 < adaptiveQueue.length) {
-      setCurrentIndex((i) => i + 1);
+      const nextIdx = currentIndex + 1;
+      setCurrentIndex(nextIdx);
+      if (topicId) updateLastPosition(topicId, nextIdx);
       setShowHint(false);
       setFeedbackMessage(null);
       return;
@@ -401,14 +424,20 @@ const PracticePage = () => {
       return;
     }
     setAdaptiveQueue((q) => [...q, next]);
-    setCurrentIndex((i) => i + 1);
+    const nextIdx = currentIndex + 1;
+    setCurrentIndex(nextIdx);
+    if (topicId) updateLastPosition(topicId, nextIdx);
     setShowHint(false);
     setFeedbackMessage(null);
   };
 
   const handlePrev = () => {
     if (currentIndex === 0) return;
-    setCurrentIndex((i) => i - 1);
+    const prevIdx = currentIndex - 1;
+    setCurrentIndex(prevIdx);
+    if (topicId && !reviewMistakesMode && !difficultyFilter) {
+      updateLastPosition(topicId, prevIdx);
+    }
     setShowHint(false);
     setFeedbackMessage(null);
   };
@@ -426,6 +455,7 @@ const PracticePage = () => {
     sessionAnswersRef.current = {};
     seededKeyRef.current = null;
     setAdaptiveQueue([]);
+    if (topicId) updateLastPosition(topicId, 0);
   };
 
   const handleReviewMistakes = () => {

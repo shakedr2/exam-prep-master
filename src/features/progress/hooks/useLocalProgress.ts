@@ -28,8 +28,8 @@ const DEFAULT_PROGRESS: UserProgress = {
 };
 
 const STORAGE_KEY = "examprep_progress";
-const XP_PER_CORRECT = 10;
-const XP_PER_LEVEL = 100;
+export const XP_PER_CORRECT = 10;
+export const XP_PER_LEVEL = 100;
 
 function loadProgress(): UserProgress {
   try {
@@ -45,7 +45,7 @@ function saveProgress(progress: UserProgress) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
 }
 
-export function useProgress() {
+export function useLocalProgress() {
   const [progress, setProgress] = useState<UserProgress>(loadProgress);
 
   useEffect(() => {

@@ -76,7 +76,7 @@ const ReviewMistakes = () => {
   const handleAnswer = useCallback((correct: boolean) => {
     const q = practiceQuestions[currentIndex];
     if (!q) return;
-    answerQuestion(q.id, correct);
+    answerQuestion(q.id, q.topic, correct);
     if (correct) {
       setCorrectedIds(prev => new Set(prev).add(q.id));
     }

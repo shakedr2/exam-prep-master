@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProgress } from "@/features/progress/hooks/useProgress";
+import { useProgress } from "@/hooks/useProgress";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 import { MODULES, type Module } from "@/data/modules";
 import { XpBadge } from "@/components/XpBadge";

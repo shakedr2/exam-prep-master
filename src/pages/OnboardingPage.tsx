@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useProgress } from "@/features/progress/hooks/useProgress";
+import { useProgress } from "@/hooks/useProgress";
 
 const OnboardingPage = () => {
   const { progress, setUsername } = useProgress();

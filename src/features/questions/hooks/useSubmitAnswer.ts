@@ -1,1 +1,1 @@
-export { useProgress } from "@/features/progress/hooks/useProgress";
+export { useProgress } from "@/hooks/useProgress";
