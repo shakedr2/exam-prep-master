@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
+import { animation } from "./src/styles/tokens";
 
 export default {
   darkMode: ["class"],
@@ -17,6 +18,9 @@ export default {
       fontFamily: {
         heebo: ["Heebo", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
+      },
+      fontSize: {
+        "2xs": ["0.625rem", { lineHeight: "0.875rem" }],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -79,30 +83,20 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "calc(var(--radius) + 4px)",
+        "2xl": "calc(var(--radius) + 8px)",
+        "3xl": "calc(var(--radius) + 12px)",
+      },
+      boxShadow: {
+        "glow-primary": "0 0 20px hsl(262 83% 58% / 0.35)",
+        "glow-accent":  "0 0 20px hsl(174 72% 46% / 0.35)",
+        "glow-xp":      "0 0 20px hsl(45 93% 47% / 0.35)",
       },
       keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-        "pulse-xp": {
-          "0%, 100%": { transform: "scale(1)" },
-          "50%": { transform: "scale(1.1)" },
-        },
-        "slide-up": {
-          from: { opacity: "0", transform: "translateY(20px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
-        },
+        ...animation.keyframes,
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-        "pulse-xp": "pulse-xp 0.6s ease-in-out",
-        "slide-up": "slide-up 0.4s ease-out",
+        ...animation.classes,
       },
     },
   },
