@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import type { ReactNode } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import posthog from "posthog-js";
+import * as Sentry from "@sentry/react";
 
 interface AuthContextType {
   user: User | null;
@@ -32,6 +34,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(s);
         setUser(s?.user ?? null);
         setLoading(false);
+
+        if (s?.user) {
+          posthog.identify(s.user.id, { email: s.user.email });
+          Sentry.setUser({ id: s.user.id, email: s.user.email });
+        } else {
+          posthog.reset();
+          Sentry.setUser(null);
+        }
       }
     );
 
