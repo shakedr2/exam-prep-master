@@ -207,13 +207,44 @@ serve(async (req) => {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const APP_URL = Deno.env.get("APP_URL") ?? "https://exam-prep-master.vercel.app";
+    const APP_URL = Deno.env.get("APP_URL");
+    const RESEND_FROM_EMAIL =
+      Deno.env.get("RESEND_FROM_EMAIL") ?? "ExamPrep <noreply@examprep.app>";
 
     if (!RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY is not configured");
     }
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error("Supabase service role credentials are not configured");
+    }
+    if (!APP_URL) {
+      throw new Error("APP_URL is not configured");
+    }
+
+    // Validate the caller is an authenticated Supabase user.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing Authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Verify the JWT using the anon/public Supabase client to confirm the token.
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!SUPABASE_ANON_KEY) {
+      throw new Error("SUPABASE_ANON_KEY is not configured");
+    }
+    const callerClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+    const { data: { user: callerUser }, error: authError } = await callerClient.auth.getUser();
+    if (authError || !callerUser) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     const body: WelcomeEmailRequest = await req.json();
@@ -223,6 +254,14 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "userId and email are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Ensure callers can only trigger emails for themselves.
+    if (callerUser.id !== userId) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -260,7 +299,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "ExamPrep <noreply@examprep.app>",
+        from: RESEND_FROM_EMAIL,
         to: [email],
         subject: "ברוך הבא ל-ExamPrep 🎓",
         html,
@@ -281,8 +320,13 @@ serve(async (req) => {
       );
 
     if (updateError) {
+      // The email was already sent but the flag update failed.
+      // Return an error so the caller can retry marking the flag.
       console.error("Failed to update welcome_email_sent:", updateError.message);
-      // Non-fatal: the email was already sent; log and continue.
+      return new Response(
+        JSON.stringify({ sent: true, flagError: updateError.message }),
+        { status: 207, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     return new Response(
