@@ -101,6 +101,7 @@ export type Database = {
           username: string | null
           last_topic_id: string | null
           last_question_index: number | null
+          welcome_email_sent: boolean
           created_at: string
           updated_at: string
         }
@@ -109,6 +110,7 @@ export type Database = {
           username?: string | null
           last_topic_id?: string | null
           last_question_index?: number | null
+          welcome_email_sent?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -117,6 +119,7 @@ export type Database = {
           username?: string | null
           last_topic_id?: string | null
           last_question_index?: number | null
+          welcome_email_sent?: boolean
           created_at?: string
           updated_at?: string
         }
