@@ -4,6 +4,7 @@ import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import posthog from "posthog-js";
 import * as Sentry from "@sentry/react";
+import { mergeGuestProgress } from "@/features/guest/lib/mergeProgress";
 
 interface AuthContextType {
   user: User | null;
@@ -30,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, s) => {
+      (event, s) => {
         setSession(s);
         setUser(s?.user ?? null);
         setLoading(false);
@@ -38,6 +39,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (s?.user) {
           posthog.identify(s.user.id, { email: s.user.email });
           Sentry.setUser({ id: s.user.id, email: s.user.email });
+
+          if (event === "SIGNED_IN") {
+            mergeGuestProgress(s.user.id).catch((err) => {
+              console.error("mergeGuestProgress failed:", err);
+            });
+          }
         } else {
           posthog.reset();
           Sentry.setUser(null);

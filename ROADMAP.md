@@ -167,3 +167,27 @@ The current 8-topic Python content maps to Phase 1 modules.
 
 ## Execution
 Implementation follows the locked 7-step order in `docs/next-steps.md`. No step begins until the prior one is verified and reported.
+
+
+---
+
+## Progress Log (Updated April 11, 2026)
+
+### Completed
+- [x] Google OAuth (PR #90) - frontend auth flow
+- [x] Google Cloud OAuth consent screen - published to production
+- [x] Supabase Google provider + URL configuration
+- [x] Auth callback route + user_profiles table + RLS (Issue #93)
+- [x] PostHog analytics integration (PR #100)
+- [x] Sentry error monitoring integration (PR #100)
+- [x] Vercel env vars configured for production
+- [x] Guest-to-user progress merge + signup wall (PR #101, Issue #94)
+- [x] Curriculum domain model: Track > Phase > Module (PR #102, Issue #96)
+
+### In Progress
+- [ ] Move progress from localStorage to Supabase (Issue #95, Claude Code)
+
+### Remaining
+- [ ] Multilingual strategy + i18n foundation (Issue #97)
+- [ ] Welcome email via Edge Function + Resend (Issue #98)
+- [ ] NeetCode-style guided learning flow (Issue #84)
