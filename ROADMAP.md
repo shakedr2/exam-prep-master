@@ -256,6 +256,8 @@ Claude Skills installed for development workflow:
 | **Phase 13** | **Full Agent Roster + Learning Flow Agent** | **Planned** |
 | **Phase 14** | **Advanced UX — 3D Learning Path Map, celebrations** | **Planned** |
 | **Phase 15** | **Smart Notifications — Calendar, email summaries** | **Future** |
+| **Phase 16** | **Mobile App — PWA + Capacitor for App Store / Galaxy Store** | **Future** |
+| **Phase 17** | **Native-Only Features — Biometrics, widgets, deep links** | **Future** |
 
 ---
 
@@ -309,6 +311,27 @@ Claude Skills installed for development workflow:
 - 15.3 Push notifications (what to strengthen)
 - 15.4 Monetization: pricing tiers, payment integration
 
+### Phase 16: Mobile App — PWA + Capacitor
+Ship ExamPrep to App Store (iOS) and Galaxy Store / Google Play (Android) using a progressive enhancement strategy. See `docs/mobile-architecture.md` for the full architecture decision.
+
+- 16.1 PWA hardening: web app manifest, service worker, offline caching, installable icons and splash screens
+- 16.2 Capacitor setup: `@capacitor/core`, `capacitor.config.ts`, iOS and Android projects
+- 16.3 Native shell plugins: `@capacitor/app`, `@capacitor/haptics`, `@capacitor/preferences`, `@capacitor/status-bar`, `@capacitor/splash-screen`, `@capacitor/keyboard`, `@capacitor/browser`
+- 16.4 Native push notifications (APNs + FCM) via `@capacitor/push-notifications`
+- 16.5 App Store submission: Apple Developer account, icons, screenshots, privacy policy, review
+- 16.6 Google Play + Galaxy Store submission: feature graphic, screenshots, privacy policy, review
+- 16.7 Monetization strategy check: Stripe on web vs native IAP (reader app exemption)
+
+### Phase 17: Native-Only Features
+Take advantage of native capabilities that PWA cannot deliver. Depends on Phase 16 shipping the native shell.
+
+- 17.1 Biometric login (Face ID / Touch ID / Android fingerprint)
+- 17.2 Home screen widgets (iOS 16+ / Android) showing current streak and next module
+- 17.3 Deep linking (`exam-prep://topic/variables_io`) for push notifications and shared links
+- 17.4 Offline-first lesson sync: download last 5 lessons to IndexedDB, queue practice attempts
+- 17.5 Native camera for code snippet capture (OCR to practice question)
+- 17.6 In-app purchases (only if monetization model requires store IAP)
+
 ---
 
 ## Dependencies
@@ -320,6 +343,8 @@ Claude Skills installed for development workflow:
 - Phase 13 depends on Phase 12 (expand after first agents proven)
 - Phase 14 (3D) depends on Phase 10 (design system must exist first)
 - Phase 15 depends on Phases 11-12 (notifications need agent data)
+- Phase 16 (Mobile App) depends on Phase 10 (responsive UX, mobile layouts, and design system must exist first)
+- Phase 17 (Native-Only Features) depends on Phase 16 (requires the Capacitor native shell to be live)
 
 ## Priority Order
 
@@ -371,3 +396,5 @@ Implementation follows the locked phase order above. No phase begins until the p
 - [ ] Phase 13: Full Agent Roster
 - [ ] Phase 14: Advanced UX + 3D
 - [ ] Phase 15: Smart Notifications & Growth
+- [ ] Phase 16: Mobile App — PWA + Capacitor (App Store / Galaxy Store)
+- [ ] Phase 17: Native-Only Features — Biometrics, widgets, deep links
