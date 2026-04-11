@@ -1,5 +1,6 @@
 import { initSentry } from "./lib/sentry";
 import { initPostHog } from "./lib/posthog";
+import "@/features/i18n/config";
 
 initSentry();
 initPostHog();
