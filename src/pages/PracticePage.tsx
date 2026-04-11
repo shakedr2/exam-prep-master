@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef, Fragment } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp, ArrowLeft } from "lucide-react";
@@ -25,6 +25,8 @@ import {
 } from "@/features/progress/lib/adaptiveSelection";
 import posthog from "posthog-js";
 import type { Difficulty, Question } from "@/data/questions";
+import { useGuestThreshold } from "@/features/guest/hooks/useGuestThreshold";
+import { SignupWall } from "@/features/guest/components/SignupWall";
 
 const difficultyLabels: Record<Difficulty, string> = {
   easy: "קל",
@@ -87,6 +89,7 @@ const PracticePage = () => {
   const navigate = useNavigate();
   const { answerQuestion, getWeakTopics, progress } = useProgress();
   const { saveAnswer } = useSaveAnswer();
+  const { showWall, increment: incrementGuestCount, dismiss: dismissWall } = useGuestThreshold();
 
   // One-time: copy any legacy localStorage progress into Supabase.
   useLocalProgressMigration();
@@ -349,6 +352,7 @@ const PracticePage = () => {
   const handleAnswer = (questionId: string, answer: string, correct: boolean) => {
     setAnswers((prev) => ({ ...prev, [questionId]: { answer, correct } }));
     answerQuestion(questionId, correct);
+    incrementGuestCount();
     if (topicId) {
       const q = allQuestions.find((q) => q.id === questionId);
       saveAnswer(questionId, topicId, correct, q?.patternFamily, q?.commonMistake);
@@ -601,6 +605,8 @@ const PracticePage = () => {
   const hint = getHintForQuestion(current);
 
   return (
+    <Fragment>
+      {showWall && <SignupWall onDismiss={dismissWall} />}
     <div className="min-h-screen bg-background pb-40 pt-4">
       <div className="mx-auto max-w-2xl px-4 space-y-4">
         <div className="flex items-center justify-between">
@@ -767,6 +773,7 @@ const PracticePage = () => {
         userAnswer={answers[current.id]?.answer}
       />
     </div>
+    </Fragment>
   );
 };
 
