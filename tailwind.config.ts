@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
-import { animation } from "./src/styles/tokens";
+import { animation, typography } from "./src/styles/tokens";
 
 export default {
   darkMode: ["class"],
@@ -16,11 +16,11 @@ export default {
     },
     extend: {
       fontFamily: {
-        heebo: ["Heebo", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        heebo: typography.fontFamily.sans,
+        mono: typography.fontFamily.mono,
       },
       fontSize: {
-        "2xs": ["0.625rem", { lineHeight: "0.875rem" }],
+        "2xs": typography.fontSize["2xs"],
       },
       colors: {
         border: "hsl(var(--border))",
