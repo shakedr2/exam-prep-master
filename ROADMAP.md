@@ -350,14 +350,19 @@ Implementation follows the locked phase order above. No phase begins until the p
 - [x] LearnPage: render commonMistakes + prepQuestions mini-quiz (PR #111)
 
 ### In Progress
-- [ ] Move progress from localStorage to Supabase (Issue #95, Claude Code)
-- [ ] Dashboard learning-progress signals: badge + banner fix (Issue #107)
-- [ ] ProgressPage: learned-vs-practiced topic split (Issue #110)
+### In Progress
+- [ ] ProgressPage: learned-vs-practiced topic split (Issue #110, Copilot PR #115 draft)
 
-### Remaining (Current Sprint)
-- [ ] Multilingual strategy + i18n foundation (Issue #97)
-- [ ] Welcome email via Edge Function + Resend (Issue #98)
-- [ ] NeetCode-style guided learning flow (Issue #84)
+### Completed (This Sprint)
+- [x] Move progress from localStorage to Supabase (Issue #95, PR #104/#105)
+- [x] Dashboard learning-progress signals: badge + banner fix (Issue #107, PR #113)
+- [x] Multilingual strategy + i18n foundation (Issue #97, PR #104)
+- [x] Welcome email via Edge Function + Resend (Issue #98, PR #105)
+- [x] LearnPage: render commonMistakes + prepQuestions mini-quiz (PR #111)
+- [x] Content cleanup: remove dead slug-keyed entries (Issue #109, PR #112)
+- [x] NeetCode-style guided learning flow — sub-tasks A/B/D complete (Issue #84)
+- [x] Gap-closure plan for Issue #84 (PR #106)
+- [x] ROADMAP update with agent architecture + UX vision (PR #114)
 
 ### Planned (Future Sprints)
 - [ ] Phase 10: UX Overhaul
