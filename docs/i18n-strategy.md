@@ -120,9 +120,10 @@ The `ContentTranslation` interface is defined in `src/types/curriculum.ts`.
 The i18n system is bootstrapped in `src/features/i18n/config.ts` and imported once in `src/main.tsx` (a single side-effect import: `import "@/features/i18n/config"`).
 
 The configuration:
-- Hebrew as `defaultNS` and `fallbackLng`.
+- Hebrew as `lng`, `fallbackLng`, and explicit `defaultNS: "translation"`.
 - Resources are bundled (no HTTP backend) — locale files live in `src/features/i18n/locales/`.
 - `initReactI18next` is applied so all React components can use `useTranslation`.
+- Initialization errors are caught and logged to the console.
 
 ---
 

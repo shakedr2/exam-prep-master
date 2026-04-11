@@ -11,9 +11,12 @@ i18n.use(initReactI18next).init({
   },
   lng: DEFAULT_LOCALE,
   fallbackLng: DEFAULT_LOCALE,
+  defaultNS: "translation",
   interpolation: {
     escapeValue: false,
   },
+}).catch((err: unknown) => {
+  console.error("[i18n] Initialization failed:", err);
 });
 
 export default i18n;

@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { getLocaleDirection, isRTL, DEFAULT_LOCALE, type LocaleDirection } from "../locales";
+import { getLocaleDirection, isRTL, DEFAULT_LOCALE, LOCALES, type LocaleDirection } from "../locales";
 import type { Locale } from "@/types/curriculum";
 
 export interface UseLocaleReturn {
@@ -19,7 +19,8 @@ export interface UseLocaleReturn {
  */
 export function useLocale(): UseLocaleReturn {
   const { i18n } = useTranslation();
-  const locale = (i18n.language as Locale) ?? DEFAULT_LOCALE;
+  const lang = i18n.language;
+  const locale: Locale = lang in LOCALES ? (lang as Locale) : DEFAULT_LOCALE;
   const direction = getLocaleDirection(locale);
 
   return {
