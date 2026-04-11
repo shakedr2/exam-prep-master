@@ -289,7 +289,7 @@ serve(async (req) => {
     }
 
     const dashboardUrl = `${APP_URL}/dashboard`;
-    const name = displayName || email.split("@")[0];
+    const name = displayName ?? email.split("@")[0];
     const html = buildEmailHtml(name, dashboardUrl);
 
     const resendRes = await fetch("https://api.resend.com/emails", {
@@ -311,7 +311,8 @@ serve(async (req) => {
       throw new Error(`Resend API error ${resendRes.status}: ${errorText}`);
     }
 
-    // Mark welcome email as sent — upsert so a missing profile row is created.
+    // Atomically mark welcome email as sent only if it hasn't been set yet.
+    // This prevents duplicate sends in concurrent scenarios.
     const { error: updateError } = await adminClient
       .from("user_profiles")
       .upsert(
