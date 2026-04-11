@@ -1,11 +1,14 @@
+import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Target, CheckCircle2, BarChart3, RotateCcw, AlertCircle, TrendingUp, Trophy } from "lucide-react";
+import { Target, CheckCircle2, BarChart3, RotateCcw, AlertCircle, TrendingUp, Trophy, GraduationCap, BookOpen } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProgress } from "@/hooks/useProgress";
 import { useSupabaseProgress } from "@/hooks/useSupabaseProgress";
 import { useWeakPatterns, type PatternStat } from "@/hooks/useWeakPatterns";
+import { useAllLearningProgress } from "@/hooks/useAllLearningProgress";
+import { getTutorialByTopicId } from "@/data/topicTutorials";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { patternFamilyLabel } from "@/lib/patternFamilyLabels";
@@ -57,9 +60,40 @@ const ProgressPage = () => {
   const { user } = useAuth();
   const supabaseProgress = useSupabaseProgress();
   const weakPatterns = useWeakPatterns();
+  const { learnMap } = useAllLearningProgress();
   const navigate = useNavigate();
 
   const isAuthenticated = !!user;
+
+  // Annotate each topic stat with learn/practice percentages and partition
+  // into "learned+practiced" vs "practiced only" in a single pass.
+  const { learnedAndPracticed, practicedOnly } = useMemo(() => {
+    type AnnotatedStat = typeof supabaseProgress.topicStats[number] & {
+      progressPct: number;
+      learnPct: number;
+    };
+    const learned: AnnotatedStat[] = [];
+    const practiceOnly: AnnotatedStat[] = [];
+
+    for (const stat of supabaseProgress.topicStats) {
+      const conceptsLearned = learnMap[stat.topicId]?.length ?? 0;
+      const totalConcepts = getTutorialByTopicId(stat.topicId)?.concepts.length ?? 0;
+      const progressPct = stat.totalQuestions > 0
+        ? Math.round((stat.answered / stat.totalQuestions) * 100)
+        : 0;
+      const learnPct = totalConcepts > 0
+        ? Math.round((conceptsLearned / totalConcepts) * 100)
+        : 0;
+      const annotated: AnnotatedStat = { ...stat, progressPct, learnPct };
+      if (conceptsLearned > 0) {
+        learned.push(annotated);
+      } else {
+        practiceOnly.push(annotated);
+      }
+    }
+
+    return { learnedAndPracticed: learned, practicedOnly: practiceOnly };
+  }, [supabaseProgress.topicStats, learnMap]);
 
   // After Sprint 3.1 `useSupabaseProgress` works for anonymous learners
   // too, so we always read from Supabase. Total question count is the
@@ -196,24 +230,57 @@ const ProgressPage = () => {
         {/* Per topic — Supabase data */}
         <div>
           <h2 className="font-bold text-foreground mb-3">לפי נושא</h2>
-          <div className="space-y-2">
-            {supabaseProgress.topicStats.map(stat => {
-              const progressPct = stat.totalQuestions > 0
-                ? Math.round((stat.answered / stat.totalQuestions) * 100)
-                : 0;
-              return (
-                <div key={stat.topicId} className="rounded-lg border border-foreground/10 bg-card p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-base">{stat.topicIcon}</span>
-                    <span className="text-sm font-semibold flex-1 text-foreground">{stat.topicName}</span>
-                    <span className="text-xs text-muted-foreground font-mono">{stat.answered}/{stat.totalQuestions}</span>
-                    <span className="text-xs text-primary font-bold w-10 text-left">{stat.accuracy}%</span>
-                  </div>
-                  <Progress value={progressPct} className="h-1.5" />
+          {(() => {
+            const renderTopicCard = (stat: typeof learnedAndPracticed[number]) => (
+              <div key={stat.topicId} className="rounded-lg border border-foreground/10 bg-card p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{stat.topicIcon}</span>
+                  <span className="text-sm font-semibold flex-1 text-foreground">{stat.topicName}</span>
+                  <span className="text-xs text-muted-foreground font-mono">{stat.answered}/{stat.totalQuestions}</span>
+                  <span className="text-xs text-primary font-bold w-10 text-left">{stat.accuracy}%</span>
                 </div>
-              );
-            })}
-          </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-3 w-3 text-blue-500 shrink-0" />
+                    <Progress value={stat.learnPct} className="h-1.5 flex-1" />
+                    <span className="text-[10px] text-muted-foreground font-mono w-7 text-left">{stat.learnPct}%</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Target className="h-3 w-3 text-green-500 shrink-0" />
+                    <Progress value={stat.progressPct} className="h-1.5 flex-1" />
+                    <span className="text-[10px] text-muted-foreground font-mono w-7 text-left">{stat.progressPct}%</span>
+                  </div>
+                </div>
+              </div>
+            );
+
+            return (
+              <>
+                {learnedAndPracticed.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <GraduationCap className="h-4 w-4 text-primary" />
+                      נלמדו ותורגלו
+                    </h3>
+                    <div className="space-y-2">
+                      {learnedAndPracticed.map(renderTopicCard)}
+                    </div>
+                  </div>
+                )}
+                {practicedOnly.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <TrendingUp className="h-4 w-4 text-warning" />
+                      תורגלו בלבד
+                    </h3>
+                    <div className="space-y-2">
+                      {practicedOnly.map(renderTopicCard)}
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
 
         {/* Review Mistakes */}
