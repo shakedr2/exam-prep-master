@@ -8,7 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import { useTheme } from "@/hooks/useTheme";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/shared/components/AuthGuard";
 import { Navbar } from "@/shared/components/Navbar";
@@ -96,8 +96,6 @@ function AnimatedRoutes() {
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  useTheme();
-
   return (
     <div>
       <Toaster />
@@ -116,11 +114,13 @@ const App = () => (
   <Sentry.ErrorBoundary fallback={<SentryErrorFallback />}>
     <PostHogProvider client={posthog}>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
-        </TooltipProvider>
+        <ThemeProvider>
+          <TooltipProvider>
+            <AuthProvider>
+              <AppContent />
+            </AuthProvider>
+          </TooltipProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </PostHogProvider>
   </Sentry.ErrorBoundary>
