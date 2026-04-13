@@ -12,6 +12,8 @@ export interface SymbolExplainer {
 export interface TopicTutorial {
   topicId: string;
   title: string;
+  /** Real-world Hebrew analogy shown BEFORE any code (§6.1 Beginner-First). */
+  realWorldAnalogy?: string;
   introduction: string;
   concepts: {
     title: string;
@@ -36,125 +38,186 @@ export const topicTutorials: TopicTutorial[] = [
   {
     topicId: "11111111-0001-0000-0000-000000000000",
     title: "משתנים, טיפוסים וקלט/פלט",
+    realWorldAnalogy:
+      "חשבו על משתנה כמו על מגירה עם תווית. " +
+      "התווית היא השם של המשתנה, והתוכן של המגירה הוא הערך. " +
+      "כשאתם כותבים x = 5, זה כמו להדביק תווית \"x\" על מגירה ולשים בה את המספר 5.",
     introduction:
-      "מעקב קוד זה כמו להיות בלש 🕵️ — אתם עוקבים אחרי הקוד שורה אחר שורה, רושמים מה קורה לכל משתנה, ומגלים מה הפלט. " +
-      "זה אחד הנושאים הכי חשובים במבחן! ברגע שתשלטו בזה, שאלות mystery לא יפחידו אתכם יותר. " +
-      "הסוד הוא לבנות טבלת מעקב — כמו טבלה שבה כל שורה היא צעד אחד בריצת הקוד.",
+      "בנושא הזה נלמד את אבני הבניין הבסיסיות ביותר בפייתון: " +
+      "איך לשמור מידע במשתנים, אילו סוגי מידע קיימים, " +
+      "איך לקבל קלט מהמשתמש ואיך להדפיס תוצאות למסך. " +
+      "אלה הצעדים הראשונים שלכם בתכנות — ומכאן הכל מתחיל!",
     concepts: [
       {
-        title: "טבלת מעקב — הכלי החשוב ביותר",
+        title: "מה זה משתנה?",
         explanation:
-          "דמיינו שאתם מנהלים יומן — בכל שורה רושמים את הערכים של כל המשתנים אחרי כל פעולה. " +
-          "ככה אף פעם לא תלכו לאיבוד בתוך לולאות מורכבות.",
-        codeExample: `def mystery(n):
-    result = ""
-    for i in range(n):
-        result += str(i * 2) + " "
-    print(result)
-
-mystery(3)`,
-        expectedOutput: "0 2 4 ",
+          "משתנה הוא שם שמצביע על ערך בזיכרון. " +
+          "כותבים את השם, סימן =, ואז את הערך. " +
+          "מרגע זה אפשר להשתמש בשם כדי לגשת לערך.",
+        codeExample: `x = 5
+print(x)`,
+        expectedOutput: "5",
       },
       {
-        title: "השמה מרובה (a, b = b, a+b)",
+        title: "טיפוסים — סוגי מידע",
         explanation:
-          "בפייתון אפשר לעדכן שני משתנים בו-זמנית! הצד הימני מחושב קודם עם הערכים הישנים, " +
-          "ורק אחר כך הערכים החדשים מושמים. זה נפוץ מאוד בשאלות פיבונאצ'י ודומות.",
-        codeExample: `a, b = 0, 1
-for i in range(5):
-    a, b = b, a + b
-    print(f"a={a}, b={b}")`,
-        expectedOutput: "a=1, b=1\na=1, b=2\na=2, b=3\na=3, b=5\na=5, b=8",
+          "לכל ערך בפייתון יש טיפוס (סוג). " +
+          "מספר שלם הוא int, מספר עשרוני הוא float, " +
+          "טקסט הוא str (תמיד בתוך גרשיים), וערך אמת/שקר הוא bool. " +
+          "אפשר לבדוק טיפוס עם type().",
+        codeExample: `age = 25
+price = 9.99
+name = "דני"
+is_student = True
+
+print(type(age))
+print(type(name))`,
+        expectedOutput: "<class 'int'>\n<class 'str'>",
       },
       {
-        title: "מעקב אחרי מחרוזות ורשימות",
+        title: "קלט מהמשתמש — input()",
         explanation:
-          "כשעוקבים אחרי קוד שמשנה מחרוזת או רשימה, חשוב לרשום את המצב המלא של המחרוזת/רשימה אחרי כל שינוי. " +
-          "שימו לב לאינדקסים — הם מתחילים מ-0!",
-        codeExample: `def mystery(s):
-    result = ""
-    for i in range(len(s)):
-        if i % 2 == 0:
-            result += s[i].upper()
-        else:
-            result += s[i]
-    print(result)
-
-mystery("hello")`,
-        expectedOutput: "HeLlO",
+          "הפקודה input() מציגה הודעה למשתמש וממתינה שיקליד תשובה. " +
+          "התשובה תמיד חוזרת כטקסט (str), גם אם המשתמש הקליד מספר!",
+        codeExample: `name = input("מה שמך? ")
+print("שלום", name)`,
+        expectedOutput: "מה שמך? דני\nשלום דני",
+      },
+      {
+        title: "המרת טיפוסים",
+        explanation:
+          "כדי לחשב עם מספר שהתקבל מ-input(), צריך להמיר אותו. " +
+          "int() ממיר לשלם, float() לעשרוני, str() לטקסט. " +
+          "בלי המרה — פייתון לא יודע שזה מספר!",
+        codeExample: `age_text = input("בן כמה אתה? ")
+age = int(age_text)
+print("בשנה הבאה תהיה בן", age + 1)`,
+        expectedOutput: "בן כמה אתה? 20\nבשנה הבאה תהיה בן 21",
+      },
+      {
+        title: "הדפסה מותאמת — sep ו-end",
+        explanation:
+          "print() יכול לקבל כמה ערכים ומדפיס אותם עם רווח ביניהם. " +
+          "sep קובע מה יופיע בין הערכים, ו-end קובע מה יופיע בסוף (ברירת מחדל: שורה חדשה).",
+        codeExample: `print("א", "ב", "ג")
+print("א", "ב", "ג", sep="-")
+print("שלום", end=" ")
+print("עולם")`,
+        expectedOutput: "א ב ג\nא-ב-ג\nשלום עולם",
       },
     ],
     commonMistakes: [
-      "שכחת שאינדקסים מתחילים מ-0 ולא מ-1",
-      "טעות בהשמה מרובה — חישוב הצד הימני עם ערכים חדשים במקום ישנים",
-      "שכחת end=\" \" ב-print — מה מפריד בין הפלטים?",
-      "בלבול בין range(n) (0 עד n-1) ל-range(1, n) (1 עד n-1)",
-      "אי-שימוש בטבלת מעקב ומעבר ישר לניחוש",
+      "שכחת המרה: input() מחזיר תמיד str — אם רוצים מספר צריך int() או float()",
+      "בלבול בין = (השמה) ל-== (השוואה) — כאן נשתמש רק ב-= לשמירת ערך",
+      "שכחת גרשיים סביב טקסט: name = דני במקום name = \"דני\" — שגיאה!",
     ],
     quickTip:
-      "תמיד בנו טבלת מעקב! רשמו עמודה לכל משתנה ושורה לכל איטרציה. זה ההבדל בין ניחוש לתשובה נכונה.",
+      "אם לא בטוחים מה הטיפוס של משתנה — השתמשו ב-type() ו-print() כדי לבדוק!",
     patternFamilies: [
       "type_conversion",
       "input_conversion",
-      "multiple_assignment",
+      "variable_naming",
       "print_sep",
       "print_end",
       "type_check",
     ],
+    symbolExplainers: [
+      { symbol: "=", meaning: "סימן השמה — שומר ערך בתוך משתנה" },
+      { symbol: "print()", meaning: "מדפיס ערכים למסך" },
+      { symbol: "input()", meaning: "מבקש קלט (טקסט) מהמשתמש" },
+      { symbol: "int()", meaning: "ממיר ערך למספר שלם" },
+      { symbol: "float()", meaning: "ממיר ערך למספר עשרוני" },
+      { symbol: "str()", meaning: "ממיר ערך לטקסט" },
+      { symbol: "type()", meaning: "מחזיר את הטיפוס (סוג) של ערך" },
+    ],
     prepQuestions: [
       {
-        question: "מה תדפיס הפונקציה mystery(3) אם היא מבצעת: result = \"\", ולאחר לולאה result += str(i*2)+\" \" עבור i ב-range(3)?",
-        options: ["0 2 4 ", "1 3 5 ", "2 4 6 ", "0 1 2 "],
+        question: "מה ידפיס הקוד הבא?\nx = 3\nprint(x + 2)",
+        options: ["5", "32", "x + 2", "שגיאה"],
+        correctAnswer: 0,
+      },
+      {
+        question: "מה הטיפוס של הערך \"5\"?",
+        options: ["str", "int", "float", "bool"],
         correctAnswer: 0,
       },
     ],
   },
   {
     topicId: "11111111-0003-0000-0000-000000000000",
-    title: "תנאים ולוגיקה",
+    title: "תנאים",
+    realWorldAnalogy:
+      "תנאים זה כמו רמזור — בהתאם לצבע, אתה יודע מה לעשות. " +
+      "ירוק? עובר. אדום? עוצר. כתום? בודק ומחליט. " +
+      "בתכנות, המחשב מקבל החלטות בדיוק באותו אופן.",
     introduction:
-      "תנאים הם כמו רמזור 🚦 — בהתאם למצב, התוכנית בוחרת לאן ללכת. " +
-      "עם if, elif ו-else אתם יכולים ליצור ענפים שונים בקוד. " +
-      "נושא זה חוזר כמעט בכל שאלה במבחן, אז חשוב להבין אותו לעומק. " +
-      "נלמד גם אופרטורים לוגיים (and, or, not) שמאפשרים לבנות תנאים מורכבים.",
+      "בנושא הזה נלמד איך לגרום לתוכנית לקבל החלטות. " +
+      "עם if, elif ו-else אפשר ליצור מסלולים שונים בקוד — " +
+      "מסלול אחד כשתנאי מתקיים, ומסלול אחר כשלא. " +
+      "תנאים מופיעים כמעט בכל שאלה במבחן!",
     concepts: [
       {
-        title: "מבנה if-elif-else",
+        title: "תנאי פשוט — if",
         explanation:
-          "פייתון בודקת את התנאים מלמעלה למטה. ברגע שתנאי מתקיים — היא מבצעת את הבלוק שלו ומדלגת על כל השאר. " +
-          "תחשבו על זה כמו שרשרת שאלות: האם X? אם כן — עשה A. אם לא, האם Y? אם כן — עשה B. אחרת — עשה C.",
-        codeExample: `def discount(price):
-    if price > 200:
-        return price * 0.2
-    elif price > 100:
-        return price * 0.1
-    else:
-        return 0
-
-print(discount(150))`,
-        expectedOutput: "15.0",
+          "if בודק אם תנאי מתקיים. אם כן — מבצע את הקוד שבפנים. " +
+          "אם לא — מדלג. " +
+          "שימו לב לנקודתיים (:) בסוף השורה ולהזחה בשורה הבאה!",
+        codeExample: `age = 20
+if age >= 18:
+    print("אתה בגיר")`,
+        expectedOutput: "אתה בגיר",
       },
       {
-        title: "אופרטורים לוגיים: and, or, not",
+        title: "שני מסלולים — if-else",
         explanation:
-          "and — שני התנאים חייבים להתקיים. or — מספיק שאחד מתקיים. not — הופך True ל-False ולהפך. " +
-          "שימו לב: and קודם ל-or בסדר הקדימויות!",
+          "else מוסיף מסלול חלופי — מה לעשות כשהתנאי לא מתקיים. " +
+          "תמיד אחד משני המסלולים יתבצע, אף פעם לא שניהם.",
+        codeExample: `temperature = 35
+if temperature > 30:
+    print("חם מאוד!")
+else:
+    print("מזג אוויר נעים")`,
+        expectedOutput: "חם מאוד!",
+      },
+      {
+        title: "שרשרת תנאים — if-elif-else",
+        explanation:
+          "elif (קיצור של else if) מאפשר לבדוק כמה תנאים בזה אחר זה. " +
+          "פייתון בודקת מלמעלה למטה — ברגע שתנאי מתקיים, היא מבצעת את הבלוק שלו ומדלגת על כל השאר.",
+        codeExample: `grade = 85
+if grade >= 90:
+    print("מצוין")
+elif grade >= 80:
+    print("טוב מאוד")
+elif grade >= 70:
+    print("טוב")
+else:
+    print("צריך לשפר")`,
+        expectedOutput: "טוב מאוד",
+      },
+      {
+        title: "אופרטורים לוגיים — and, or, not",
+        explanation:
+          "and — שני התנאים חייבים להתקיים. " +
+          "or — מספיק שאחד מתקיים. " +
+          "not — הופך True ל-False ולהפך. " +
+          "and קודם ל-or בסדר פעולות!",
         codeExample: `age = 20
 has_id = True
-is_vip = False
-
 if age >= 18 and has_id:
     print("כניסה מאושרת")
 
-if is_vip or age >= 18:
-    print("יש הנחה")`,
-        expectedOutput: "כניסה מאושרת\nיש הנחה",
+x = 5
+if not x > 10:
+    print("x לא גדול מ-10")`,
+        expectedOutput: "כניסה מאושרת\nx לא גדול מ-10",
       },
       {
         title: "תנאים מקוננים",
         explanation:
-          "אפשר לשים if בתוך if. זה שימושי כשצריך לבדוק כמה דברים בשלבים. " +
-          "טיפ: לפעמים אפשר לפשט תנאים מקוננים עם and.",
+          "אפשר לשים if בתוך if — זה שימושי כשצריך לבדוק כמה דברים בשלבים. " +
+          "כל if פנימי חייב הזחה נוספת. " +
+          "לפעמים אפשר לפשט תנאי מקונן עם and.",
         codeExample: `x = 15
 if x > 0:
     if x % 2 == 0:
@@ -170,10 +233,9 @@ else:
       "שימוש ב-= (השמה) במקום == (השוואה) בתנאי",
       "שכחת נקודתיים (:) בסוף שורת if/elif/else",
       "בלבול בסדר הקדימויות: and מתבצע לפני or",
-      "שכחה ש-elif לא חייב להופיע — אפשר if...else בלבד",
     ],
     quickTip:
-      "כשמתבלבלים בתנאים מורכבים — שרטטו תרשים זרימה קצר על דף. זה עוזר לראות את כל המסלולים.",
+      "כשמתבלבלים בתנאים מורכבים — שרטטו תרשים זרימה קצר על דף. זה עוזר לראות את כל המסלולים האפשריים.",
     patternFamilies: [
       "comparison_operators",
       "logical_operators",
@@ -181,57 +243,105 @@ else:
       "elif_chain",
       "short_circuit",
     ],
+    symbolExplainers: [
+      { symbol: "if", meaning: "בודק אם תנאי מתקיים" },
+      { symbol: "elif", meaning: "תנאי נוסף — נבדק רק אם הקודמים לא התקיימו" },
+      { symbol: "else", meaning: "מה לעשות אם אף תנאי לא התקיים" },
+      { symbol: "==", meaning: "בודק אם שני ערכים שווים" },
+      { symbol: "!=", meaning: "בודק אם שני ערכים שונים" },
+      { symbol: "and", meaning: "שני התנאים חייבים להתקיים" },
+      { symbol: "or", meaning: "מספיק שתנאי אחד מתקיים" },
+      { symbol: "not", meaning: "הופך True ל-False ולהפך" },
+    ],
     prepQuestions: [
       {
-        question: "מה יודפס עבור x = 15?\nif x > 10:\n    if x % 2 == 0:\n        print('A')\n    else:\n        print('B')\nelse:\n    print('C')",
-        options: ["A", "B", "C", "שגיאה"],
-        correctAnswer: 1,
+        question: "מה ידפיס הקוד?\nx = 15\nif x > 10:\n    print(\"גדול\")\nelse:\n    print(\"קטן\")",
+        options: ["גדול", "קטן", "גדול\nקטן", "שגיאה"],
+        correctAnswer: 0,
+      },
+      {
+        question: "מה ידפיס?\nx = 5\nif x > 10 or x < 8:\n    print(\"כן\")\nelse:\n    print(\"לא\")",
+        options: ["כן", "לא", "כן\nלא", "שגיאה"],
+        correctAnswer: 0,
       },
     ],
   },
   {
     topicId: "11111111-0004-0000-0000-000000000000",
-    title: "לולאות ודפוסים",
+    title: "לולאות",
+    realWorldAnalogy:
+      "לולאה זה כמו מכונת כביסה — חוזרת על אותה פעולה שוב ושוב. " +
+      "כל סיבוב הוא איטרציה, ובסוף התהליך נגמר. " +
+      "בתכנות, לולאה חוסכת לנו את הצורך לכתוב את אותו קוד מאות פעמים.",
     introduction:
-      "לולאות הן כמו מכונת כביסה 🔄 — הן חוזרות על פעולה שוב ושוב עד שמתקיים תנאי מסוים. " +
+      "בנושא הזה נלמד איך לחזור על פעולות בקוד. " +
       "for משמשת כשידוע מספר החזרות, while כשצריך גמישות. " +
-      "במבחן, לולאות מופיעות כמעט בכל שאלה — הדפסת פירמידות, עיבוד מחרוזות, חיפוש ברשימות. " +
-      "השליטה בלולאות מקוננות וב-break/continue היא המפתח להצלחה!",
+      "לולאות מופיעות כמעט בכל שאלה במבחן — " +
+      "הדפסת דפוסים, סכימה, ספירה ועוד.",
     concepts: [
       {
-        title: "לולאת for עם range",
+        title: "לולאת for עם range — חזרה מספר ידוע של פעמים",
         explanation:
-          "range(start, stop, step) מייצר רצף מספרים. stop לא כלול! " +
-          "range(5) = 0,1,2,3,4. range(1,6) = 1,2,3,4,5. range(0,10,2) = 0,2,4,6,8.",
-        codeExample: `for i in range(1, 6):
-    print("*" * i)`,
-        expectedOutput: "*\n**\n***\n****\n*****",
+          "range(n) מייצר מספרים מ-0 עד n-1. " +
+          "range(start, stop) מייצר מ-start עד stop-1. " +
+          "שימו לב: המספר האחרון (stop) לא נכלל!",
+        codeExample: `for i in range(5):
+    print(i)`,
+        expectedOutput: "0\n1\n2\n3\n4",
       },
       {
-        title: "לולאת while",
+        title: "לולאת while — חזרה עד שתנאי מתקיים",
         explanation:
-          "ממשיכה כל עוד התנאי True. חשוב לוודא שהמשתנה משתנה בתוך הלולאה — " +
-          "אחרת תיתקעו בלולאה אינסופית! while שימושית כשלא ידוע מראש כמה פעמים צריך לחזור.",
-        codeExample: `n = 123
-digit_sum = 0
-while n > 0:
-    digit_sum += n % 10
-    n //= 10
-print(digit_sum)`,
-        expectedOutput: "6",
+          "while ממשיכה כל עוד התנאי True. " +
+          "חשוב לעדכן את המשתנה בתוך הלולאה — אחרת תיתקעו בלולאה אינסופית! " +
+          "while שימושית כשלא ידוע מראש כמה פעמים צריך לחזור.",
+        codeExample: `count = 1
+while count <= 5:
+    print(count)
+    count = count + 1`,
+        expectedOutput: "1\n2\n3\n4\n5",
       },
       {
-        title: "לולאות מקוננות ו-break/continue",
+        title: "break ו-continue",
+        explanation:
+          "break — עוצר את הלולאה לגמרי ויוצא ממנה. " +
+          "continue — מדלג על שאר הקוד באיטרציה הנוכחית וממשיך לאיטרציה הבאה.",
+        codeExample: `for i in range(10):
+    if i == 3:
+        continue
+    if i == 6:
+        break
+    print(i)`,
+        expectedOutput: "0\n1\n2\n4\n5",
+      },
+      {
+        title: "דפוסי לולאות — צבירה וספירה",
+        explanation:
+          "דפוס הצבירה: מתחילים ממשתנה (כמו total = 0) ומוסיפים בכל סיבוב. " +
+          "דפוס הספירה: סופרים כמה פעמים תנאי מתקיים. " +
+          "שני הדפוסים האלה חוזרים שוב ושוב במבחן!",
+        codeExample: `total = 0
+for i in range(1, 6):
+    total = total + i
+print("הסכום:", total)
+
+count = 0
+for i in range(1, 11):
+    if i % 2 == 0:
+        count = count + 1
+print("זוגיים:", count)`,
+        expectedOutput: "הסכום: 15\nזוגיים: 5",
+      },
+      {
+        title: "לולאות מקוננות",
         explanation:
           "לולאה בתוך לולאה — הפנימית רצה מלאה בכל איטרציה של החיצונית. " +
-          "break יוצא מהלולאה הקרובה ביותר. continue מדלג לאיטרציה הבאה.",
-        codeExample: `for i in range(3):
-    for j in range(3):
-        if i == j:
-            continue
-        print(f"({i},{j})", end=" ")
+          "חשבו על שעון: המחוג הקטן זז לאט, והגדול רץ סיבוב שלם על כל צעד של הקטן.",
+        codeExample: `for i in range(1, 4):
+    for j in range(1, 4):
+        print(i * j, end=" ")
     print()`,
-        expectedOutput: "(0,1) (0,2) \n(1,0) (1,2) \n(2,0) (2,1) ",
+        expectedOutput: "1 2 3 \n2 4 6 \n3 6 9 ",
       },
     ],
     commonMistakes: [
@@ -241,7 +351,7 @@ print(digit_sum)`,
       "שכחה ש-break יוצא רק מהלולאה הפנימית בלולאות מקוננות",
     ],
     quickTip:
-      "לולאות מקוננות? חשבו על שעון — המחוג הקטן (חיצוני) זז לאט, הגדול (פנימי) רץ סיבוב שלם על כל צעד של הקטן.",
+      "בונים טבלת מעקב! רשמו עמודה לכל משתנה ושורה לכל איטרציה — ככה תדעו בדיוק מה קורה.",
     patternFamilies: [
       "range_loop",
       "range_step",
@@ -250,60 +360,116 @@ print(digit_sum)`,
       "continue_statement",
       "nested_loops",
     ],
+    symbolExplainers: [
+      { symbol: "for", meaning: "לולאה שרצה מספר ידוע של פעמים" },
+      { symbol: "while", meaning: "לולאה שרצה כל עוד תנאי מתקיים" },
+      { symbol: "range()", meaning: "מייצר רצף מספרים ללולאת for" },
+      { symbol: "break", meaning: "יוצא מהלולאה מיד" },
+      { symbol: "continue", meaning: "מדלג לאיטרציה הבאה" },
+    ],
+    prepQuestions: [
+      {
+        question: "כמה פעמים ירוץ הקוד בתוך הלולאה?\nfor i in range(4):\n    print(i)",
+        options: ["4", "3", "5", "שגיאה"],
+        correctAnswer: 0,
+      },
+      {
+        question: "מה ידפיס הקוד?\ntotal = 0\nfor i in range(1, 4):\n    total = total + i\nprint(total)",
+        options: ["6", "10", "3", "0"],
+        correctAnswer: 0,
+      },
+    ],
   },
   {
     topicId: "11111111-0007-0000-0000-000000000000",
-    title: "רשימות ופונקציות",
+    title: "רשימות",
+    realWorldAnalogy:
+      "רשימה זה כמו עגלת קניות — אפשר להוסיף פריטים, להסיר, " +
+      "לסדר אותם ולעבור על כולם. " +
+      "בניגוד למחרוזות, ברשימה אפשר לשנות פריטים ישירות!",
     introduction:
-      "רשימה בפייתון היא כמו עגלת קניות 🛒 — אפשר להוסיף פריטים, להסיר, לסדר אותם ולעבור עליהם. " +
+      "בנושא הזה נלמד לעבוד עם רשימות — אוסף סדור של ערכים. " +
       "רשימות הן mutable (ניתנות לשינוי), מה שהופך אותן לכלי חזק ושימושי. " +
-      "בנושא זה נלמד גם פונקציות — איך לכתוב קוד מסודר שאפשר לקרוא לו שוב ושוב. " +
-      "שילוב של רשימות ופונקציות הוא הבסיס לרוב שאלות המבחן!",
+      "נלמד ליצור, לגשת, להוסיף, להסיר, למיין ולחתוך רשימות.",
     concepts: [
       {
-        title: "פעולות בסיסיות על רשימות",
+        title: "יצירת רשימה וגישה לאיברים",
         explanation:
-          "append() מוסיף לסוף, pop() מסיר מהסוף (או לפי אינדקס), sort() ממיין במקום. " +
-          "אינדוקס מתחיל מ-0, אינדקס שלילי סופר מהסוף.",
-        codeExample: `lst = [3, 1, 4, 1, 5]
-lst.append(9)
-lst.sort()
-print(lst)
-print(lst[-1])`,
-        expectedOutput: "[1, 1, 3, 4, 5, 9]\n9",
+          "רשימה נוצרת בסוגריים מרובעים []. " +
+          "גישה לאיבר לפי אינדקס (מתחיל מ-0). " +
+          "אינדקס שלילי סופר מהסוף: lst[-1] הוא האחרון.",
+        codeExample: `fruits = ["תפוח", "בננה", "תפוז"]
+print(fruits[0])
+print(fruits[-1])
+print(len(fruits))`,
+        expectedOutput: "תפוח\nתפוז\n3",
       },
       {
-        title: "חיתוך (Slicing) ו-List Comprehension",
+        title: "הוספה והסרה — append, pop, remove",
         explanation:
-          "חיתוך: lst[start:stop:step]. List comprehension: דרך קומפקטית ליצור רשימה חדשה. " +
-          "שתי הטכניקות חוסכות הרבה שורות קוד!",
+          "append() מוסיף איבר לסוף הרשימה. " +
+          "pop() מסיר ומחזיר את האחרון (או לפי אינדקס). " +
+          "remove() מסיר את המופע הראשון של ערך מסוים.",
+        codeExample: `lst = [1, 2, 3]
+lst.append(4)
+print(lst)
+
+lst.pop()
+print(lst)
+
+lst.remove(2)
+print(lst)`,
+        expectedOutput: "[1, 2, 3, 4]\n[1, 2, 3]\n[1, 3]",
+      },
+      {
+        title: "חיתוך רשימות (Slicing)",
+        explanation:
+          "lst[start:stop] מחזיר רשימה חדשה מ-start עד stop-1. " +
+          "בדיוק כמו חיתוך מחרוזות! " +
+          "שימושי לחילוץ חלק מרשימה.",
+        codeExample: `nums = [10, 20, 30, 40, 50]
+print(nums[1:4])
+print(nums[:3])
+print(nums[2:])
+print(nums[::-1])`,
+        expectedOutput: "[20, 30, 40]\n[10, 20, 30]\n[30, 40, 50]\n[50, 40, 30, 20, 10]",
+      },
+      {
+        title: "מיון וחיפוש — sort, in",
+        explanation:
+          "sort() ממיין את הרשימה במקום (משנה אותה). " +
+          "sorted() מחזיר רשימה חדשה ממוינת בלי לשנות את המקור. " +
+          "in בודק אם איבר קיים ברשימה.",
+        codeExample: `nums = [3, 1, 4, 1, 5]
+nums.sort()
+print(nums)
+
+print(4 in nums)
+print(9 in nums)`,
+        expectedOutput: "[1, 1, 3, 4, 5]\nTrue\nFalse",
+      },
+      {
+        title: "List Comprehension — יצירת רשימה בשורה אחת",
+        explanation:
+          "דרך קומפקטית ליצור רשימה חדשה מתוך רשימה קיימת. " +
+          "אפשר לסנן עם if ולהפעיל פעולה על כל איבר. " +
+          "זו טכניקה מתקדמת שחוסכת הרבה שורות!",
         codeExample: `nums = [1, 2, 3, 4, 5, 6]
 evens = [x for x in nums if x % 2 == 0]
 print(evens)
-print(nums[1:4])`,
-        expectedOutput: "[2, 4, 6]\n[2, 3, 4]",
-      },
-      {
-        title: "כתיבת פונקציות עם רשימות",
-        explanation:
-          "פונקציות מקבלות רשימה כפרמטר ויכולות לשנות אותה (mutable!). " +
-          "כתיבת פונקציה טובה: שם ברור, תיעוד קצר, return של התוצאה.",
-        codeExample: `def larger_than(lst, threshold):
-    return [x for x in lst if x > threshold]
 
-result = larger_than([10, 5, 20, 3, 15], 8)
-print(result)`,
-        expectedOutput: "[10, 20, 15]",
+squares = [x ** 2 for x in range(5)]
+print(squares)`,
+        expectedOutput: "[2, 4, 6]\n[0, 1, 4, 9, 16]",
       },
     ],
     commonMistakes: [
       "sort() ממיין במקום ומחזיר None — אל תכתבו lst = lst.sort()",
       "בלבול בין append (מוסיף איבר בודד) ל-extend (מוסיף רשימה)",
-      "שכחת return בפונקציה — הפונקציה מחזירה None",
       "שינוי רשימה בתוך לולאה שרצה עליה — עלול לגרום לבאגים",
     ],
     quickTip:
-      "שאלה שכיחה במבחן: כתוב פונקציה שמקבלת רשימה ומחזירה רשימה חדשה. תמיד חשבו — האם לשנות את המקור או ליצור חדש?",
+      "שאלה שכיחה במבחן: כתוב קוד שמקבל רשימה ומחזיר רשימה חדשה. חשבו — האם לשנות את המקור או ליצור חדש?",
     patternFamilies: [
       "list_append_pop",
       "list_comprehension",
@@ -312,10 +478,23 @@ print(result)`,
       "list_extend_vs_append",
       "list_slicing",
     ],
+    symbolExplainers: [
+      { symbol: "[]", meaning: "יצירת רשימה ריקה או גישה לאיבר לפי אינדקס" },
+      { symbol: ".append()", meaning: "מוסיף איבר לסוף הרשימה" },
+      { symbol: ".pop()", meaning: "מסיר ומחזיר את האיבר האחרון" },
+      { symbol: ".sort()", meaning: "ממיין את הרשימה במקום (משנה אותה)" },
+      { symbol: "sorted()", meaning: "מחזיר רשימה חדשה ממוינת" },
+      { symbol: "in", meaning: "בודק אם איבר קיים ברשימה" },
+    ],
     prepQuestions: [
       {
-        question: "מה יודפס?\nlst = [3, 1, 4, 1, 5]\nlst.sort()\nprint(lst[-1])",
+        question: "מה ידפיס?\nlst = [3, 1, 4, 1, 5]\nlst.sort()\nprint(lst[-1])",
         options: ["5", "3", "None", "שגיאה"],
+        correctAnswer: 0,
+      },
+      {
+        question: "מה ידפיס?\nlst = [1, 2, 3]\nlst.append(4)\nprint(len(lst))",
+        options: ["4", "3", "[1, 2, 3, 4]", "שגיאה"],
         correctAnswer: 0,
       },
     ],
@@ -323,46 +502,76 @@ print(result)`,
   {
     topicId: "11111111-0005-0000-0000-000000000000",
     title: "פונקציות",
+    realWorldAnalogy:
+      "פונקציה זה כמו מתכון — כותבים אותו פעם אחת, " +
+      "ואחר כך אפשר לבשל לפיו כמה פעמים שרוצים. " +
+      "למתכון יש מרכיבים (פרמטרים) ותוצאה (ערך חזרה).",
     introduction:
-      "פונקציה היא כמו מתכון 📋 — מגדירים אותה פעם אחת ומשתמשים בה כמה פעמים שצריך. " +
-      "פונקציות הן אחד הנושאים המרכזיים במבחן: תצטרכו לכתוב פונקציות, לקרוא להן ולהבין כיצד ערכים עוברים דרכן. " +
-      "הכרת מושגי פרמטרים, ערכי ברירת מחדל, סקופ ורקורסיה יעניקו לכם יתרון משמעותי!",
+      "בנושא הזה נלמד איך ליצור פונקציות — קטעי קוד עם שם שאפשר לקרוא להם שוב ושוב. " +
+      "פונקציות הן אחד הנושאים המרכזיים במבחן: " +
+      "תצטרכו לכתוב פונקציות, לקרוא להן ולהבין כיצד ערכים עוברים דרכן.",
     concepts: [
       {
-        title: "הגדרת פונקציה עם פרמטרים ו-return",
+        title: "פונקציה ראשונה — def וקריאה",
         explanation:
-          "מגדירים פונקציה עם def, מציינים פרמטרים בסוגריים ומחזירים ערך עם return. " +
-          "חשוב: אם אין return מפורש, הפונקציה מחזירה None. " +
-          "שמות פרמטרים הם שמות מקומיים בלבד — לא קשורים לשמות המשתנים בקריאה.",
-        codeExample: `def calc_area(base, height):
-    area = (base * height) / 2
-    return area
+          "מגדירים פונקציה עם def, בוחרים שם, ומוסיפים נקודתיים. " +
+          "הקוד בפנים מוזח. כדי להפעיל אותה — כותבים את שמה עם סוגריים.",
+        codeExample: `def say_hello():
+    print("שלום עולם!")
 
-triangle = calc_area(6, 4)
-print(triangle)
-print(calc_area(10, 3))`,
-        expectedOutput: "12.0\n15.0",
+say_hello()
+say_hello()`,
+        expectedOutput: "שלום עולם!\nשלום עולם!",
       },
       {
-        title: "ברירות מחדל וסקופ",
+        title: "פרמטרים וערך חזרה — return",
         explanation:
-          "פרמטר עם ערך ברירת מחדל הופך לאופציונלי בקריאה. " +
-          "משתנה שמוגדר בתוך פונקציה הוא מקומי (local) — לא נגיש מחוצה לה. " +
-          "כדי לגשת למשתנה גלובלי מתוך פונקציה ולשנותו, משתמשים ב-global.",
+          "פרמטרים הם ערכים שהפונקציה מקבלת מבחוץ. " +
+          "return מחזיר תוצאה לקוד שקרא לפונקציה. " +
+          "בלי return — הפונקציה מחזירה None.",
+        codeExample: `def add(a, b):
+    return a + b
+
+result = add(3, 4)
+print(result)
+print(add(10, 20))`,
+        expectedOutput: "7\n30",
+      },
+      {
+        title: "ערכי ברירת מחדל",
+        explanation:
+          "אפשר לתת לפרמטר ערך ברירת מחדל — " +
+          "אז לא חייבים לשלוח אותו בקריאה. " +
+          "פרמטרים עם ברירת מחדל תמיד בסוף!",
         codeExample: `def greet(name, greeting="שלום"):
-    message = f"{greeting}, {name}!"
-    return message
+    return greeting + ", " + name + "!"
 
 print(greet("דנה"))
 print(greet("יוסי", "היי"))`,
         expectedOutput: "שלום, דנה!\nהיי, יוסי!",
       },
       {
-        title: "רקורסיה",
+        title: "סקופ — משתנים מקומיים וגלובליים",
         explanation:
-          "פונקציה רקורסיבית קוראת לעצמה. חייב להיות תנאי עצירה (base case) — " +
-          "אחרת הפונקציה תרוץ לאינסוף! " +
-          "כל קריאה עובדת על בעיה קטנה יותר עד שמגיעים לתנאי הבסיס.",
+          "משתנה שמוגדר בתוך פונקציה הוא מקומי (local) — " +
+          "לא נגיש מחוצה לה. משתנה מחוץ לפונקציה הוא גלובלי. " +
+          "הפונקציה יכולה לקרוא משתנה גלובלי, אבל לא לשנות אותו בלי global.",
+        codeExample: `x = 10
+
+def show():
+    y = 5
+    print("בתוך הפונקציה:", x, y)
+
+show()
+print("בחוץ:", x)`,
+        expectedOutput: "בתוך הפונקציה: 10 5\nבחוץ: 10",
+      },
+      {
+        title: "רקורסיה — פונקציה שקוראת לעצמה",
+        explanation:
+          "פונקציה רקורסיבית קוראת לעצמה עם קלט קטן יותר. " +
+          "חייב להיות תנאי עצירה (base case) — אחרת היא תרוץ לאינסוף! " +
+          "כל קריאה עובדת על בעיה קטנה יותר עד שמגיעים לבסיס.",
         codeExample: `def factorial(n):
     if n == 0:
         return 1
@@ -374,14 +583,12 @@ print(factorial(0))`,
       },
     ],
     commonMistakes: [
-      "שכחת return — הפונקציה מחזירה None ואז קורים חישובים לא צפויים",
-      "בלבול בין פרמטר (בהגדרה) לארגומנט (בקריאה)",
+      "שכחת return — הפונקציה מחזירה None ואז חישובים לא עובדים כצפוי",
       "שימוש במשתנה מקומי מחוץ לפונקציה — שגיאת NameError",
       "רקורסיה ללא תנאי עצירה — קריסה עם RecursionError",
-      "שינוי פרמטר מסוג list בתוך פונקציה משפיע על המקור — היזהרו!",
     ],
     quickTip:
-      "בשאלת כתיבת פונקציה במבחן: קראו את הדרישות, כתבו את החתימה (שם + פרמטרים), ודאו שיש return, ובדקו על דוגמת הקלט שנתנו.",
+      "בשאלת כתיבת פונקציה במבחן: קראו את הדרישות, כתבו את החתימה (שם + פרמטרים), ודאו שיש return, ובדקו על דוגמת הקלט.",
     patternFamilies: [
       "return_value_usage",
       "return_none",
@@ -390,9 +597,20 @@ print(factorial(0))`,
       "global_keyword",
       "recursion",
     ],
+    symbolExplainers: [
+      { symbol: "def", meaning: "מילת המפתח להגדרת פונקציה" },
+      { symbol: "return", meaning: "מחזיר ערך מהפונקציה לקוד שקרא לה" },
+      { symbol: "None", meaning: "ערך ריק — מוחזר כשאין return" },
+      { symbol: "global", meaning: "מאפשר לפונקציה לשנות משתנה גלובלי" },
+    ],
     prepQuestions: [
       {
-        question: "מה תחזיר הפונקציה greet('עמי') אם מוגדרת: def greet(name, greeting='שלום'): return f'{greeting}, {name}!'",
+        question: "מה ידפיס הקוד?\ndef double(x):\n    return x * 2\n\nprint(double(5))",
+        options: ["10", "5", "None", "שגיאה"],
+        correctAnswer: 0,
+      },
+      {
+        question: "מה תחזיר greet(\"עמי\") אם:\ndef greet(name, greeting=\"שלום\"):\n    return greeting + \", \" + name + \"!\"",
         options: ["שלום, עמי!", "עמי, שלום!", "None", "שגיאה"],
         correctAnswer: 0,
       },
@@ -401,107 +619,192 @@ print(factorial(0))`,
   {
     topicId: "11111111-0006-0000-0000-000000000000",
     title: "מחרוזות",
+    realWorldAnalogy:
+      "מחרוזת זה כמו שרשרת חרוזים — כל חרוז הוא תו (אות, ספרה או סימן). " +
+      "אפשר לגשת לכל חרוז לפי מיקומו בשרשרת, " +
+      "אבל אי אפשר להחליף חרוז בודד — צריך ליצור שרשרת חדשה.",
     introduction:
-      "מחרוזת בפייתון היא שרשרת תווים 🔤 — כל תו נמצא במיקום מוגדר ואפשר לגשת אליו לפי אינדקס. " +
-      "מחרוזות הן immutable — לא ניתנות לשינוי במקום, אלא יוצרים מחרוזת חדשה. " +
-      "עיבוד מחרוזות הוא אחת הפעולות השכיחות ביותר במבחן: ספירת תווים, היפוך, חיתוך ועוד. " +
-      "הכירו את המתודות הנפוצות והחיתוכים (slicing) — הם חוזרים שוב ושוב!",
+      "בנושא הזה נלמד לעבוד עם טקסט בפייתון. " +
+      "מחרוזות הן אחד מסוגי המידע הכי נפוצים — " +
+      "נלמד לגשת לתווים בודדים, לחתוך חלקים, להשתמש במתודות שימושיות, " +
+      "ולעבד מחרוזות בלולאות. נושא זה חוזר בכמעט כל מבחן!",
     concepts: [
       {
-        title: "אינדקסים, חיתוך ו-in",
+        title: "יצירת מחרוזות ואינדקסים",
         explanation:
-          "s[i] מחזיר תו בודד (מ-0). s[start:stop:step] מחזיר תת-מחרוזת. " +
-          "אינדקס שלילי סופר מהסוף: s[-1] הוא התו האחרון. " +
-          "האופרטור in בודק אם תת-מחרוזת נמצאת בתוך המחרוזת.",
+          "מחרוזת נוצרת בגרשיים (\"\" או ''). len() מחזיר את האורך. " +
+          "s[0] הוא התו הראשון, s[-1] הוא האחרון. " +
+          "אינדקסים מתחילים מ-0!",
         codeExample: `s = "Python"
 print(s[0])
 print(s[-1])
-print(s[1:4])
-print(s[::-1])
-print("tho" in s)`,
-        expectedOutput: "P\nn\nyth\nnohtyP\nTrue",
+print(len(s))`,
+        expectedOutput: "P\nn\n6",
       },
       {
-        title: "מתודות מחרוזת שימושיות",
+        title: "חיתוך (Slicing)",
         explanation:
-          "upper()/lower() — המרת רישיות. find() — מציאת מיקום תת-מחרוזת (-1 אם לא נמצאת). " +
-          "replace() — החלפת כל המופעים. split() — פיצול לרשימה. join() — חיבור רשימה למחרוזת.",
-        codeExample: `sentence = "שלום עולם"
+          "s[start:stop] מחזיר תת-מחרוזת מ-start עד stop-1. " +
+          "s[::-1] הופך את המחרוזת. " +
+          "אפשר להשמיט start (מההתחלה) או stop (עד הסוף).",
+        codeExample: `s = "Python"
+print(s[1:4])
+print(s[:3])
+print(s[3:])
+print(s[::-1])`,
+        expectedOutput: "yth\nPyt\nhon\nnohtyP",
+      },
+      {
+        title: "מתודות מחרוזת — upper, lower, find, replace",
+        explanation:
+          "upper() ממיר לאותיות גדולות, lower() לקטנות. " +
+          "find() מוצא מיקום תת-מחרוזת (-1 אם לא נמצאת). " +
+          "replace() מחליף כל מופע בתת-מחרוזת אחרת. " +
+          "כל המתודות מחזירות מחרוזת חדשה — המקורית לא משתנה!",
+        codeExample: `s = "Hello World"
+print(s.upper())
+print(s.lower())
+print(s.find("World"))
+print(s.replace("World", "Python"))`,
+        expectedOutput: "HELLO WORLD\nhello world\n6\nHello Python",
+      },
+      {
+        title: "פיצול וחיבור — split ו-join",
+        explanation:
+          "split() מפצל מחרוזת לרשימת מילים (ברירת מחדל: לפי רווחים). " +
+          "join() מחבר רשימה למחרוזת עם מפריד ביניהם. " +
+          "שני הדפוסים האלה חוזרים הרבה במבחן!",
+        codeExample: `sentence = "שלום עולם יפה"
 words = sentence.split()
 print(words)
 print("-".join(words))
-print(sentence.replace("עולם", "פייתון"))
-print("HELLO".lower())`,
-        expectedOutput: "['שלום', 'עולם']\nשלום-עולם\nשלום פייתון\nhello",
+
+csv = "80,95,70"
+grades = csv.split(",")
+print(grades)`,
+        expectedOutput: "['שלום', 'עולם', 'יפה']\nשלום-עולם-יפה\n['80', '95', '70']",
       },
       {
         title: "עיבוד מחרוזות בלולאה",
         explanation:
-          "ניתן לעבור תו אחרי תו עם for. כך ספירת תווים, בדיקת תנאים על כל תו ובנייה של מחרוזת חדשה. " +
-          "len(s) מחזיר את אורך המחרוזת.",
-        codeExample: `def count_vowels(s):
-    vowels = "aeiouAEIOU"
-    count = 0
-    for ch in s:
-        if ch in vowels:
-            count += 1
-    return count
+          "אפשר לעבור תו אחרי תו עם for. " +
+          "הדפוס הנפוץ: מתחילים עם result = \"\" ומוסיפים תווים בכל סיבוב. " +
+          "אפשר גם לספור תווים מסוימים או לבנות מחרוזת חדשה לפי תנאי.",
+        codeExample: `text = "Hello123"
+count = 0
+for ch in text:
+    if ch.isdigit():
+        count = count + 1
+print("ספרות:", count)
 
-print(count_vowels("Hello World"))
-print(len("Python"))`,
-        expectedOutput: "3\n6",
+result = ""
+for ch in "abc":
+    result = result + ch.upper()
+print(result)`,
+        expectedOutput: "ספרות: 3\nABC",
       },
     ],
     commonMistakes: [
-      "ניסיון לשנות תו ישירות: s[0] = 'A' — שגיאה! מחרוזות הן immutable",
-      "בלבול בין find() (מחזיר אינדקס או -1) ל-index() (זורק שגיאה אם לא נמצא)",
-      "שכחה ש-split() ללא ארגומנט מפצל לפי רווחים ומסיר רווחים כפולים",
-      "חיתוך מחוץ לגבולות לא זורק שגיאה — פייתון פשוט מחזירה עד הסוף",
+      "ניסיון לשנות תו: s[0] = \"A\" — שגיאה! מחרוזות הן immutable",
       "שכחת שאינדקסים מתחילים מ-0 ולא מ-1",
+      "בלבול בין find() (מחזיר -1) ל-index() (זורק שגיאה)",
     ],
     quickTip:
-      "לבנות מחרוזת חדשה בלולאה: התחילו עם result = \"\" ואז result += בכל איטרציה. זהו הדפוס הנפוץ ביותר בשאלות מחרוזות במבחן!",
+      "לבנות מחרוזת חדשה בלולאה: התחילו עם result = \"\" ואז result += בכל איטרציה. זהו הדפוס הכי נפוץ במבחן!",
+    patternFamilies: [
+      "string_slicing",
+      "string_indexing",
+      "string_find",
+      "string_split",
+      "string_join",
+      "string_methods",
+      "string_length",
+      "string_concatenation",
+    ],
+    symbolExplainers: [
+      { symbol: "s[i]", meaning: "גישה לתו במיקום i (מתחיל מ-0)" },
+      { symbol: "s[a:b]", meaning: "חיתוך — תת-מחרוזת ממיקום a עד b-1" },
+      { symbol: "s[::-1]", meaning: "היפוך המחרוזת" },
+      { symbol: "len()", meaning: "מחזיר את אורך המחרוזת" },
+      { symbol: ".split()", meaning: "מפצל מחרוזת לרשימה" },
+      { symbol: ".join()", meaning: "מחבר רשימה למחרוזת" },
+      { symbol: "in", meaning: "בודק אם תת-מחרוזת נמצאת בתוך מחרוזת" },
+    ],
     prepQuestions: [
       {
-        question: "מה יחזיר הביטוי: 'Python'[::-1]?",
+        question: "מה יחזיר הביטוי \"Python\"[::-1]?",
         options: ["nohtyP", "Python", "P", "שגיאה"],
+        correctAnswer: 0,
+      },
+      {
+        question: "מה יחזיר \"hello world\".split()?",
+        options: ["['hello', 'world']", "['hello world']", "hello world", "שגיאה"],
         correctAnswer: 0,
       },
     ],
   },
   {
     topicId: "11111111-0008-0000-0000-000000000000",
-    title: "טאפלים, קבוצות ומילונים",
+    title: "טאפלים, סטים ומילונים",
+    realWorldAnalogy:
+      "שלושה מבנים שונים לשמירת מידע: " +
+      "טאפל כמו תעודת זהות — אי אפשר לשנות את מה שכתוב בה. " +
+      "סט (קבוצה) כמו סל ללא כפילויות — כל פריט מופיע פעם אחת בלבד. " +
+      "מילון כמו ספר טלפונים — לכל שם יש מספר.",
     introduction:
-      "שלושת המבנים האלה משלימים את ארגז הכלים של פייתון 📦. " +
-      "טאפל — כמו רשימה שאי-אפשר לשנות (קואורדינטות, תאריכים). " +
-      "קבוצה — אוסף ללא כפילויות, מעולה לפעולות קבוצה. " +
-      "מילון — מיפוי מפתח לערך, כמו מילון אמיתי 📖. " +
-      "נושא זה חוזר בשאלות על עיבוד נתונים, ספירה וחיפוש יעיל.",
+      "בנושא הזה נלמד שלושה מבנים חשובים שמשלימים את רשימות: " +
+      "טאפלים (לא ניתנים לשינוי), קבוצות (ללא כפילויות), " +
+      "ומילונים (מיפוי מפתח לערך). " +
+      "נושא זה חוזר בשאלות על עיבוד נתונים, ספירה וחיפוש.",
     concepts: [
       {
-        title: "טאפלים — אוספים בלתי-משתנים",
+        title: "טאפלים — יצירה וגישה",
         explanation:
-          "טאפל נוצר בסוגריים עגולים () או בפסיקים בלבד. " +
-          "ניתן לגשת לאיברים לפי אינדקס ולפרוק (unpack) לתוך משתנים — אך לא לשנות! " +
-          "פרוק (tuple unpacking) שימושי מאוד להחלפת ערכים ולהחזרת כמה ערכים מפונקציה.",
+          "טאפל נוצר בסוגריים עגולים () או בפסיקים. " +
+          "דומה לרשימה — אפשר לגשת לפי אינדקס — אבל אי אפשר לשנות! " +
+          "שימושי לערכים שלא צריכים להשתנות, כמו קואורדינטות.",
         codeExample: `point = (3, 7)
-x, y = point
-print(x, y)
-
-def min_max(lst):
-    return min(lst), max(lst)
-
-lo, hi = min_max([4, 1, 9, 2])
-print(lo, hi)`,
-        expectedOutput: "3 7\n1 9",
+print(point[0])
+print(point[1])
+print(len(point))`,
+        expectedOutput: "3\n7\n2",
       },
       {
-        title: "קבוצות — ייחודיות ופעולות קבוצה",
+        title: "פריקת טאפל (Unpacking)",
         explanation:
-          "קבוצה נוצרת עם {} או set(). אין כפילויות ואין סדר. " +
-          "| — איחוד, & — חיתוך, - — הפרש, <= — תת-קבוצה. " +
-          "add() מוסיף איבר בודד, update() מוסיף כמה.",
+          "אפשר לשים את האיברים של טאפל לתוך משתנים נפרדים בבת אחת. " +
+          "מספר המשתנים חייב להתאים למספר האיברים בטאפל. " +
+          "שימושי גם להחלפת ערכים: a, b = b, a",
+        codeExample: `point = (3, 7)
+x, y = point
+print("x:", x)
+print("y:", y)
+
+a, b = 1, 2
+a, b = b, a
+print("a:", a, "b:", b)`,
+        expectedOutput: "x: 3\ny: 7\na: 2 b: 1",
+      },
+      {
+        title: "קבוצות (Sets) — ייחודיות",
+        explanation:
+          "קבוצה נוצרת עם set() או עם {} (עם ערכים בפנים). " +
+          "אין כפילויות — אם מוסיפים ערך שכבר קיים, הוא לא נוסף. " +
+          "אין סדר — אי אפשר לגשת לפי אינדקס.",
+        codeExample: `nums = {1, 2, 3, 2, 1}
+print(nums)
+
+nums.add(4)
+print(nums)
+print(3 in nums)`,
+        expectedOutput: "{1, 2, 3}\n{1, 2, 3, 4}\nTrue",
+      },
+      {
+        title: "פעולות קבוצה — איחוד, חיתוך, הפרש",
+        explanation:
+          "| (או union) — איחוד, כל האיברים משתי הקבוצות. " +
+          "& (או intersection) — חיתוך, רק מה שמשותף. " +
+          "- (או difference) — הפרש, מה שבראשונה ולא בשנייה.",
         codeExample: `a = {1, 2, 3, 4}
 b = {3, 4, 5, 6}
 print(a | b)
@@ -512,27 +815,26 @@ print(a - b)`,
       {
         title: "מילונים — מפתח וערך",
         explanation:
-          "מילון נוצר עם {} עם זוגות key:value. " +
-          "גישה לפי מפתח: d[key] — זורק KeyError אם לא קיים. d.get(key, default) בטוח יותר. " +
-          "d.keys(), d.values(), d.items() לאיטרציה. " +
-          "שימושי לספירת מופעים: d[key] = d.get(key, 0) + 1.",
-        codeExample: `grades = {"דנה": 95, "יוסי": 80, "רן": 90}
-grades["לילי"] = 88
+          "מילון נוצר עם {} וזוגות key: value. " +
+          "גישה לפי מפתח: d[key]. d.get(key, default) בטוח יותר — לא זורק שגיאה. " +
+          "d.keys() — המפתחות, d.values() — הערכים, d.items() — הזוגות.",
+        codeExample: `grades = {"דנה": 95, "יוסי": 80}
+grades["רן"] = 90
+print(grades["דנה"])
+print(grades.get("לילי", 0))
+
 for name, grade in grades.items():
-    print(f"{name}: {grade}")
-print(max(grades, key=grades.get))`,
-        expectedOutput: "דנה: 95\nיוסי: 80\nרן: 90\nלילי: 88\nדנה",
+    print(name, grade)`,
+        expectedOutput: "95\n0\nדנה 95\nיוסי 80\nרן 90",
       },
     ],
     commonMistakes: [
       "ניסיון לשנות טאפל: t[0] = 5 — שגיאת TypeError",
       "גישה לאיבר בקבוצה לפי אינדקס: s[0] — שגיאה! לקבוצות אין סדר",
-      "גישה למפתח לא קיים במילון ישירות — קבלו KeyError; השתמשו ב-.get()",
-      "בלבול בין {} ריק (מילון) ל-set() ריק (קבוצה) — {} הוא מילון!",
-      "שינוי מילון תוך כדי איטרציה עליו — גורם ל-RuntimeError",
+      "בלבול בין {} ריק (מילון!) ל-set() ריק (קבוצה)",
     ],
     quickTip:
-      "ספירת מופעים: השתמשו במילון עם d.get(key, 0) + 1 — זהו דפוס מאוד נפוץ בשאלות עיבוד מחרוזות ורשימות!",
+      "ספירת מופעים עם מילון: d[key] = d.get(key, 0) + 1 — דפוס שחוזר הרבה במבחן!",
     patternFamilies: [
       "tuple_immutability",
       "set_operations",
@@ -541,78 +843,140 @@ print(max(grades, key=grades.get))`,
       "dict_iteration",
       "dict_get_default",
     ],
+    symbolExplainers: [
+      { symbol: "()", meaning: "יצירת טאפל (אוסף לא ניתן לשינוי)" },
+      { symbol: "set()", meaning: "יצירת קבוצה ריקה" },
+      { symbol: "{k: v}", meaning: "יצירת מילון עם מפתח וערך" },
+      { symbol: "|", meaning: "איחוד קבוצות" },
+      { symbol: "&", meaning: "חיתוך קבוצות" },
+      { symbol: ".get()", meaning: "גישה בטוחה למילון — לא זורק שגיאה" },
+      { symbol: ".items()", meaning: "מחזיר את זוגות מפתח-ערך מהמילון" },
+    ],
     prepQuestions: [
       {
-        question: "מה יחזיר: {1,2,3} & {2,3,4}?",
+        question: "מה יחזיר הביטוי {1, 2, 3} & {2, 3, 4}?",
         options: ["{2, 3}", "{1, 2, 3, 4}", "{1, 4}", "שגיאה"],
+        correctAnswer: 0,
+      },
+      {
+        question: "מה ידפיס?\nd = {\"a\": 1}\nprint(d.get(\"b\", 0))",
+        options: ["0", "None", "שגיאה", "\"b\""],
         correctAnswer: 0,
       },
     ],
   },
   {
     topicId: "11111111-0002-0000-0000-000000000000",
-    title: "מספרים ומתמטיקה",
+    title: "אריתמטיקה ואופרטורים",
+    realWorldAnalogy:
+      "אופרטורים זה כמו כפתורים במחשבון — " +
+      "כל כפתור עושה פעולה מתמטית אחרת. " +
+      "בפייתון יש לנו את כל הכפתורים הרגילים (+, -, ×, ÷) " +
+      "ועוד כמה מיוחדים שלא קיימים במחשבון רגיל.",
     introduction:
-      "נושא זה עוסק בחישובים מתמטיים — כמו מחשבון עם כפתורים מיוחדים 🔢. " +
-      "חילוק שלם, שארית (מודולו), חזקות, ועבודה עם ספרות של מספרים. " +
-      "שאלות על ראשוניים, ספרות ייחודיות וסדרות מתמטיות חוזרות במבחנים. " +
-      "הסוד הוא להכיר את האופרטורים // ו-% ולדעת לפרק מספר לספרותיו.",
+      "בנושא הזה נלמד את כל הפעולות החשבוניות בפייתון: " +
+      "חיבור, חיסור, כפל, חילוק, חילוק שלם, שארית וחזקות. " +
+      "נכיר גם פונקציות מתמטיות מובנות כמו abs() ו-round(). " +
+      "הכרת האופרטורים האלה חיונית — הם מופיעים בכל נושא שנלמד אחר כך.",
     concepts: [
       {
-        title: "חילוק שלם (%  //) — פירוק ספרות",
+        title: "ארבע פעולות חשבון",
         explanation:
-          "n % 10 נותן את הספרה האחרונה. n // 10 מסיר את הספרה האחרונה. " +
-          "עם לולאה אפשר לפרק כל מספר לספרותיו!",
-        codeExample: `n = 4567
-while n > 0:
-    digit = n % 10
-    print(digit, end=" ")
-    n //= 10`,
-        expectedOutput: "7 6 5 4 ",
+          "פייתון תומך בחיבור (+), חיסור (-), כפל (*) וחילוק (/). " +
+          "שימו לב: חילוק רגיל (/) תמיד מחזיר מספר עשרוני (float), גם אם התוצאה שלמה.",
+        codeExample: `print(10 + 3)
+print(10 - 3)
+print(10 * 3)
+print(10 / 3)`,
+        expectedOutput: "13\n7\n30\n3.3333333333333335",
       },
       {
-        title: "בדיקת ראשוניות",
+        title: "חילוק שלם ושארית — // ו-%",
         explanation:
-          "מספר ראשוני מתחלק רק ב-1 ובעצמו. מספיק לבדוק מחלקים עד שורש המספר — " +
-          "אם אין מחלק עד שם, המספר ראשוני.",
-        codeExample: `def is_prime(n):
-    if n < 2:
-        return False
-    for i in range(2, int(n**0.5) + 1):
-        if n % i == 0:
-            return False
-    return True
+          "// מחזיר רק את החלק השלם של החילוק (בלי שבר). " +
+          "% (מודולו) מחזיר את השארית. " +
+          "שני האופרטורים האלה שימושיים מאוד — למשל, n % 10 נותן את הספרה האחרונה של מספר.",
+        codeExample: `print(17 // 5)
+print(17 % 5)
+print(123 % 10)
+print(123 // 10)`,
+        expectedOutput: "3\n2\n3\n12",
+      },
+      {
+        title: "חזקות וסדר פעולות",
+        explanation:
+          "** מחשב חזקה. סדר הפעולות בפייתון זהה למתמטיקה: " +
+          "סוגריים ← חזקות ← כפל/חילוק ← חיבור/חיסור. " +
+          "כשלא בטוחים — שימו סוגריים!",
+        codeExample: `print(2 ** 3)
+print(3 ** 2)
+print(2 + 3 * 4)
+print((2 + 3) * 4)`,
+        expectedOutput: "8\n9\n14\n20",
+      },
+      {
+        title: "פונקציות מתמטיות מובנות",
+        explanation:
+          "abs() מחזיר ערך מוחלט. round() מעגל מספר עשרוני. " +
+          "לפונקציות נוספות כמו שורש ועיגול למעלה/למטה — " +
+          "משתמשים ב-import math.",
+        codeExample: `print(abs(-7))
+print(round(3.7))
+print(round(3.14159, 2))
 
-print(is_prime(17))
-print(is_prime(15))`,
-        expectedOutput: "True\nFalse",
+import math
+print(math.sqrt(16))
+print(math.floor(3.9))`,
+        expectedOutput: "7\n4\n3.14\n4.0\n3",
       },
       {
-        title: "סדרות מתמטיות",
+        title: "ביטויים משולבים",
         explanation:
-          "סדרות כמו פיבונאצ'י ו-Pell בנויות מנוסחת נסיגה — כל איבר מחושב מהקודמים. " +
-          "השתמשו בהשמה מרובה (a, b = b, a+b) לחישוב יעיל.",
-        codeExample: `# סדרת פיבונאצ'י — 10 איברים ראשונים
-a, b = 0, 1
-for _ in range(10):
-    print(a, end=" ")
-    a, b = b, a + b`,
-        expectedOutput: "0 1 1 2 3 5 8 13 21 34 ",
+          "אפשר לשלב כמה אופרטורים בביטוי אחד. " +
+          "פייתון מחשב לפי סדר פעולות, משמאל לימין כשהעדיפות שווה. " +
+          "שימו לב: חילוק (/) תמיד נותן float!",
+        codeExample: `x = 10
+y = 3
+print(x + y * 2)
+print(x % y)
+print(x ** 2 + y ** 2)`,
+        expectedOutput: "16\n1\n109",
       },
     ],
     commonMistakes: [
-      "בלבול בין / (חילוק עשרוני) ל-// (חילוק שלם)",
-      "שכחה ש-n % 10 עובד רק על מספרים חיוביים כמצופה",
-      "בדיקת ראשוניות עד n במקום עד שורש n — לא יעיל ויכול לגרום לטעויות",
-      "שכחה לטפל במקרי קצה: 0, 1 הם לא ראשוניים",
+      "בלבול בין / (חילוק עשרוני, מחזיר float) ל-// (חילוק שלם, מחזיר int)",
+      "שכחה שסדר פעולות קיים: 2 + 3 * 4 זה 14 ולא 20",
+      "בלבול בין ** (חזקה) ל-* (כפל): 2**3 = 8, לא 6",
+      "שכחה ש-round() מעגל לזוגי: round(2.5) = 2, לא 3",
     ],
     quickTip:
-      "לפרק מספר לספרותיו: loop עם % 10 (קבל ספרה) ו-// 10 (הסר ספרה). זה דפוס שחוזר בהרבה שאלות!",
+      "% ו-// הם הצמד הכי שימושי: % 10 נותן את הספרה האחרונה, // 10 מסיר אותה. נשתמש בזה הרבה!",
+    patternFamilies: [
+      "floor_division",
+      "modulo",
+      "power_operator",
+      "operator_precedence",
+      "math_functions",
+      "rounding",
+      "mixed_type_arithmetic",
+    ],
+    symbolExplainers: [
+      { symbol: "//", meaning: "חילוק שלם — מחזיר רק את החלק השלם" },
+      { symbol: "%", meaning: "מודולו — מחזיר את השארית מחילוק" },
+      { symbol: "**", meaning: "חזקה — בסיס בחזקת מעריך" },
+      { symbol: "abs()", meaning: "ערך מוחלט — מרחק מאפס" },
+      { symbol: "round()", meaning: "עיגול מספר עשרוני" },
+    ],
     prepQuestions: [
       {
-        question: "מה יחזיר: 17 % 5?",
-        options: ["3", "2", "1", "0"],
+        question: "מה יחזיר הביטוי 17 % 5?",
+        options: ["3", "2", "3.4", "0"],
         correctAnswer: 1,
+      },
+      {
+        question: "מה יחזיר הביטוי 7 // 2?",
+        options: ["3", "3.5", "4", "שגיאה"],
+        correctAnswer: 0,
       },
     ],
   },
