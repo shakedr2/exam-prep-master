@@ -6,31 +6,31 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 25% 10%;
+    --background: 0 0% 98%;
+    --foreground: 240 28% 14%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 10%;
+    --card-foreground: 240 28% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 10%;
+    --popover-foreground: 240 28% 14%;
 
-    --primary: 262 83% 58%;
+    --primary: 258 72% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 92%;
-    --secondary-foreground: 220 25% 10%;
+    --secondary: 240 6% 93%;
+    --secondary-foreground: 240 28% 14%;
 
-    --muted: 220 14% 95%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 240 6% 95%;
+    --muted-foreground: 237 11% 37%;
 
-    --accent: 174 72% 46%;
+    --accent: 164 58% 45%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 71% 45%;
+    --success: 164 58% 45%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
@@ -39,11 +39,11 @@
     --xp: 45 93% 47%;
     --xp-foreground: 0 0% 10%;
 
-    --border: 220 14% 89%;
-    --input: 220 14% 89%;
-    --ring: 262 83% 58%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 258 72% 58%;
 
-    --radius: 0.25rem;
+    --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -51,56 +51,93 @@
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-border: 240 6% 91%;
+    --sidebar-ring: 258 72% 58%;
+
+    /* Premium design tokens — light */
+    --bg-primary: #fafafa;
+    --bg-surface: #ffffff;
+    --bg-surface-hover: #f0f0f5;
+    --color-primary: #6d4cdc;
+    --color-primary-light: #8b6cf7;
+    --text-primary: #1a1a2e;
+    --text-secondary: #55566a;
+    --text-muted: #8b8b9e;
+    --border-color: rgba(0,0,0,0.08);
+    --shadow-card: 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.06);
+    --glow-primary: 0 0 20px rgba(109, 76, 220, 0.2);
+    --hero-gradient: linear-gradient(135deg, #7c5cfc, #9b7fff, #e8e0ff);
+
+    /* Radius tokens */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
   }
 
-  .dark {
-    --background: 240 10% 4%;
-    --foreground: 220 14% 95%;
+  .dark,
+  [data-theme='dark'] {
+    --background: 240 12% 7%;
+    --foreground: 240 20% 95%;
 
-    --card: 240 10% 9%;
-    --card-foreground: 220 14% 95%;
+    --card: 237 28% 14%;
+    --card-foreground: 240 20% 95%;
 
-    --popover: 228 20% 14%;
-    --popover-foreground: 220 14% 95%;
+    --popover: 237 28% 14%;
+    --popover-foreground: 240 20% 95%;
 
-    --primary: 239 84% 59%;
+    --primary: 252 96% 67%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 228 15% 20%;
-    --secondary-foreground: 220 14% 95%;
+    --secondary: 238 26% 18%;
+    --secondary-foreground: 240 20% 95%;
 
-    --muted: 228 15% 18%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 238 26% 18%;
+    --muted-foreground: 240 9% 58%;
 
-    --accent: 174 72% 50%;
+    --accent: 164 66% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62% 50%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 71% 50%;
+    --success: 164 66% 50%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 55%;
+    --warning: 38 92% 50%;
     --warning-foreground: 0 0% 10%;
 
     --xp: 45 93% 55%;
     --xp-foreground: 0 0% 10%;
 
-    --border: 228 15% 22%;
-    --input: 228 15% 22%;
-    --ring: 262 83% 62%;
+    --border: 237 15% 20%;
+    --input: 237 15% 20%;
+    --ring: 252 96% 67%;
 
-    --sidebar-background: 228 20% 8%;
-    --sidebar-foreground: 220 14% 95%;
-    --sidebar-primary: 262 83% 62%;
+    --sidebar-background: 237 28% 10%;
+    --sidebar-foreground: 240 20% 95%;
+    --sidebar-primary: 252 96% 67%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 228 15% 16%;
-    --sidebar-accent-foreground: 220 14% 95%;
-    --sidebar-border: 228 15% 18%;
-    --sidebar-ring: 262 83% 62%;
+    --sidebar-accent: 238 26% 16%;
+    --sidebar-accent-foreground: 240 20% 95%;
+    --sidebar-border: 237 15% 18%;
+    --sidebar-ring: 252 96% 67%;
+
+    /* Premium design tokens — dark */
+    --bg-primary: #0f0f13;
+    --bg-surface: #1a1b2e;
+    --bg-surface-hover: #22233a;
+    --color-primary: #7c5cfc;
+    --color-primary-light: #9b7fff;
+    --text-primary: #f0f0f5;
+    --text-secondary: #8b8b9e;
+    --text-muted: #55566a;
+    --border-color: rgba(255,255,255,0.06);
+    --shadow-card: 0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
+    --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+    --glow-primary: 0 0 20px rgba(124, 92, 252, 0.3);
+    --hero-gradient: linear-gradient(135deg, #7c5cfc, #4c3acd, #1a1b2e);
   }
 }
 
@@ -126,22 +163,22 @@
 
 @layer utilities {
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(262 83% 58%), hsl(290 80% 55%));
+    background: linear-gradient(135deg, hsl(252 96% 67%), hsl(280 80% 55%));
   }
   .gradient-accent {
-    background: linear-gradient(135deg, hsl(174 72% 46%), hsl(190 80% 50%));
+    background: linear-gradient(135deg, hsl(164 66% 50%), hsl(180 70% 50%));
   }
   .gradient-xp {
     background: linear-gradient(135deg, hsl(38 92% 50%), hsl(45 93% 55%));
   }
   .gradient-success {
-    background: linear-gradient(135deg, hsl(142 71% 45%), hsl(160 72% 50%));
+    background: linear-gradient(135deg, hsl(164 66% 50%), hsl(160 72% 50%));
   }
   .gradient-streak {
-    background: linear-gradient(135deg, hsl(38 92% 50%), hsl(45 93% 55%), hsl(142 71% 45%));
+    background: linear-gradient(135deg, hsl(38 92% 50%), hsl(45 93% 55%), hsl(164 66% 50%));
   }
   .text-gradient-primary {
-    background: linear-gradient(135deg, hsl(262 83% 58%), hsl(290 80% 55%));
+    background: linear-gradient(135deg, hsl(252 96% 67%), hsl(280 80% 55%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -156,4 +193,18 @@
   .pb-safe {
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   }
+}
+
+/* Glow-pulse animation for Python hero logo */
+@keyframes glow-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(124, 92, 252, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(124, 92, 252, 0.7));
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
 }

@@ -88,9 +88,11 @@ export default {
         "3xl": "calc(var(--radius) + 12px)",
       },
       boxShadow: {
-        "glow-primary": "0 0 20px hsl(262 83% 58% / 0.35)",
-        "glow-accent":  "0 0 20px hsl(174 72% 46% / 0.35)",
+        "glow-primary": "0 0 20px hsl(252 96% 67% / 0.35)",
+        "glow-accent":  "0 0 20px hsl(164 66% 50% / 0.35)",
         "glow-xp":      "0 0 20px hsl(45 93% 47% / 0.35)",
+        "card": "var(--shadow-card)",
+        "card-hover": "var(--shadow-card-hover)",
       },
       keyframes: {
         ...animation.keyframes,

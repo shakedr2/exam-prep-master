@@ -34,9 +34,9 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     const isInteractive = interactive ?? typeof onClick === "function";
 
     const baseClasses =
-      "rounded-lg border bg-card text-card-foreground shadow-sm";
+      "rounded-xl border border-[var(--border-color)] bg-card text-card-foreground shadow-[var(--shadow-card)]";
     const interactiveClasses = isInteractive
-      ? "transition-shadow duration-200 hover:shadow-lg"
+      ? "transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5"
       : "";
 
     if (!isInteractive) {

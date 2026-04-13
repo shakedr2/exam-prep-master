@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
+import { applyDesignTokens } from "@/styles/design-tokens";
 
 type Theme = "dark" | "light";
 
@@ -32,6 +33,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } else {
       root.classList.remove("dark");
     }
+    root.setAttribute("data-theme", theme);
+    applyDesignTokens(theme);
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch {

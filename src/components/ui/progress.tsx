@@ -38,7 +38,7 @@ const Progress = React.forwardRef<
     >
       <ProgressPrimitive.Indicator asChild>
         <motion.div
-          className="h-full w-full flex-1 bg-primary"
+          className="h-full w-full flex-1 bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.4)]"
           initial={false}
           animate={{ x: target }}
           transition={

@@ -15,78 +15,78 @@
 export const colorPalette = {
   // Primary — purple/violet, used for interactive elements
   primary: {
-    light: "262 83% 58%",  // hsl(262, 83%, 58%) — #7C3AED-ish
-    dark:  "239 84% 59%",  // hsl(239, 84%, 59%) — slightly blue-shifted in dark mode
+    light: "258 72% 58%",  // hsl(258, 72%, 58%) — #6d4cdc light mode
+    dark:  "252 96% 67%",  // hsl(252, 96%, 67%) — #7c5cfc dark mode
     foreground: "0 0% 100%",
   },
 
   // Secondary — neutral gray
   secondary: {
-    light: "220 14% 92%",
-    dark:  "228 15% 20%",
+    light: "240 6% 93%",
+    dark:  "238 26% 18%",
     foreground: {
-      light: "220 25% 10%",
-      dark:  "220 14% 95%",
+      light: "240 28% 14%",
+      dark:  "240 20% 95%",
     },
   },
 
-  // Accent — teal/cyan, used for highlights and secondary actions
+  // Accent — teal/emerald, used for highlights and secondary actions
   accent: {
-    light: "174 72% 46%",
-    dark:  "174 72% 50%",
+    light: "164 58% 45%",
+    dark:  "164 66% 50%",
     foreground: "0 0% 100%",
   },
 
   // Background surfaces
   background: {
-    light: "220 20% 97%",
-    dark:  "240 10% 4%",
+    light: "0 0% 98%",      // #fafafa
+    dark:  "240 12% 7%",    // #0f0f13
   },
   foreground: {
-    light: "220 25% 10%",
-    dark:  "220 14% 95%",
+    light: "240 28% 14%",   // #1a1a2e
+    dark:  "240 20% 95%",   // #f0f0f5
   },
   card: {
-    light: "0 0% 100%",
-    dark:  "240 10% 9%",
+    light: "0 0% 100%",     // #ffffff
+    dark:  "237 28% 14%",   // #1a1b2e
     foreground: {
-      light: "220 25% 10%",
-      dark:  "220 14% 95%",
+      light: "240 28% 14%",
+      dark:  "240 20% 95%",
     },
   },
   popover: {
     light: "0 0% 100%",
-    dark:  "228 20% 14%",
+    dark:  "237 28% 14%",
     foreground: {
-      light: "220 25% 10%",
-      dark:  "220 14% 95%",
+      light: "240 28% 14%",
+      dark:  "240 20% 95%",
     },
   },
 
   // Muted — subtle backgrounds for non-interactive regions
   muted: {
-    light: "220 14% 95%",
-    dark:  "228 15% 18%",
+    light: "240 6% 95%",
+    dark:  "238 26% 18%",    // #22233a
     foreground: {
-      light: "220 10% 46%",
-      dark:  "220 10% 55%",
+      light: "237 11% 37%", // #55566a
+      dark:  "240 9% 58%",  // #8b8b9e
     },
   },
 
   // Semantic status colors
   destructive: {
-    light: "0 84% 60%",
-    dark:  "0 62% 50%",
+    light: "0 84% 60%",     // #ef4444
+    dark:  "0 84% 60%",
     foreground: "0 0% 100%",
   },
   success: {
-    light: "142 71% 45%",
-    dark:  "142 71% 50%",
+    light: "164 58% 45%",   // #2dd4a8-ish
+    dark:  "164 66% 50%",   // #2dd4a8
     foreground: "0 0% 100%",
   },
   warning: {
-    light: "38 92% 50%",
-    dark:  "38 92% 55%",
+    light: "38 92% 50%",    // #f59e0b
+    dark:  "38 92% 50%",
     foreground: {
       light: "0 0% 100%",
       dark:  "0 0% 10%",
@@ -102,31 +102,31 @@ export const colorPalette = {
 
   // Borders & inputs
   border: {
-    light: "220 14% 89%",
-    dark:  "228 15% 22%",
+    light: "240 6% 90%",
+    dark:  "237 15% 20%",
   },
   input: {
-    light: "220 14% 89%",
-    dark:  "228 15% 22%",
+    light: "240 6% 90%",
+    dark:  "237 15% 20%",
   },
   ring: {
-    light: "262 83% 58%",
-    dark:  "262 83% 62%",
+    light: "258 72% 58%",
+    dark:  "252 96% 67%",
   },
 
   // Sidebar
   sidebar: {
     background: {
       light: "0 0% 98%",
-      dark:  "228 20% 8%",
+      dark:  "237 28% 10%",
     },
     foreground: {
       light: "240 5.3% 26.1%",
-      dark:  "220 14% 95%",
+      dark:  "240 20% 95%",
     },
     primary: {
       light: "240 5.9% 10%",
-      dark:  "262 83% 62%",
+      dark:  "252 96% 67%",
       foreground: {
         light: "0 0% 98%",
         dark:  "0 0% 100%",
@@ -134,19 +134,19 @@ export const colorPalette = {
     },
     accent: {
       light: "240 4.8% 95.9%",
-      dark:  "228 15% 16%",
+      dark:  "238 26% 16%",
       foreground: {
         light: "240 5.9% 10%",
-        dark:  "220 14% 95%",
+        dark:  "240 20% 95%",
       },
     },
     border: {
-      light: "220 13% 91%",
-      dark:  "228 15% 18%",
+      light: "240 6% 91%",
+      dark:  "237 15% 18%",
     },
     ring: {
-      light: "262 83% 58%",
-      dark:  "262 83% 62%",
+      light: "258 72% 58%",
+      dark:  "252 96% 67%",
     },
   },
 } as const;
@@ -156,11 +156,11 @@ export const colorPalette = {
 // ---------------------------------------------------------------------------
 
 export const gradients = {
-  primary:  "linear-gradient(135deg, hsl(262 83% 58%), hsl(290 80% 55%))",
-  accent:   "linear-gradient(135deg, hsl(174 72% 46%), hsl(190 80% 50%))",
+  primary:  "linear-gradient(135deg, hsl(252 96% 67%), hsl(280 80% 55%))",
+  accent:   "linear-gradient(135deg, hsl(164 66% 50%), hsl(180 70% 50%))",
   xp:       "linear-gradient(135deg, hsl(38 92% 50%), hsl(45 93% 55%))",
-  success:  "linear-gradient(135deg, hsl(142 71% 45%), hsl(160 72% 50%))",
-  streak:   "linear-gradient(135deg, hsl(38 92% 50%), hsl(45 93% 55%), hsl(142 71% 45%))",
+  success:  "linear-gradient(135deg, hsl(164 66% 50%), hsl(160 72% 50%))",
+  streak:   "linear-gradient(135deg, hsl(38 92% 50%), hsl(45 93% 55%), hsl(164 66% 50%))",
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -255,8 +255,8 @@ export const shadows = {
   "2xl":"0 25px 50px -12px rgb(0 0 0 / 0.25)",
   inner:"inset 0 2px 4px 0 rgb(0 0 0 / 0.05)",
   // Glow variants for interactive states
-  "glow-primary": "0 0 20px hsl(262 83% 58% / 0.35)",
-  "glow-accent":  "0 0 20px hsl(174 72% 46% / 0.35)",
+  "glow-primary": "0 0 20px hsl(252 96% 67% / 0.35)",
+  "glow-accent":  "0 0 20px hsl(164 66% 50% / 0.35)",
   "glow-xp":      "0 0 20px hsl(45 93% 47% / 0.35)",
 } as const;
 
