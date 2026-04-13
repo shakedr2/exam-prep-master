@@ -179,6 +179,51 @@ export type Database = {
           }
         ]
       }
+      user_learning_progress: {
+        Row: {
+          id: number
+          user_id: string
+          topic_id: string
+          concept_index: number
+          completed_at: string
+        }
+        Insert: {
+          id?: number
+          user_id: string
+          topic_id: string
+          concept_index: number
+          completed_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          topic_id?: string
+          concept_index?: number
+          completed_at?: string
+        }
+        Relationships: []
+      }
+      user_topic_completions: {
+        Row: {
+          id: number
+          user_id: string
+          topic_id: string
+          completed_at: string
+        }
+        Insert: {
+          id?: number
+          user_id: string
+          topic_id: string
+          completed_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          topic_id?: string
+          completed_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
