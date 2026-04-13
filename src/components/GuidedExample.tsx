@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, CheckCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -160,7 +160,10 @@ export function GuidedExample({ example, onComplete }: GuidedExampleProps) {
     () => buildTraceRows(example.steps, stepIndex),
     [example.steps, stepIndex]
   );
-  const hasTrace = example.steps.some((s) => s.traceRow && s.traceRow.length > 0);
+  const hasTrace = useMemo(
+    () => example.steps.some((s) => s.traceRow && s.traceRow.length > 0),
+    [example.steps]
+  );
 
   function handleNext() {
     if (!isLast) {
@@ -299,7 +302,7 @@ export function GuidedExample({ example, onComplete }: GuidedExampleProps) {
             onClick={() => setStepIndex((i) => i - 1)}
             className="gap-1"
           >
-            <ChevronLeft className="h-4 w-4 rotate-180" />
+            <ChevronRight className="h-4 w-4" />
             הקודם
           </Button>
         )}
