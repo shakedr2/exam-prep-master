@@ -947,7 +947,7 @@ const PracticePage = () => {
       </div>
 
       {/* Sticky navigation bar */}
-      <div className="fixed bottom-0 inset-x-0 z-30 border-t border-foreground/10 bg-background/95 backdrop-blur-sm pb-16">
+      <div className="fixed bottom-0 inset-x-0 z-30 border-t border-foreground/10 bg-background/95 backdrop-blur-sm pb-16 md:pb-0">
         <div className="mx-auto max-w-2xl px-4 py-2 flex gap-3">
           <Button
             variant="outline"

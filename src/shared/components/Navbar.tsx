@@ -1,9 +1,10 @@
-import { Link, useNavigate } from "react-router-dom";
-import { GraduationCap, LogIn, LogOut } from "lucide-react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { GraduationCap, LogIn, LogOut, LayoutDashboard, Trophy } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const { progress } = useProgress();
@@ -25,10 +26,58 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-foreground/20 bg-background/95 backdrop-blur-sm">
       <div className="mx-auto max-w-5xl px-4 h-14 flex items-center justify-between">
-        <Link to="/dashboard" className="flex items-center gap-2 font-bold text-foreground hover:text-primary transition-colors">
-          <GraduationCap className="h-5 w-5 text-primary" />
-          <span className="text-base font-bold font-mono">ExamPrep Python</span>
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link to="/dashboard" className="flex items-center gap-2 font-bold text-foreground hover:text-primary transition-colors">
+            <GraduationCap className="h-5 w-5 text-primary" />
+            <span className="text-base font-bold font-mono">ExamPrep Python</span>
+          </Link>
+
+          {/* Desktop nav links — hidden on mobile, visible md+ */}
+          <div className="hidden md:flex items-center gap-1">
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                )
+              }
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              ראשי
+            </NavLink>
+            <NavLink
+              to="/exam"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                )
+              }
+            >
+              <GraduationCap className="h-4 w-4" />
+              מבחן
+            </NavLink>
+            <NavLink
+              to="/progress"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                )
+              }
+            >
+              <Trophy className="h-4 w-4" />
+              התקדמות
+            </NavLink>
+          </div>
+        </div>
         <div className="flex items-center gap-3">
           <ThemeToggle />
           {user ? (
