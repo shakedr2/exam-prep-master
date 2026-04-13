@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/collapsible";
 import posthog from "posthog-js";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
-import { getTutorialByTopicId } from "@/data/topicTutorials";
+import { getTutorialByTopicId, resolveTopicId } from "@/data/topicTutorials";
 import { topics } from "@/data/questions";
 import { useLearningProgress } from "@/hooks/useLearningProgress";
 
@@ -24,10 +24,12 @@ const fadeInUp = {
 };
 
 export default function LearnPage() {
-  const { topicId } = useParams<{ topicId: string }>();
+  const { topicId: rawTopicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
-  const tutorial = getTutorialByTopicId(topicId ?? "");
-  const topic = topics.find((t) => t.id === topicId);
+  const resolved = resolveTopicId(rawTopicId ?? "");
+  const tutorial = getTutorialByTopicId(resolved?.uuid ?? "");
+  const topic = topics.find((t) => t.id === resolved?.slug);
+  const topicId = resolved?.uuid ?? rawTopicId;
   const { completedConcepts, markConceptComplete } = useLearningProgress(topicId ?? "");
 
   const [currentIndex, setCurrentIndex] = useState(0);
