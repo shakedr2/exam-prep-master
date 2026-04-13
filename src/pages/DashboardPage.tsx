@@ -19,6 +19,7 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { Flame, CheckCircle2, GraduationCap, BookOpen, Brain, X, Lock, ChevronLeft, Home } from "lucide-react";
+import { PythonHero } from "@/components/PythonHero";
 import { questions as staticQuestions } from "@/data/questions";
 import { supabase } from "@/shared/integrations/supabase/client";
 
@@ -319,6 +320,9 @@ const DashboardPage = () => {
           <ChevronLeft className="h-3.5 w-3.5 opacity-60" aria-hidden="true" />
           <span className="px-1.5 py-1 font-semibold text-foreground">יסודות פייתון</span>
         </nav>
+
+        {/* Python Hero Section */}
+        <PythonHero />
 
         <div className="flex items-center justify-between">
           <div>
