@@ -621,3 +621,38 @@ for _ in range(10):
 export function getTutorialByTopicId(topicId: string): TopicTutorial | undefined {
   return topicTutorials.find((t) => t.topicId === topicId);
 }
+
+/**
+ * Bidirectional slug ↔ UUID map for the 8 canonical topics.
+ * Allows routes to work with either `/learn/variables_io` or
+ * `/learn/11111111-0001-0000-0000-000000000000`.
+ */
+const SLUG_TO_UUID: Record<string, string> = {
+  variables_io: "11111111-0001-0000-0000-000000000000",
+  arithmetic: "11111111-0002-0000-0000-000000000000",
+  conditions: "11111111-0003-0000-0000-000000000000",
+  loops: "11111111-0004-0000-0000-000000000000",
+  functions: "11111111-0005-0000-0000-000000000000",
+  strings: "11111111-0006-0000-0000-000000000000",
+  lists: "11111111-0007-0000-0000-000000000000",
+  tuples_sets_dicts: "11111111-0008-0000-0000-000000000000",
+};
+
+const UUID_TO_SLUG: Record<string, string> = Object.fromEntries(
+  Object.entries(SLUG_TO_UUID).map(([slug, uuid]) => [uuid, slug]),
+);
+
+/**
+ * Resolve a topic identifier that may be either a slug (`variables_io`) or a
+ * UUID (`11111111-0001-…`).  Returns both forms so callers can use whichever
+ * their data layer expects, or `null` when the identifier is unknown.
+ */
+export function resolveTopicId(idOrSlug: string): { uuid: string; slug: string } | null {
+  if (SLUG_TO_UUID[idOrSlug]) {
+    return { uuid: SLUG_TO_UUID[idOrSlug], slug: idOrSlug };
+  }
+  if (UUID_TO_SLUG[idOrSlug]) {
+    return { uuid: idOrSlug, slug: UUID_TO_SLUG[idOrSlug] };
+  }
+  return null;
+}

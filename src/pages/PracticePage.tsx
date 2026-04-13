@@ -17,7 +17,7 @@ import { useSupabaseAnsweredQuestions } from "@/hooks/useSupabaseAnsweredQuestio
 import { useLocalProgressMigration } from "@/hooks/useLocalProgressMigration";
 import { useSaveAnswer } from "@/hooks/useSaveAnswer";
 import { useWeakPatterns } from "@/hooks/useWeakPatterns";
-import { getTutorialByTopicId } from "@/data/topicTutorials";
+import { getTutorialByTopicId, resolveTopicId } from "@/data/topicTutorials";
 import {
   selectNextQuestion,
   type ProgressLike,
@@ -85,7 +85,9 @@ function getHintForQuestion(q: Question): string | null {
 }
 
 const PracticePage = () => {
-  const { topicId } = useParams<{ topicId: string }>();
+  const { topicId: rawTopicId } = useParams<{ topicId: string }>();
+  const resolved = resolveTopicId(rawTopicId ?? "");
+  const topicId = resolved?.uuid ?? rawTopicId;
   const navigate = useNavigate();
   const { answerQuestion, getWeakTopics, progress, updateLastPosition } = useProgress();
   const { saveAnswer } = useSaveAnswer();

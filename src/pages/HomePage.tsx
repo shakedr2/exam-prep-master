@@ -11,6 +11,7 @@ import {
   Target,
 } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
+import { useAuth } from "@/contexts/AuthContext";
 import { MODULES } from "@/data/modules";
 import { questions as staticQuestions } from "@/data/questions";
 import { Badge } from "@/components/ui/badge";
@@ -218,6 +219,7 @@ function TrackCard({
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { progress, totalCorrect, totalAnswered } = useProgress();
 
   // Python track progress: share of static Python-topic questions that the
@@ -243,7 +245,7 @@ const HomePage = () => {
   }, [progress.answeredQuestions]);
 
   const handlePythonTrack = () => {
-    if (!progress.username) {
+    if (!user && !progress.username) {
       navigate("/onboarding");
       return;
     }
@@ -304,20 +306,12 @@ const HomePage = () => {
 
         {/* Tracks section */}
         <section aria-labelledby="tracks-heading" className="space-y-4">
-          <div className="flex items-baseline justify-between">
-            <h2
-              id="tracks-heading"
-              className="text-lg font-bold text-foreground sm:text-xl"
-            >
-              מסלולי למידה
-            </h2>
-            <span
-              className="font-mono text-[11px] text-muted-foreground"
-              dir="ltr"
-            >
-              tracks[]
-            </span>
-          </div>
+          <h2
+            id="tracks-heading"
+            className="text-lg font-bold text-foreground sm:text-xl"
+          >
+            מסלולי למידה
+          </h2>
 
           <motion.div
             initial="hidden"
