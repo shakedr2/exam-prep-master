@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef, Fragment } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp, ArrowLeft, HelpCircle, ClipboardCheck } from "lucide-react";
 import { FloatingAIButton } from "@/components/FloatingAIButton";
@@ -30,6 +30,7 @@ import type { Difficulty, Question } from "@/data/questions";
 import { useGuestThreshold } from "@/features/guest/hooks/useGuestThreshold";
 import { SignupWall } from "@/features/guest/components/SignupWall";
 import { toast } from "sonner";
+import { patternFamilyLabel } from "@/lib/patternFamilyLabels";
 
 const difficultyLabels: Record<Difficulty, string> = {
   easy: "קל",
@@ -92,6 +93,7 @@ const PracticePage = () => {
   const resolved = resolveTopicId(rawTopicId ?? "");
   const topicId = resolved?.uuid ?? rawTopicId;
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { answerQuestion, getWeakTopics, progress, updateLastPosition } = useProgress();
   const { saveAnswer } = useSaveAnswer();
   const { markTopicComplete, isTopicComplete } = useTopicCompletion();
@@ -132,6 +134,19 @@ const PracticePage = () => {
   const [masteryShown, setMasteryShown] = useState(false);
   // Mini-quiz assessment mode — triggered from mastery banner
   const [miniQuizActive, setMiniQuizActive] = useState(false);
+
+  // Phase C / D pedagogy state
+  // Entering from LearnPage (/?from=learn) starts in guided_practice (Phase C).
+  // Direct navigation from the dashboard skips to independent_practice (Phase D).
+  const initialPhase: "guided_practice" | "independent_practice" =
+    searchParams.get("from") === "learn" ? "guided_practice" : "independent_practice";
+  const [practicePhase, setPracticePhase] = useState<"guided_practice" | "independent_practice">(initialPhase);
+  const [showPhaseTransition, setShowPhaseTransition] = useState(false);
+  // Tracks consecutive correct answers on easy questions in guided_practice mode.
+  // Reaching 3 triggers the Phase C → D transition.
+  const [guidedEasyCorrectStreak, setGuidedEasyCorrectStreak] = useState(0);
+  // Phase F: pattern families being reinforced in a pattern-targeted review session.
+  const [patternReviewFamilies, setPatternReviewFamilies] = useState<string[]>([]);
 
   // Adaptive queue: the list of questions presented in this session. Grows
   // by one each time the learner advances, with each new question chosen
@@ -177,6 +192,11 @@ const PracticePage = () => {
       if (!topicId || allQuestions.length === 0) return null;
       const queueIds = new Set(currentQueue.map((q) => q.id));
       let remaining = allQuestions.filter((q) => !queueIds.has(q.id));
+      // guided_practice (Phase C): pin to easy questions by default
+      if (practicePhase === "guided_practice") {
+        const easyOnly = remaining.filter((q) => q.difficulty === "easy");
+        if (easyOnly.length > 0) remaining = easyOnly;
+      }
       // "I don't understand" easy-pin: prefer easy questions when active
       if (easyPinRemaining > 0) {
         const easyOnly = remaining.filter((q) => q.difficulty === "easy");
@@ -190,7 +210,7 @@ const PracticePage = () => {
       if (!next) return null;
       return allQuestions.find((q) => q.id === next.id) ?? null;
     },
-    [allQuestions, topicId, buildSelectionProgress, globalWeakPatterns, easyPinRemaining]
+    [allQuestions, topicId, buildSelectionProgress, globalWeakPatterns, easyPinRemaining, practicePhase]
   );
 
   // Seed the queue once all the inputs needed for adaptive selection are
@@ -280,6 +300,20 @@ const PracticePage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished]);
+
+  // Phase C: auto-show hint 10 seconds after a wrong answer in guided_practice mode.
+  // This is proactive (not on-demand) scaffolding per the pedagogy spec §4.3.
+  useEffect(() => {
+    if (practicePhase !== "guided_practice") return;
+    const currentQ = activeQuestions[currentIndex];
+    if (!currentQ) return;
+    const currentAnswer = answers[currentQ.id];
+    if (!currentAnswer || currentAnswer.correct) return;
+    if (showHint) return;
+    const timer = setTimeout(() => setShowHint(true), 10_000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practicePhase, currentIndex, activeQuestions, answers, showHint]);
 
   const filteredQuestions = useMemo(() => {
     if (difficultyFilter) {
@@ -460,6 +494,21 @@ const PracticePage = () => {
         setEasyPinRemaining((n) => n - 1);
       }
 
+      // Phase C: track consecutive correct answers on easy questions.
+      // Reaching 3 triggers the Phase C → D transition celebration.
+      if (practicePhase === "guided_practice") {
+        const answeredQ = allQuestions.find((q) => q.id === questionId);
+        if (answeredQ?.difficulty === "easy") {
+          const newGuidedStreak = guidedEasyCorrectStreak + 1;
+          setGuidedEasyCorrectStreak(newGuidedStreak);
+          if (newGuidedStreak >= 3) {
+            setShowPhaseTransition(true);
+          }
+        } else {
+          setGuidedEasyCorrectStreak(0);
+        }
+      }
+
       setFeedbackMessage(getRandomEncouragement());
       setTimeout(() => setFeedbackMessage(null), 3000);
     } else {
@@ -468,6 +517,11 @@ const PracticePage = () => {
       // Decrement easy pin counter on wrong answer too
       if (easyPinRemaining > 0) {
         setEasyPinRemaining((n) => n - 1);
+      }
+
+      // Phase C: reset guided easy streak on wrong answer
+      if (practicePhase === "guided_practice") {
+        setGuidedEasyCorrectStreak(0);
       }
 
       setFeedbackMessage(null);
@@ -535,6 +589,10 @@ const PracticePage = () => {
     setEasyPinRemaining(0);
     setShowEncouragement(false);
     setMasteryShown(false);
+    setPracticePhase(initialPhase);
+    setShowPhaseTransition(false);
+    setGuidedEasyCorrectStreak(0);
+    setPatternReviewFamilies([]);
     // Clear session memory and force the seeding block to re-run next
     // render, picking a fresh starting question based on the just-recorded
     // answers.
@@ -549,7 +607,25 @@ const PracticePage = () => {
       .filter(([, a]) => !a.correct)
       .map(([id]) => id);
     const mistakes = activeQuestions.filter((q) => incorrectIds.includes(q.id));
-    setMistakeQuestions(mistakes);
+
+    // Phase F: build a pattern-targeted review pool instead of replaying the
+    // exact wrong questions. Collect the weak pattern_family tags from wrong
+    // questions and expand the pool to all questions sharing those patterns.
+    const weakFamilies = new Set(
+      mistakes.map((q) => q.patternFamily).filter((p): p is string => Boolean(p))
+    );
+    let reviewPool: Question[];
+    if (weakFamilies.size > 0) {
+      reviewPool = allQuestions.filter(
+        (q) => q.patternFamily && weakFamilies.has(q.patternFamily)
+      );
+      setPatternReviewFamilies([...weakFamilies]);
+    } else {
+      reviewPool = mistakes;
+      setPatternReviewFamilies([]);
+    }
+
+    setMistakeQuestions(reviewPool);
     setReviewMistakesMode(true);
     setCurrentIndex(0);
     setAnswers({});
@@ -723,14 +799,64 @@ const PracticePage = () => {
   return (
     <Fragment>
       {showWall && <SignupWall onDismiss={dismissWall} />}
+
+      {/* Phase C → D transition modal */}
+      <AnimatePresence>
+        {showPhaseTransition && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-background rounded-xl border border-border shadow-lg p-6 max-w-sm w-full text-center space-y-4"
+            >
+              <div className="text-4xl">🎓</div>
+              <p className="text-base font-semibold text-foreground">
+                אתה מוכן לשלב הבא — פחות רמזים, עצמאות גדולה יותר.
+              </p>
+              <Button
+                className="w-full"
+                onClick={() => {
+                  setShowPhaseTransition(false);
+                  setPracticePhase("independent_practice");
+                  posthog.capture("guided_practice_graduated", { topic_id: topicId });
+                }}
+              >
+                בואו נמשיך! 🚀
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     <div className="min-h-screen bg-background pb-40 pt-4">
       <div className="mx-auto max-w-2xl px-4 space-y-4">
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
             ← חזרה
           </Button>
-          <div className="text-sm text-muted-foreground font-medium font-mono">
-            שאלה {currentIndex + 1} מתוך {totalTarget}
+          <div className="flex items-center gap-2">
+            {/* Phase badge: distinguishes guided (Phase C) from independent (Phase D) practice */}
+            {!reviewMistakesMode && (
+              <Badge
+                variant="outline"
+                className={
+                  practicePhase === "guided_practice"
+                    ? "text-xs border-blue-300/60 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/20"
+                    : "text-xs border-primary/30 text-primary bg-primary/5"
+                }
+              >
+                {practicePhase === "guided_practice" ? "תרגול מונחה" : "תרגול עצמאי"}
+              </Badge>
+            )}
+            <div className="text-sm text-muted-foreground font-medium font-mono">
+              שאלה {currentIndex + 1} מתוך {totalTarget}
+            </div>
           </div>
         </div>
 
@@ -791,6 +917,17 @@ const PracticePage = () => {
             <XIcon className="h-3 w-3" />
             יציאה מחזרה על טעויות
           </Button>
+        )}
+
+        {/* Phase F: show which pattern families are being reinforced */}
+        {reviewMistakesMode && patternReviewFamilies.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-lg bg-primary/5 border border-primary/20 px-3 py-2 text-xs text-primary"
+          >
+            מתרגלים על: {patternReviewFamilies.map((p) => patternFamilyLabel(p)).join(", ")}
+          </motion.div>
         )}
 
         <Progress value={progressPct} className="h-2" />
@@ -899,7 +1036,8 @@ const PracticePage = () => {
         </AnimatePresence>
 
         {/* Hint button */}
-        {hint && !answers[current.id] && (
+        {/* In guided_practice mode, the hint is also shown after a wrong answer (proactive scaffolding). */}
+        {hint && (!answers[current.id] || (practicePhase === "guided_practice" && !answers[current.id]?.correct)) && (
           <div className="space-y-2">
             {!showHint ? (
               <Button

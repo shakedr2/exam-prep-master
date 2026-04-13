@@ -69,7 +69,7 @@ export default function LearnPage() {
             סיימת את כל המושגים! בוא נתרגל כדי לחזק את מה שלמדת.
           </p>
           <div className="flex flex-col gap-3 w-full max-w-xs mx-auto">
-            <Button size="lg" className="w-full text-base gap-2" onClick={() => navigate(`/practice/${topicId}`)}>
+            <Button size="lg" className="w-full text-base gap-2" onClick={() => navigate(`/practice/${topicId}?from=learn`)}>
               <Rocket className="h-5 w-5" />
               בוא נתרגל
             </Button>
