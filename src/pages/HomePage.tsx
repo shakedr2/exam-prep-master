@@ -364,8 +364,7 @@ const HomePage = () => {
                 icon={<Server className="h-7 w-7" />}
                 gradientClass="gradient-accent"
                 glowClass="hover:shadow-glow-accent"
-                comingSoon
-                comingSoonLabel="בקרוב"
+                onSelect={() => navigate("/tracks/devops")}
               />
             </motion.div>
           </motion.div>

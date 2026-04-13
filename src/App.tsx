@@ -27,6 +27,7 @@ import NotFound from "./pages/NotFound";
 
 const ReviewMistakes = lazy(() => import("./pages/ReviewMistakes"));
 const LearnPage = lazy(() => import("./pages/LearnPage"));
+const DevOpsTrackPage = lazy(() => import("./pages/DevOpsTrackPage"));
 
 const LazyFallback = () => (
   <div className="flex items-center justify-center min-h-[50vh]">
@@ -87,6 +88,7 @@ function AnimatedRoutes() {
         <Route path="/exam" element={<AuthGuard><PageTransition><ExamMode /></PageTransition></AuthGuard>} />
         <Route path="/progress" element={<AuthGuard><PageTransition><ProgressPage /></PageTransition></AuthGuard>} />
         <Route path="/review-mistakes" element={<AuthGuard><PageTransition><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></PageTransition></AuthGuard>} />
+        <Route path="/tracks/devops" element={<PageTransition><Suspense fallback={<LazyFallback />}><DevOpsTrackPage /></Suspense></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
