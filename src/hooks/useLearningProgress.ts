@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getAnonUserId } from "@/lib/anonUserId";
 
 const STORAGE_PREFIX = "learn_progress_";
+const GE_STORAGE_PREFIX = "guided_example_completed_";
 
 function loadLocal(topicId: string): number[] {
   try {
@@ -24,6 +25,22 @@ function saveLocal(topicId: string, completed: number[]) {
   }
 }
 
+function loadGuidedExampleCompleted(topicId: string): boolean {
+  try {
+    return localStorage.getItem(GE_STORAGE_PREFIX + topicId) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function saveGuidedExampleCompleted(topicId: string) {
+  try {
+    localStorage.setItem(GE_STORAGE_PREFIX + topicId, "1");
+  } catch {
+    // storage unavailable
+  }
+}
+
 export function useLearningProgress(topicId: string) {
   const { user } = useAuth();
   const userIdRef = useRef(user?.id ?? getAnonUserId());
@@ -35,6 +52,9 @@ export function useLearningProgress(topicId: string) {
     loadLocal(topicId)
   );
   const [loading, setLoading] = useState(true);
+  const [guidedExampleCompleted, setGuidedExampleCompleted] = useState<boolean>(
+    () => loadGuidedExampleCompleted(topicId)
+  );
 
   // Fetch from Supabase on mount
   useEffect(() => {
@@ -93,5 +113,10 @@ export function useLearningProgress(topicId: string) {
     [topicId]
   );
 
-  return { completedConcepts, markConceptComplete, loading };
+  const markGuidedExampleComplete = useCallback(() => {
+    saveGuidedExampleCompleted(topicId);
+    setGuidedExampleCompleted(true);
+  }, [topicId]);
+
+  return { completedConcepts, markConceptComplete, loading, guidedExampleCompleted, markGuidedExampleComplete };
 }

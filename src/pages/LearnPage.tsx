@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/collapsible";
 import posthog from "posthog-js";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
+import { GuidedExample } from "@/components/GuidedExample";
 import { getTutorialByTopicId, resolveTopicId } from "@/data/topicTutorials";
 import { topics } from "@/data/questions";
 import { useLearningProgress } from "@/hooks/useLearningProgress";
@@ -30,13 +31,17 @@ export default function LearnPage() {
   const tutorial = getTutorialByTopicId(resolved?.uuid ?? "");
   const topic = topics.find((t) => t.id === resolved?.slug);
   const topicId = resolved?.uuid ?? rawTopicId;
-  const { completedConcepts, markConceptComplete } = useLearningProgress(topicId ?? "");
+  const { completedConcepts, markConceptComplete, guidedExampleCompleted, markGuidedExampleComplete } = useLearningProgress(topicId ?? "");
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hintOpen, setHintOpen] = useState(false);
   const [quizSelected, setQuizSelected] = useState<number | null>(null);
   const [quizSkipped, setQuizSkipped] = useState(false);
   const [showCompletion, setShowCompletion] = useState(false);
+  // Phase B: show guided example(s) after last concept card
+  const [showGuidedExample, setShowGuidedExample] = useState(false);
+  // Index into tutorial.guidedExamples[]
+  const [guidedExampleIndex, setGuidedExampleIndex] = useState(0);
 
   if (!tutorial || !topicId) {
     return (
@@ -83,6 +88,47 @@ export default function LearnPage() {
   const isLast = currentIndex === totalConcepts - 1;
   const progressPct = Math.round(((currentIndex + 1) / totalConcepts) * 100);
   const currentPrepQ = tutorial.prepQuestions?.[currentIndex] ?? null;
+
+  // Phase B: guided example screen
+  if (showGuidedExample && tutorial.guidedExamples && tutorial.guidedExamples.length > 0) {
+    const example = tutorial.guidedExamples[guidedExampleIndex];
+    const exampleCount = tutorial.guidedExamples.length;
+    return (
+      <div dir="rtl" className="max-w-3xl mx-auto space-y-5 p-4 pb-24">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <span className="text-4xl">{topic?.icon ?? "📖"}</span>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-foreground">{tutorial.title}</h1>
+            <span className="inline-flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
+              <BookOpen className="h-3.5 w-3.5" />
+              דוגמה מודרכת{exampleCount > 1 ? ` ${guidedExampleIndex + 1}/${exampleCount}` : ""}
+            </span>
+          </div>
+        </div>
+
+        <Card className="border-border overflow-hidden">
+          <div className="bg-primary/8 px-4 py-3 border-b border-border">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs shrink-0 border-primary/40 text-primary">
+                שלב B — דוגמה מודרכת
+              </Badge>
+              <p className="text-sm text-muted-foreground">
+                עקבו אחרי הקוד שלב אחרי שלב
+              </p>
+            </div>
+          </div>
+          <CardContent className="pt-4 pb-4">
+            <GuidedExample
+              key={`${topicId}-${guidedExampleIndex}`}
+              example={example}
+              onComplete={handleGuidedExampleComplete}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   const quizAnswered = quizSelected !== null || quizSkipped;
   const nextLocked = currentPrepQ !== null && !quizAnswered;
 
@@ -109,12 +155,37 @@ export default function LearnPage() {
         topic_id: topicId,
         topic_name: topic?.name,
       });
-      setShowCompletion(true);
+      // Phase B: show guided example if available and not yet completed
+      const hasGuidedExamples = tutorial.guidedExamples && tutorial.guidedExamples.length > 0;
+      if (hasGuidedExamples && !guidedExampleCompleted) {
+        setShowGuidedExample(true);
+        setGuidedExampleIndex(0);
+      } else {
+        setShowCompletion(true);
+      }
     } else {
       setCurrentIndex((i) => i + 1);
       setHintOpen(false);
       setQuizSelected(null);
       setQuizSkipped(false);
+    }
+  }
+
+  function handleGuidedExampleComplete() {
+    const examples = tutorial.guidedExamples ?? [];
+    const nextIdx = guidedExampleIndex + 1;
+    if (nextIdx < examples.length) {
+      // More examples to show
+      setGuidedExampleIndex(nextIdx);
+    } else {
+      // All examples done
+      markGuidedExampleComplete();
+      posthog.capture("guided_example_completed", {
+        topic_id: topicId,
+        steps_count: examples.reduce((sum, ex) => sum + ex.steps.length, 0),
+      });
+      setShowGuidedExample(false);
+      setShowCompletion(true);
     }
   }
 
