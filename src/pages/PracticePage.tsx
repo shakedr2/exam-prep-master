@@ -136,7 +136,7 @@ const PracticePage = () => {
   const [miniQuizActive, setMiniQuizActive] = useState(false);
 
   // Phase C / D pedagogy state
-  // Entering from LearnPage (/?from=learn) starts in guided_practice (Phase C).
+  // Entering from LearnPage (/practice/:topicId?from=learn) starts in guided_practice (Phase C).
   // Direct navigation from the dashboard skips to independent_practice (Phase D).
   const initialPhase: "guided_practice" | "independent_practice" =
     searchParams.get("from") === "learn" ? "guided_practice" : "independent_practice";
@@ -1036,8 +1036,12 @@ const PracticePage = () => {
         </AnimatePresence>
 
         {/* Hint button */}
-        {/* In guided_practice mode, the hint is also shown after a wrong answer (proactive scaffolding). */}
-        {hint && (!answers[current.id] || (practicePhase === "guided_practice" && !answers[current.id]?.correct)) && (
+        {/* In guided_practice mode hints are available after wrong answers too (proactive scaffolding). */}
+        {hint && (
+          practicePhase === "guided_practice"
+            ? !answers[current.id]?.correct
+            : !answers[current.id]
+        ) && (
           <div className="space-y-2">
             {!showHint ? (
               <Button
