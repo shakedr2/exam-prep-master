@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Lightbulb, BookOpen, Rocket, CheckCircle, AlertTriangle } from "lucide-react";
@@ -43,10 +43,13 @@ export default function LearnPage() {
   const [showGuidedExample, setShowGuidedExample] = useState(false);
   // Index into tutorial.guidedExamples[]
   const [guidedExampleIndex, setGuidedExampleIndex] = useState(0);
+  // Guard: fire confetti only once per component mount when completion is reached
+  const confettiFiredRef = useRef(false);
 
   // Fire confetti when topic learning is complete
   useEffect(() => {
-    if (showCompletion) {
+    if (showCompletion && !confettiFiredRef.current) {
+      confettiFiredRef.current = true;
       fireTopicMasteredConfetti();
     }
   }, [showCompletion]);
