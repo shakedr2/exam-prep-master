@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef, Fragment } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp, ArrowLeft, HelpCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp, ArrowLeft, HelpCircle, ClipboardCheck } from "lucide-react";
 import { FloatingAIButton } from "@/components/FloatingAIButton";
 import { TopicTutorial } from "@/components/TopicTutorial";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ import { useSupabaseAnsweredQuestions } from "@/hooks/useSupabaseAnsweredQuestio
 import { useLocalProgressMigration } from "@/hooks/useLocalProgressMigration";
 import { useSaveAnswer } from "@/hooks/useSaveAnswer";
 import { useWeakPatterns } from "@/hooks/useWeakPatterns";
+import { useTopicCompletion } from "@/hooks/useTopicCompletion";
+import { MiniQuizMode, type MiniQuizResult } from "@/features/questions/components/MiniQuizMode";
 import { getTutorialByTopicId, resolveTopicId } from "@/data/topicTutorials";
 import {
   selectNextQuestion,
@@ -92,6 +94,7 @@ const PracticePage = () => {
   const navigate = useNavigate();
   const { answerQuestion, getWeakTopics, progress, updateLastPosition } = useProgress();
   const { saveAnswer } = useSaveAnswer();
+  const { markTopicComplete, isTopicComplete } = useTopicCompletion();
   const { showWall, increment: incrementGuestCount, dismiss: dismissWall } = useGuestThreshold();
 
   // One-time: copy any legacy localStorage progress into Supabase.
@@ -127,6 +130,8 @@ const PracticePage = () => {
   const [showEncouragement, setShowEncouragement] = useState(false);
   // Mastery milestone — shown once when 80%+ over 6+ attempts
   const [masteryShown, setMasteryShown] = useState(false);
+  // Mini-quiz assessment mode — triggered from mastery banner
+  const [miniQuizActive, setMiniQuizActive] = useState(false);
 
   // Adaptive queue: the list of questions presented in this session. Grows
   // by one each time the learner advances, with each new question chosen
@@ -318,6 +323,30 @@ const PracticePage = () => {
           />
         </div>
       </div>
+    );
+  }
+
+  // Mini-quiz assessment mode — full-screen replacement of the practice UI
+  if (miniQuizActive && topicId && allQuestions.length > 0) {
+    const sessionIds = new Set(Object.keys(answers));
+    return (
+      <MiniQuizMode
+        topicName={topic?.name ?? ""}
+        topicIcon={topic?.icon ?? null}
+        allQuestions={allQuestions}
+        sessionAnsweredIds={sessionIds}
+        onComplete={async (result: MiniQuizResult) => {
+          setMiniQuizActive(false);
+          if (result.passed) {
+            await markTopicComplete(topicId);
+            toast.success("כל הכבוד! הנושא הושלם! 🎉", { duration: 5000 });
+            posthog.capture("mini_quiz_passed", { topic_id: topicId });
+          } else {
+            posthog.capture("mini_quiz_failed", { topic_id: topicId, correct: result.correct });
+          }
+        }}
+        onClose={() => setMiniQuizActive(false)}
+      />
     );
   }
 
@@ -799,24 +828,42 @@ const PracticePage = () => {
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               className="rounded-lg bg-success/10 border border-success/30 p-4 text-center space-y-3"
             >
-              <p className="text-sm font-semibold text-success">
-                מוכן למבחן! השלמת את הנושא.
-              </p>
-              {(() => {
-                const topicIdx = topics.findIndex((t) => t.id === topicId);
-                const nextTopic = topicIdx >= 0 && topicIdx < topics.length - 1 ? topics[topicIdx + 1] : null;
-                return nextTopic ? (
+              {topicId && isTopicComplete(topicId) ? (
+                <>
+                  <p className="text-sm font-semibold text-success">
+                    ✅ הנושא הושלם! עברת את מבחן הנושא.
+                  </p>
+                  {(() => {
+                    const topicIdx = topics.findIndex((t) => t.id === topicId);
+                    const nextTopic = topicIdx >= 0 && topicIdx < topics.length - 1 ? topics[topicIdx + 1] : null;
+                    return nextTopic ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => navigate(`/practice/${nextTopic.id}`)}
+                      >
+                        {nextTopic.icon ?? "📖"} {nextTopic.name}
+                        <ArrowLeft className="h-3 w-3" />
+                      </Button>
+                    ) : null;
+                  })()}
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-semibold text-success">
+                    מצוין! הגעת לרמת שליטה גבוהה!
+                  </p>
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="gap-2"
-                    onClick={() => navigate(`/practice/${nextTopic.id}`)}
+                    className="gap-2 bg-success hover:bg-success/90 text-success-foreground"
+                    onClick={() => setMiniQuizActive(true)}
                   >
-                    {nextTopic.icon ?? "📖"} {nextTopic.name}
-                    <ArrowLeft className="h-3 w-3" />
+                    <ClipboardCheck className="h-4 w-4" />
+                    מוכן למבחן נושא!
                   </Button>
-                ) : null;
-              })()}
+                </>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
