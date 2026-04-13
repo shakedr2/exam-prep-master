@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/hooks/useProgress";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 import { useAllLearningProgress } from "@/hooks/useAllLearningProgress";
+import { useTopicCompletion } from "@/hooks/useTopicCompletion";
 import { MODULES, type Module } from "@/data/modules";
 import { getTutorialByTopicId } from "@/data/topicTutorials";
 import { XpBadge } from "@/components/XpBadge";
@@ -52,6 +53,8 @@ function TopicCard({
   learnMap,
   progress,
   getTopicCompletion,
+  isTopicUnlocked,
+  isTopicComplete,
   onLearn,
   onPractice,
 }: {
@@ -60,10 +63,14 @@ function TopicCard({
   learnMap: Record<string, number[]>;
   progress: ReturnType<typeof useProgress>["progress"];
   getTopicCompletion: ReturnType<typeof useProgress>["getTopicCompletion"];
+  isTopicUnlocked: (topicId: string) => boolean;
+  isTopicComplete: (topicId: string) => boolean;
   onLearn: () => void;
   onPractice: () => void;
 }) {
   const completion = getTopicCompletion(topic.id, questionCount);
+  const unlocked = isTopicUnlocked(topic.id);
+  const completed = isTopicComplete(topic.id);
 
   const topicQuestionIds = new Set(
     staticQuestions.filter((q) => q.topic === topic.id).map((q) => q.id)
@@ -76,9 +83,20 @@ function TopicCard({
   const totalConcepts = getTutorialByTopicId(topic.id)?.concepts.length ?? 0;
 
   return (
-    <Card className="bg-card border border-foreground/10 hover:border-primary/40 hover:shadow-md transition-all group relative">
-      {completion === 100 && (
+    <Card className={`bg-card border hover:shadow-md transition-all group relative ${
+      completed
+        ? "border-success/40 hover:border-success/60"
+        : unlocked
+        ? "border-foreground/10 hover:border-primary/40"
+        : "border-foreground/10 opacity-75"
+    }`}>
+      {completed && (
         <span className="absolute top-2 left-2 text-base" title="הושלם">✅</span>
+      )}
+      {!unlocked && !completed && (
+        <span className="absolute top-2 left-2 text-base" title="נעול — יש לסיים את הנושא הקודם">
+          <Lock className="h-4 w-4 text-muted-foreground" />
+        </span>
       )}
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
@@ -122,11 +140,20 @@ function TopicCard({
           <Button
             size="sm"
             variant="outline"
-            className="flex-1 h-8 text-xs gap-1 border-green-500/40 text-green-600 hover:bg-green-50 hover:text-green-700 dark:border-green-400/30 dark:text-green-400 dark:hover:bg-green-950/30 touch-manipulation"
-            onClick={(e) => { e.stopPropagation(); onPractice(); }}
+            className={`flex-1 h-8 text-xs gap-1 touch-manipulation ${
+              unlocked
+                ? "border-green-500/40 text-green-600 hover:bg-green-50 hover:text-green-700 dark:border-green-400/30 dark:text-green-400 dark:hover:bg-green-950/30"
+                : "border-muted text-muted-foreground cursor-not-allowed opacity-60"
+            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (unlocked) onPractice();
+            }}
+            disabled={!unlocked}
+            title={!unlocked ? "יש לסיים את הנושא הקודם כדי לפתוח נושא זה" : undefined}
           >
-            <Brain className="h-3 w-3" />
-            תרגול
+            {unlocked ? <Brain className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+            {unlocked ? "תרגול" : "נעול"}
           </Button>
         </div>
       </CardContent>
@@ -141,6 +168,8 @@ function ModuleSection({
   learnMap,
   progress,
   getTopicCompletion,
+  isTopicUnlocked,
+  isTopicComplete,
   onLearn,
   onPractice,
 }: {
@@ -150,6 +179,8 @@ function ModuleSection({
   learnMap: Record<string, number[]>;
   progress: ReturnType<typeof useProgress>["progress"];
   getTopicCompletion: ReturnType<typeof useProgress>["getTopicCompletion"];
+  isTopicUnlocked: (topicId: string) => boolean;
+  isTopicComplete: (topicId: string) => boolean;
   onLearn: (topicId: string) => void;
   onPractice: (topicId: string) => void;
 }) {
@@ -193,6 +224,8 @@ function ModuleSection({
               learnMap={learnMap}
               progress={progress}
               getTopicCompletion={getTopicCompletion}
+              isTopicUnlocked={isTopicUnlocked}
+              isTopicComplete={isTopicComplete}
               onLearn={() => onLearn(topic.id)}
               onPractice={() => onPractice(topic.id)}
             />
@@ -209,6 +242,7 @@ const DashboardPage = () => {
   const { topics, loading } = useSupabaseTopics();
   const questionCounts = useTopicQuestionCounts();
   const { learnMap } = useAllLearningProgress();
+  const { isTopicUnlocked, isTopicComplete } = useTopicCompletion();
   const [tipDismissed, setTipDismissed] = useState(
     () => localStorage.getItem(PRACTICE_TIP_DISMISSED_KEY) === "true"
   );
@@ -392,6 +426,8 @@ const DashboardPage = () => {
                 learnMap={learnMap}
                 progress={progress}
                 getTopicCompletion={getTopicCompletion}
+                isTopicUnlocked={isTopicUnlocked}
+                isTopicComplete={isTopicComplete}
                 onLearn={(topicId) => navigate(`/learn/${topicId}`)}
                 onPractice={(topicId) => navigate(`/practice/${topicId}`)}
               />
@@ -428,6 +464,8 @@ const DashboardPage = () => {
                     learnMap={learnMap}
                     progress={progress}
                     getTopicCompletion={getTopicCompletion}
+                    isTopicUnlocked={isTopicUnlocked}
+                    isTopicComplete={isTopicComplete}
                     onLearn={() => navigate(`/learn/${topic.id}`)}
                     onPractice={() => navigate(`/practice/${topic.id}`)}
                   />

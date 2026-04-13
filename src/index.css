@@ -111,10 +111,16 @@
 
   html {
     direction: rtl;
+    color-scheme: dark;
+  }
+
+  html:not(.dark) {
+    color-scheme: light;
   }
 
   body {
     @apply bg-background text-foreground font-heebo;
+    transition: background-color 200ms ease, color 200ms ease;
   }
 }
 
@@ -139,5 +145,15 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  /* Smooth theme transition for common surface elements */
+  .theme-transition {
+    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+  }
+
+  /* Safe area padding for mobile bottom nav */
+  .pb-safe {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   }
 }

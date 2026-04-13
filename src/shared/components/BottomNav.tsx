@@ -18,7 +18,7 @@ export function BottomNav() {
             to={to}
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center gap-1 rounded-xl min-w-[44px] min-h-[44px] px-5 py-2 text-xs font-medium transition-colors touch-manipulation",
+                "flex flex-col items-center gap-1 rounded-lg px-5 py-2.5 text-xs font-medium transition-colors min-h-[44px] touch-manipulation",
                 isActive
                   ? "text-primary bg-primary/10"
                   : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"

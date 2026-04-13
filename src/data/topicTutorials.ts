@@ -9,6 +9,23 @@ export interface SymbolExplainer {
   meaning: string;
 }
 
+export interface GuidedExampleStep {
+  /** Hebrew narration text for this step (max ~120 words). */
+  narration: string;
+  /** 1-based line numbers to highlight in the code block. */
+  highlightLines?: number[];
+  /** New trace-table row revealed at this step. */
+  traceRow?: { variable: string; value: string }[];
+}
+
+export interface GuidedExample {
+  /** Short Hebrew title for the example. */
+  title: string;
+  code: string;
+  language?: string;
+  steps: GuidedExampleStep[];
+}
+
 export interface TopicTutorial {
   topicId: string;
   title: string;
@@ -32,6 +49,11 @@ export interface TopicTutorial {
   patternFamilies?: string[];
   /** Short symbol/syntax explainers aimed at 9th graders. */
   symbolExplainers?: SymbolExplainer[];
+  /**
+   * Phase B: Step-by-step worked example walkthroughs.
+   * Shown after all concept cards (Phase A) are complete.
+   */
+  guidedExamples?: GuidedExample[];
 }
 
 export const topicTutorials: TopicTutorial[] = [
@@ -140,6 +162,41 @@ print("עולם")`,
         question: "מה הטיפוס של הערך \"5\"?",
         options: ["str", "int", "float", "bool"],
         correctAnswer: 0,
+      },
+    ],
+    guidedExamples: [
+      {
+        title: "מעקב אחרי משתנים — שלב אחרי שלב",
+        code: `name = "דני"
+age = 17
+age = age + 1
+print("שלום", name)
+print("בן", age)`,
+        steps: [
+          {
+            narration: "בשורה הראשונה יוצרים משתנה בשם name ושמים בו את הטקסט \"דני\". כשפייתון מגיעה לשורה הזו, היא פותחת מגירה, שמה עליה תווית name, ומניחה בתוכה את הערך \"דני\".",
+            highlightLines: [1],
+            traceRow: [{ variable: "name", value: '"דני"' }],
+          },
+          {
+            narration: "בשורה השנייה יוצרים משתנה age עם הערך 17. עכשיו יש לנו שתי מגירות: name עם \"דני\" ו-age עם 17.",
+            highlightLines: [2],
+            traceRow: [{ variable: "age", value: "17" }],
+          },
+          {
+            narration: "בשורה השלישית מחשבים age + 1 (כלומר 17 + 1 = 18) ושמים את התוצאה חזרה בתוך age. המגירה של age עודכנה — עכשיו יש בה 18 במקום 17.",
+            highlightLines: [3],
+            traceRow: [{ variable: "age", value: "18" }],
+          },
+          {
+            narration: "בשורה הרביעית מדפיסים את שתי המילים \"שלום\" ו-\"דני\" (תוכן name) מופרדות ברווח. הפלט הוא: שלום דני.",
+            highlightLines: [4],
+          },
+          {
+            narration: "בשורה האחרונה מדפיסים \"בן\" ואת ערך age שהוא כעת 18. הפלט הוא: בן 18. שימו לב שלא הדפסנו 17 — כי עדכנו את age לפני ההדפסה!",
+            highlightLines: [5],
+          },
+        ],
       },
     ],
   },
@@ -265,6 +322,46 @@ else:
         correctAnswer: 0,
       },
     ],
+    guidedExamples: [
+      {
+        title: "מעקב אחרי if-elif-else",
+        code: `grade = 75
+if grade >= 90:
+    print("מצוין")
+elif grade >= 80:
+    print("טוב מאוד")
+elif grade >= 70:
+    print("טוב")
+else:
+    print("צריך לשפר")`,
+        steps: [
+          {
+            narration: "בשורה הראשונה משימים את הציון 75 במשתנה grade. זהו ערך ה-int שיעבור בדיקת תנאים.",
+            highlightLines: [1],
+            traceRow: [{ variable: "grade", value: "75" }],
+          },
+          {
+            narration: "בשורה השנייה בודקים: האם 75 >= 90? 75 גדול מ-90? לא! התנאי שקרי (False), לכן מדלגים על הבלוק הזה.",
+            highlightLines: [2, 3],
+            traceRow: [{ variable: "grade >= 90", value: "False" }],
+          },
+          {
+            narration: "עכשיו בודקים את ה-elif הראשון: האם 75 >= 80? 75 גדול מ-80? לא! גם זה False — ממשיכים לבדיקה הבאה.",
+            highlightLines: [4, 5],
+            traceRow: [{ variable: "grade >= 80", value: "False" }],
+          },
+          {
+            narration: "בודקים את ה-elif השני: האם 75 >= 70? כן! 75 אכן גדול מ-70. התנאי True — מבצעים את הבלוק הזה.",
+            highlightLines: [6, 7],
+            traceRow: [{ variable: "grade >= 70", value: "True" }],
+          },
+          {
+            narration: "מדפיסים \"טוב\" ומסיימים. ה-else לא מתבצע כלל כי כבר מצאנו תנאי שהתקיים. הפלט: טוב.",
+            highlightLines: [7],
+          },
+        ],
+      },
+    ],
   },
   {
     topicId: "11111111-0004-0000-0000-000000000000",
@@ -377,6 +474,46 @@ print("זוגיים:", count)`,
         question: "מה ידפיס הקוד?\ntotal = 0\nfor i in range(1, 4):\n    total = total + i\nprint(total)",
         options: ["6", "10", "3", "0"],
         correctAnswer: 0,
+      },
+    ],
+    guidedExamples: [
+      {
+        title: "סכימת מספרים בלולאה — שלב אחרי שלב",
+        code: `total = 0
+for i in range(1, 5):
+    total = total + i
+print("הסכום:", total)`,
+        steps: [
+          {
+            narration: "מתחילים ביצירת משתנה total עם ערך 0. זה \"מצבר\" — כאן נצבור את הסכום. בכל סיבוב של הלולאה נוסיף לו את ה-i הנוכחי.",
+            highlightLines: [1],
+            traceRow: [{ variable: "total", value: "0" }],
+          },
+          {
+            narration: "הלולאה מתחילה: range(1, 5) מייצרת את המספרים 1, 2, 3, 4 (5 לא נכלל!). בסיבוב הראשון i=1. מחשבים total + i: 0 + 1 = 1. שומרים 1 בתוך total.",
+            highlightLines: [2, 3],
+            traceRow: [{ variable: "i", value: "1" }, { variable: "total", value: "1" }],
+          },
+          {
+            narration: "סיבוב שני: i=2. מחשבים total + i: 1 + 2 = 3. total עודכן ל-3.",
+            highlightLines: [2, 3],
+            traceRow: [{ variable: "i", value: "2" }, { variable: "total", value: "3" }],
+          },
+          {
+            narration: "סיבוב שלישי: i=3. מחשבים 3 + 3 = 6. total עודכן ל-6.",
+            highlightLines: [2, 3],
+            traceRow: [{ variable: "i", value: "3" }, { variable: "total", value: "6" }],
+          },
+          {
+            narration: "סיבוב רביעי ואחרון: i=4. מחשבים 6 + 4 = 10. total עודכן ל-10. הלולאה מסתיימת — range(1,5) לא כולל 5.",
+            highlightLines: [2, 3],
+            traceRow: [{ variable: "i", value: "4" }, { variable: "total", value: "10" }],
+          },
+          {
+            narration: "לבסוף מדפיסים את total. הפלט: הסכום: 10. שימו לב: 1+2+3+4 = 10. זה דפוס הצבירה הנפוץ ביותר במבחן!",
+            highlightLines: [4],
+          },
+        ],
       },
     ],
   },
