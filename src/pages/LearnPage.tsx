@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Lightbulb, BookOpen, Rocket, CheckCircle, AlertTriangle } from "lucide-react";
@@ -17,6 +17,7 @@ import { GuidedExample } from "@/components/GuidedExample";
 import { getTutorialByTopicId, resolveTopicId } from "@/data/topicTutorials";
 import { topics } from "@/data/questions";
 import { useLearningProgress } from "@/hooks/useLearningProgress";
+import { fireTopicMasteredConfetti } from "@/shared/lib/confetti";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 16 },
@@ -42,6 +43,13 @@ export default function LearnPage() {
   const [showGuidedExample, setShowGuidedExample] = useState(false);
   // Index into tutorial.guidedExamples[]
   const [guidedExampleIndex, setGuidedExampleIndex] = useState(0);
+
+  // Fire confetti when topic learning is complete
+  useEffect(() => {
+    if (showCompletion) {
+      fireTopicMasteredConfetti();
+    }
+  }, [showCompletion]);
 
   if (!tutorial || !topicId) {
     return (

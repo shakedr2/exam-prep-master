@@ -31,6 +31,7 @@ import { useGuestThreshold } from "@/features/guest/hooks/useGuestThreshold";
 import { SignupWall } from "@/features/guest/components/SignupWall";
 import { toast } from "sonner";
 import { patternFamilyLabel } from "@/lib/patternFamilyLabels";
+import { fireTopicMasteredConfetti } from "@/shared/lib/confetti";
 
 const difficultyLabels: Record<Difficulty, string> = {
   easy: "קל",
@@ -373,6 +374,7 @@ const PracticePage = () => {
           setMiniQuizActive(false);
           if (result.passed) {
             await markTopicComplete(topicId);
+            fireTopicMasteredConfetti();
             toast.success("כל הכבוד! הנושא הושלם! 🎉", { duration: 5000 });
             posthog.capture("mini_quiz_passed", { topic_id: topicId });
           } else {
@@ -386,11 +388,28 @@ const PracticePage = () => {
 
   if (questionsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="space-y-4 w-full max-w-2xl px-4">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-64 w-full" />
+      <div className="min-h-screen bg-background pb-24 pt-4">
+        <div className="mx-auto max-w-2xl px-4 space-y-5">
+          {/* Topic header skeleton */}
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          </div>
+          {/* Progress bar skeleton */}
+          <Skeleton className="h-1.5 w-full rounded-full" />
+          {/* Question card skeleton */}
+          <div className="rounded-lg border border-foreground/10 bg-card p-5 space-y-4">
+            <Skeleton className="h-5 w-20 rounded-full" />
+            <Skeleton className="h-5 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            {/* Answer options */}
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-11 w-full rounded-lg" />
+            ))}
+          </div>
         </div>
       </div>
     );
