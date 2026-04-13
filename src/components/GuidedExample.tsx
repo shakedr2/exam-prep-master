@@ -144,25 +144,26 @@ const rowVariants = {
 export function GuidedExample({ example, onComplete }: GuidedExampleProps) {
   const [stepIndex, setStepIndex] = useState(0);
 
-  const codeLines = useMemo(() => example.code.split("\n"), [example.code]);
+  const codeLines = useMemo(() => (example?.code ?? "").split("\n"), [example?.code]);
   const tokenizedLines = useMemo(
     () => codeLines.map((line) => tokenize(line)),
     [codeLines]
   );
 
-  const currentStep = example.steps[stepIndex];
-  const isLast = stepIndex === example.steps.length - 1;
+  const steps = example?.steps ?? [];
+  const currentStep = steps[stepIndex];
+  const isLast = stepIndex === steps.length - 1;
   const highlightSet = useMemo(
     () => new Set(currentStep?.highlightLines ?? []),
     [currentStep]
   );
   const traceRows = useMemo(
-    () => buildTraceRows(example.steps, stepIndex),
-    [example.steps, stepIndex]
+    () => buildTraceRows(steps, stepIndex),
+    [steps, stepIndex]
   );
   const hasTrace = useMemo(
-    () => example.steps.some((s) => s.traceRow && s.traceRow.length > 0),
-    [example.steps]
+    () => steps.some((s) => s.traceRow && s.traceRow.length > 0),
+    [steps]
   );
 
   function handleNext() {
@@ -177,9 +178,9 @@ export function GuidedExample({ example, onComplete }: GuidedExampleProps) {
     <div dir="rtl" className="space-y-4">
       {/* Title + step counter */}
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-foreground text-base">{example.title}</h3>
+        <h3 className="font-semibold text-foreground text-base">{example?.title}</h3>
         <Badge variant="outline" className="text-xs shrink-0">
-          שלב {stepIndex + 1} מתוך {example.steps.length}
+          שלב {stepIndex + 1} מתוך {steps.length}
         </Badge>
       </div>
 

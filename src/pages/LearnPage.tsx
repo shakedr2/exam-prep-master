@@ -82,16 +82,28 @@ export default function LearnPage() {
     );
   }
 
-  const conceptsList = tutorial.concepts;
+  const conceptsList = tutorial.concepts ?? [];
   const totalConcepts = conceptsList.length;
-  const concept = conceptsList[currentIndex];
-  const isLast = currentIndex === totalConcepts - 1;
-  const progressPct = Math.round(((currentIndex + 1) / totalConcepts) * 100);
-  const currentPrepQ = tutorial.prepQuestions?.[currentIndex] ?? null;
+  const safeIndex = Math.min(currentIndex, Math.max(totalConcepts - 1, 0));
+  const concept = conceptsList[safeIndex];
+  const isLast = safeIndex === totalConcepts - 1;
+  const progressPct = totalConcepts > 0 ? Math.round(((safeIndex + 1) / totalConcepts) * 100) : 0;
+  const currentPrepQ = tutorial.prepQuestions?.[safeIndex] ?? null;
+
+  if (!concept) {
+    return (
+      <div dir="rtl" className="flex flex-col items-center justify-center min-h-[60vh] gap-4 p-6 text-center">
+        <h1 className="text-2xl font-bold">הנושא לא נמצא</h1>
+        <p className="text-muted-foreground">לא נמצא תוכן לימוד עבור נושא זה.</p>
+        <Button onClick={() => navigate("/dashboard")}>חזרה לדשבורד</Button>
+      </div>
+    );
+  }
 
   // Phase B: guided example screen
   if (showGuidedExample && tutorial.guidedExamples && tutorial.guidedExamples.length > 0) {
-    const example = tutorial.guidedExamples[guidedExampleIndex];
+    const safeGuidedIdx = Math.min(guidedExampleIndex, tutorial.guidedExamples.length - 1);
+    const example = tutorial.guidedExamples[safeGuidedIdx];
     const exampleCount = tutorial.guidedExamples.length;
     return (
       <div dir="rtl" className="max-w-3xl mx-auto space-y-5 p-4 pb-24">
