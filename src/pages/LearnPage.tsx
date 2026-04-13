@@ -36,6 +36,7 @@ export default function LearnPage() {
   const [hintOpen, setHintOpen] = useState(false);
   const [quizSelected, setQuizSelected] = useState<number | null>(null);
   const [quizSkipped, setQuizSkipped] = useState(false);
+  const [showCompletion, setShowCompletion] = useState(false);
 
   if (!tutorial || !topicId) {
     return (
@@ -43,6 +44,35 @@ export default function LearnPage() {
         <h1 className="text-2xl font-bold">הנושא לא נמצא</h1>
         <p className="text-muted-foreground">לא נמצא תוכן לימוד עבור נושא זה.</p>
         <Button onClick={() => navigate("/dashboard")}>חזרה לדשבורד</Button>
+      </div>
+    );
+  }
+
+  if (showCompletion) {
+    return (
+      <div dir="rtl" className="max-w-3xl mx-auto p-4 flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="space-y-6"
+        >
+          <div className="text-6xl">🎓</div>
+          <h1 className="text-2xl font-bold text-foreground">
+            סיימת את כל המושגים!
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-md mx-auto">
+            סיימת את כל המושגים! בוא נתרגל כדי לחזק את מה שלמדת.
+          </p>
+          <div className="flex flex-col gap-3 w-full max-w-xs mx-auto">
+            <Button size="lg" className="w-full text-base gap-2" onClick={() => navigate(`/practice/${topicId}`)}>
+              <Rocket className="h-5 w-5" />
+              בוא נתרגל
+            </Button>
+            <Button variant="outline" size="lg" className="w-full" onClick={() => navigate("/dashboard")}>
+              חזרה לדשבורד
+            </Button>
+          </div>
+        </motion.div>
       </div>
     );
   }
@@ -79,7 +109,7 @@ export default function LearnPage() {
         topic_id: topicId,
         topic_name: topic?.name,
       });
-      navigate(`/practice/${topicId}`);
+      setShowCompletion(true);
     } else {
       setCurrentIndex((i) => i + 1);
       setHintOpen(false);

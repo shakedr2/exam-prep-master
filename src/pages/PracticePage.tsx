@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef, Fragment } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp, ArrowLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp, ArrowLeft, HelpCircle } from "lucide-react";
 import { FloatingAIButton } from "@/components/FloatingAIButton";
 import { TopicTutorial } from "@/components/TopicTutorial";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import posthog from "posthog-js";
 import type { Difficulty, Question } from "@/data/questions";
 import { useGuestThreshold } from "@/features/guest/hooks/useGuestThreshold";
 import { SignupWall } from "@/features/guest/components/SignupWall";
+import { toast } from "sonner";
 
 const difficultyLabels: Record<Difficulty, string> = {
   easy: "קל",
@@ -117,6 +118,16 @@ const PracticePage = () => {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [lastFeedbackIdx, setLastFeedbackIdx] = useState(-1);
 
+  // Unified learning flow — session progress tracking
+  const [correctCount, setCorrectCount] = useState(0);
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [totalAttempts, setTotalAttempts] = useState(0);
+  // "I don't understand" — pin next N questions to easy difficulty
+  const [easyPinRemaining, setEasyPinRemaining] = useState(0);
+  const [showEncouragement, setShowEncouragement] = useState(false);
+  // Mastery milestone — shown once when 80%+ over 6+ attempts
+  const [masteryShown, setMasteryShown] = useState(false);
+
   // Adaptive queue: the list of questions presented in this session. Grows
   // by one each time the learner advances, with each new question chosen
   // by `selectNextQuestion` based on the latest in-memory answers. This
@@ -160,7 +171,12 @@ const PracticePage = () => {
     (currentQueue: Question[]): Question | null => {
       if (!topicId || allQuestions.length === 0) return null;
       const queueIds = new Set(currentQueue.map((q) => q.id));
-      const remaining = allQuestions.filter((q) => !queueIds.has(q.id));
+      let remaining = allQuestions.filter((q) => !queueIds.has(q.id));
+      // "I don't understand" easy-pin: prefer easy questions when active
+      if (easyPinRemaining > 0) {
+        const easyOnly = remaining.filter((q) => q.difficulty === "easy");
+        if (easyOnly.length > 0) remaining = easyOnly;
+      }
       if (remaining.length === 0) return null;
       const pool = remaining as unknown as SelectableQuestion[];
       const next = selectNextQuestion(pool, buildSelectionProgress(), topicId, {
@@ -169,7 +185,7 @@ const PracticePage = () => {
       if (!next) return null;
       return allQuestions.find((q) => q.id === next.id) ?? null;
     },
-    [allQuestions, topicId, buildSelectionProgress, globalWeakPatterns]
+    [allQuestions, topicId, buildSelectionProgress, globalWeakPatterns, easyPinRemaining]
   );
 
   // Seed the queue once all the inputs needed for adaptive selection are
@@ -388,10 +404,43 @@ const PracticePage = () => {
       [questionId]: { correct, attempts: prevAttempts + 1 },
     };
     setShowHint(false);
+
+    // Session progress tracking
+    const newTotal = totalAttempts + 1;
+    setTotalAttempts(newTotal);
     if (correct) {
+      const newCorrect = correctCount + 1;
+      const newStreak = currentStreak + 1;
+      setCorrectCount(newCorrect);
+      setCurrentStreak(newStreak);
+
+      // Streak celebration at every 3-in-a-row
+      if (newStreak === 3) {
+        toast.success("יופי! 3 נכונות ברצף — אתה מתקדם!", { duration: 3500 });
+      } else if (newStreak > 0 && newStreak % 5 === 0) {
+        toast.success(`${newStreak} נכונות ברצף! כל הכבוד!`, { duration: 3500 });
+      }
+
+      // Mastery milestone: 80%+ over 6+ attempts
+      if (!masteryShown && newTotal >= 6 && newCorrect / newTotal >= 0.8) {
+        setMasteryShown(true);
+      }
+
+      // Decrement easy pin counter
+      if (easyPinRemaining > 0) {
+        setEasyPinRemaining((n) => n - 1);
+      }
+
       setFeedbackMessage(getRandomEncouragement());
       setTimeout(() => setFeedbackMessage(null), 3000);
     } else {
+      setCurrentStreak(0);
+
+      // Decrement easy pin counter on wrong answer too
+      if (easyPinRemaining > 0) {
+        setEasyPinRemaining((n) => n - 1);
+      }
+
       setFeedbackMessage(null);
     }
   };
@@ -451,6 +500,12 @@ const PracticePage = () => {
     setReviewMistakesMode(false);
     setShowHint(false);
     setFeedbackMessage(null);
+    setCorrectCount(0);
+    setCurrentStreak(0);
+    setTotalAttempts(0);
+    setEasyPinRemaining(0);
+    setShowEncouragement(false);
+    setMasteryShown(false);
     // Clear session memory and force the seeding block to re-run next
     // render, picking a fresh starting question based on the just-recorded
     // answers.
@@ -711,6 +766,61 @@ const PracticePage = () => {
 
         <Progress value={progressPct} className="h-2" />
 
+        {/* Session progress indicator */}
+        {totalAttempts > 0 && (
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <span>שאלות נכונות: <strong className="text-foreground">{correctCount}</strong></span>
+            {currentStreak > 0 && (
+              <span>רצף נכון: <strong className="text-primary">{currentStreak} ברצף</strong></span>
+            )}
+          </div>
+        )}
+
+        {/* Encouragement after "I don't understand" */}
+        <AnimatePresence>
+          {showEncouragement && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              className="rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 p-3 text-center text-sm font-medium text-blue-800 dark:text-blue-200"
+            >
+              בסדר גמור — בוא נחזור רגע לבסיס.
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Mastery milestone */}
+        <AnimatePresence>
+          {masteryShown && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              className="rounded-lg bg-success/10 border border-success/30 p-4 text-center space-y-3"
+            >
+              <p className="text-sm font-semibold text-success">
+                מוכן למבחן! השלמת את הנושא.
+              </p>
+              {(() => {
+                const topicIdx = topics.findIndex((t) => t.id === topicId);
+                const nextTopic = topicIdx >= 0 && topicIdx < topics.length - 1 ? topics[topicIdx + 1] : null;
+                return nextTopic ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => navigate(`/practice/${nextTopic.id}`)}
+                  >
+                    {nextTopic.icon ?? "📖"} {nextTopic.name}
+                    <ArrowLeft className="h-3 w-3" />
+                  </Button>
+                ) : null;
+              })()}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Encouraging feedback message */}
         <AnimatePresence>
           {feedbackMessage && (
@@ -767,6 +877,25 @@ const PracticePage = () => {
               </motion.div>
             )}
           </div>
+        )}
+
+        {/* "I don't understand" button */}
+        {!answers[current.id] && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 text-xs text-muted-foreground hover:text-foreground"
+            onClick={() => {
+              setCurrentStreak(0);
+              setEasyPinRemaining(3);
+              setShowEncouragement(true);
+              setTimeout(() => setShowEncouragement(false), 4000);
+              posthog.capture("dont_understand_clicked", { topic_id: topicId, question_id: current.id });
+            }}
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
+            לא הבנתי — תסביר אחרת
+          </Button>
         )}
       </div>
 
