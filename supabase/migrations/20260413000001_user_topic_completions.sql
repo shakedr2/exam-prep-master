@@ -14,9 +14,11 @@ CREATE TABLE IF NOT EXISTS user_topic_completions (
 CREATE INDEX IF NOT EXISTS idx_utc_user_id
   ON user_topic_completions(user_id);
 
--- RLS: any user (authenticated or anon identified by clerk-style text id)
--- can read/write their own rows.  Same permissive policy pattern as
--- user_learning_progress so guest progress works without signing in.
+-- RLS: permissive policy matching the same pattern used by
+-- user_learning_progress.  user_id is a plain text column (supporting
+-- both Supabase auth UIDs and anonymous IDs from getAnonUserId()), so
+-- row-level isolation cannot use auth.uid() directly.  The client is
+-- responsible for always querying with its own user_id.
 ALTER TABLE user_topic_completions ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "user_topic_completions_own" ON user_topic_completions;

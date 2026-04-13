@@ -71,7 +71,12 @@ export function useTopicCompletion() {
         .select("topic_id")
         .eq("user_id", userId);
 
-      if (cancelled || error || !data) return;
+      if (cancelled) return;
+      if (error) {
+        console.warn("useTopicCompletion: remote fetch failed, using localStorage fallback", error.message);
+        return;
+      }
+      if (!data) return;
 
       const remote: Record<string, boolean> = {};
       for (const row of data) {

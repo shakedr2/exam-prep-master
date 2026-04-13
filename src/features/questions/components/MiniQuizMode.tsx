@@ -147,6 +147,11 @@ const typeLabels: Record<string, string> = {
   "fill-blank": "השלמה",
 };
 
+function getQuestionText(q: Question): string {
+  if (q.type === "coding" || q.type === "fill-blank") return q.title;
+  return q.question;
+}
+
 export function MiniQuizMode({ topicName, topicIcon, allQuestions, sessionAnsweredIds = new Set(), onComplete, onClose }: Props) {
   const [quizQuestions] = useState(() =>
     selectQuizQuestions(allQuestions, sessionAnsweredIds)
@@ -240,7 +245,7 @@ export function MiniQuizMode({ topicName, topicIcon, allQuestions, sessionAnswer
                   <Card key={q.id} className="border-destructive/20">
                     <CardContent className="p-3">
                       <p className="text-sm font-medium line-clamp-2">
-                        {q.type === "coding" || q.type === "fill-blank" ? (q as { title: string }).title : (q as { question: string }).question}
+                        {getQuestionText(q)}
                       </p>
                       <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                         <span>{typeLabels[q.type]}</span>

@@ -339,7 +339,7 @@ const PracticePage = () => {
           setMiniQuizActive(false);
           if (result.passed) {
             await markTopicComplete(topicId);
-            toast.success("כל הכבוד! הנושא הושלם! +50 XP 🎉", { duration: 5000 });
+            toast.success("כל הכבוד! הנושא הושלם! 🎉", { duration: 5000 });
             posthog.capture("mini_quiz_passed", { topic_id: topicId });
           } else {
             posthog.capture("mini_quiz_failed", { topic_id: topicId, correct: result.correct });
