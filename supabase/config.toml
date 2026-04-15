@@ -1,1 +1,14 @@
 project_id = "gppwqdfxbakcuybohzor"
+
+[auth]
+# JWT expiry in seconds. 1 hour keeps sessions short-lived.
+jwt_expiry = 3600
+# Refresh tokens expire after 7 days of inactivity.
+refresh_token_rotation_enabled = true
+
+[auth.rate_limit]
+# Limit sign-up / sign-in attempts to reduce brute-force risk.
+# Values are requests per 5-minute window per IP.
+anon_sign_ins = 30
+sign_ups = 10
+token_refreshes = 150
