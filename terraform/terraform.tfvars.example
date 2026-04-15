@@ -1,0 +1,32 @@
+# Root-level tfvars example used when invoking the root module directly
+# (for ad-hoc plans). In CI and normal use, operate from
+# `terraform/environments/<env>/` — those carry the workspace binding and
+# their own tfvars.example.
+
+environment  = "staging"
+project_name = "exam-prep-master"
+
+# Vercel
+vercel_api_token  = "vcl_xxx"
+vercel_team_id    = ""
+github_repo       = "shakedr2/exam-prep-master"
+production_branch = "main"
+custom_domain     = "exam-prep-master.example.com"
+
+# Supabase
+supabase_access_token      = "sbp_xxx"
+supabase_organization_slug = "your-org-slug"
+supabase_project_ref       = "abcdefghijklmnop"
+supabase_db_password       = ""
+supabase_region            = "eu-central-1"
+supabase_url               = "https://abcdefghijklmnop.supabase.co"
+supabase_publishable_key   = "eyJhbGciOi..."
+
+# DNS
+cloudflare_api_token = "cf_xxx"
+cloudflare_zone_id   = "0123456789abcdef0123456789abcdef"
+
+# Observability
+sentry_dsn   = ""
+posthog_key  = ""
+posthog_host = "https://us.i.posthog.com"

@@ -1,0 +1,26 @@
+# Local state, credentials, and provider binaries should never be committed.
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+crash.log
+crash.*.log
+
+# Populated variable files
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Terraform runtime directories
+.terraform/
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+
+# CLI overrides
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Plan output
+tfplan
+*.tfplan
