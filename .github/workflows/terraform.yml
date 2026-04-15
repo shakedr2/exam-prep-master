@@ -92,6 +92,9 @@ jobs:
     steps:
       - name: Preflight — check for Terraform Cloud token
         id: preflight
+        # Override the job-level default working-directory, which points at a
+        # path that only exists after checkout.
+        working-directory: ${{ github.workspace }}
         env:
           TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
         run: |
