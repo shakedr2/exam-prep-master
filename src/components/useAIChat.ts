@@ -27,12 +27,21 @@ export function useAIChat(question: Question) {
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
-  // Keep a ref in sync so callbacks always see the latest messages without
-  // causing unnecessary re-renders or stale-closure bugs.
+
+  // Refs so async callbacks always see the latest values without
+  // recreating the callback on every state/prop change.
   const messagesRef = useRef<ChatMessage[]>([]);
+  const streamingRef = useRef(false);
+  const tRef = useRef(t);
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+  useEffect(() => {
+    streamingRef.current = streaming;
+  }, [streaming]);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
 
   useEffect(() => {
     abortRef.current?.abort();
@@ -42,7 +51,7 @@ export function useAIChat(question: Question) {
   }, [question.id]);
 
   const sendMessage = useCallback(async (userText: string) => {
-    if (streaming || !userText.trim()) return;
+    if (streamingRef.current || !userText.trim()) return;
 
     const newMessages: ChatMessage[] = [
       ...messagesRef.current,
@@ -52,6 +61,7 @@ export function useAIChat(question: Question) {
     messagesRef.current = newMessages;
     setError(null);
     setStreaming(true);
+    streamingRef.current = true;
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
     const controller = new AbortController();
@@ -114,7 +124,7 @@ export function useAIChat(question: Question) {
       }
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
-      setError(t(getAiErrorKey(e)));
+      setError(tRef.current(getAiErrorKey(e)));
       setMessages((prev) => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant" && !last.content) {
@@ -124,12 +134,13 @@ export function useAIChat(question: Question) {
       });
     } finally {
       setStreaming(false);
+      streamingRef.current = false;
     }
-  }, [question, streaming]);
+  }, [question]);
 
   /** Re-sends the last user message. Useful for the retry button on error. */
   const retry = useCallback(() => {
-    if (streaming) return;
+    if (streamingRef.current) return;
     const current = messagesRef.current;
     const lastUserIdx = current.findLastIndex((m) => m.role === "user");
     if (lastUserIdx === -1) return;
@@ -139,7 +150,7 @@ export function useAIChat(question: Question) {
     setMessages(trimmed);
     setError(null);
     sendMessage(lastUserText);
-  }, [streaming, sendMessage]);
+  }, [sendMessage]);
 
   return { messages, streaming, error, sendMessage, retry };
 }

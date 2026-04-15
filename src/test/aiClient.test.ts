@@ -142,6 +142,24 @@ describe("callAIFunction", () => {
       }),
     ).rejects.toMatchObject({ type: "network" });
   });
+
+  it("retries the configured number of times on network errors", async () => {
+    const mockFetch = vi
+      .spyOn(globalThis, "fetch")
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValueOnce(makeJsonResponse({ ok: true }));
+
+    const result = await callAIFunction<{ ok: boolean }>(
+      "https://example.com/fn",
+      {},
+      {},
+      { maxRetries: 3, retryDelayMs: 0 },
+    );
+
+    expect(result).toEqual({ ok: true });
+    expect(mockFetch).toHaveBeenCalledTimes(3);
+  });
 });
 
 // ─── callAIFunctionStream ────────────────────────────────────────────────────

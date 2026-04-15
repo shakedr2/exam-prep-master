@@ -69,7 +69,7 @@ export interface AiClientOptions {
   timeoutMs?: number;
   /** Total number of attempts (including the first). Default: 3 */
   maxRetries?: number;
-  /** Base delay between retries in ms (doubles each attempt). Default: 500 */
+  /** Base delay in ms before the first retry (doubles for each subsequent retry). Default: 500 */
   retryDelayMs?: number;
 }
 
@@ -83,6 +83,14 @@ const DEFAULT_OPTIONS: Required<AiClientOptions> = {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Returns the delay in ms before the nth retry attempt.
+ * attempt=1 → baseMs, attempt=2 → 2*baseMs, attempt=3 → 4*baseMs, etc.
+ */
+function retryDelay(attempt: number, baseMs: number): number {
+  return baseMs * Math.pow(2, attempt - 1);
 }
 
 function classifyHttpError(status: number): AiError {
@@ -172,7 +180,7 @@ export async function callAIFunction<T>(
     }
 
     if (attempt < maxRetries) {
-      const delay = retryDelayMs * Math.pow(2, attempt - 1);
+      const delay = retryDelay(attempt, retryDelayMs);
       console.log(`[aiClient] retrying in ${delay}ms…`);
       await sleep(delay);
     }
@@ -253,7 +261,7 @@ export async function callAIFunctionStream(
     }
 
     if (attempt < maxRetries) {
-      const delay = retryDelayMs * Math.pow(2, attempt - 1);
+      const delay = retryDelay(attempt, retryDelayMs);
       console.log(`[aiClient] retrying stream in ${delay}ms…`);
       await sleep(delay);
     }
