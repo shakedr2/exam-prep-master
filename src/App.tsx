@@ -7,7 +7,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/shared/components/AuthGuard";
@@ -59,39 +58,34 @@ function PostHogPageviewTracker() {
 }
 
 /**
- * Renders the route table inside an AnimatePresence so that each page
- * element gets a fade/slide transition on mount and unmount.
+ * Renders the route table. Each page is wrapped in `PageTransition` which
+ * applies a CSS fade+slide entrance animation (see `src/index.css`).
  *
  * Notes:
- *   • `mode="wait"` → exit animation completes before the next page enters.
- *     This avoids two pages rendering on top of each other during the swap.
- *   • We `key` the <Routes> on `location.pathname` (not the whole location
- *     object) so in-page state updates that don't change the path don't
- *     retrigger the transition.
- *   • `PageTransition` internally checks `prefers-reduced-motion` and
- *     collapses to an instant opacity swap when the user has it enabled.
+ *   • We `key` the <Routes> on `location.pathname` so navigating to a new
+ *     path remounts the wrapper div and re-triggers the entrance animation.
+ *   • `PageTransition` honours `prefers-reduced-motion` via a CSS
+ *     `@media` rule — no JS check needed here.
  */
 function AnimatedRoutes() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
-        <Route path="/onboarding" element={<PageTransition><OnboardingPage /></PageTransition>} />
-        <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
-        <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
-        <Route path="/auth/callback" element={<PageTransition><AuthCallbackPage /></PageTransition>} />
-        <Route path="/dashboard" element={<AuthGuard><PageTransition><DashboardPage /></PageTransition></AuthGuard>} />
-        <Route path="/practice/:topicId" element={<AuthGuard><PageTransition><PracticePage /></PageTransition></AuthGuard>} />
-        <Route path="/learn/:topicId" element={<AuthGuard><PageTransition><Suspense fallback={<LazyFallback />}><LearnPage /></Suspense></PageTransition></AuthGuard>} />
-        <Route path="/exam" element={<AuthGuard><PageTransition><ExamMode /></PageTransition></AuthGuard>} />
-        <Route path="/progress" element={<AuthGuard><PageTransition><ProgressPage /></PageTransition></AuthGuard>} />
-        <Route path="/review-mistakes" element={<AuthGuard><PageTransition><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></PageTransition></AuthGuard>} />
-        <Route path="/tracks/devops" element={<PageTransition><Suspense fallback={<LazyFallback />}><DevOpsTrackPage /></Suspense></PageTransition>} />
-        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
-      </Routes>
-    </AnimatePresence>
+    <Routes location={location} key={location.pathname}>
+      <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+      <Route path="/onboarding" element={<PageTransition><OnboardingPage /></PageTransition>} />
+      <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
+      <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
+      <Route path="/auth/callback" element={<PageTransition><AuthCallbackPage /></PageTransition>} />
+      <Route path="/dashboard" element={<AuthGuard><PageTransition><DashboardPage /></PageTransition></AuthGuard>} />
+      <Route path="/practice/:topicId" element={<AuthGuard><PageTransition><PracticePage /></PageTransition></AuthGuard>} />
+      <Route path="/learn/:topicId" element={<AuthGuard><PageTransition><Suspense fallback={<LazyFallback />}><LearnPage /></Suspense></PageTransition></AuthGuard>} />
+      <Route path="/exam" element={<AuthGuard><PageTransition><ExamMode /></PageTransition></AuthGuard>} />
+      <Route path="/progress" element={<AuthGuard><PageTransition><ProgressPage /></PageTransition></AuthGuard>} />
+      <Route path="/review-mistakes" element={<AuthGuard><PageTransition><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></PageTransition></AuthGuard>} />
+      <Route path="/tracks/devops" element={<PageTransition><Suspense fallback={<LazyFallback />}><DevOpsTrackPage /></Suspense></PageTransition>} />
+      <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+    </Routes>
   );
 }
 

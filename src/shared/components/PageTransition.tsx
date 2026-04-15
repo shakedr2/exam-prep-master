@@ -1,40 +1,20 @@
-import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 
-import {
-  pageTransition,
-  pageTransitionVariants,
-  reducedPageTransition,
-  reducedPageTransitionVariants,
-} from "@/shared/lib/motion";
-
 /**
- * Wraps a route element in a motion.div that animates on mount/unmount.
+ * Wraps a route element in a div with a CSS entrance animation.
  *
- * Used inside AnimatePresence (see App.tsx → AnimatedRoutes) to produce
- * fade+slide page transitions. Honors `prefers-reduced-motion` by falling
- * back to a no-op opacity swap (no transform, zero duration).
+ * The `.animate-page-enter` class (defined in index.css) produces a gentle
+ * fade + slide-up on mount.  It honours `prefers-reduced-motion` via an
+ * `@media` rule in the same stylesheet — no JS needed.
+ *
+ * Exit animations are intentionally omitted: they required framer-motion's
+ * `AnimatePresence` and added ~50 kB to every route's bundle.  The instant
+ * swap on navigation is imperceptible at normal interaction speeds.
  */
 export function PageTransition({ children }: { children: ReactNode }) {
-  const shouldReduceMotion = useReducedMotion();
-
-  const variants = shouldReduceMotion
-    ? reducedPageTransitionVariants
-    : pageTransitionVariants;
-  const transition = shouldReduceMotion ? reducedPageTransition : pageTransition;
-
   return (
-    <motion.div
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      variants={variants}
-      transition={transition}
-      // min-h keeps short pages from collapsing during the exit animation
-      // (prevents a visual "jump" from the Navbar + bottom-nav sandwich).
-      className="min-h-[40vh]"
-    >
+    <div className="animate-page-enter min-h-[40vh]">
       {children}
-    </motion.div>
+    </div>
   );
 }

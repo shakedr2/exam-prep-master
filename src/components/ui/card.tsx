@@ -1,27 +1,16 @@
 import * as React from "react";
-import { motion, useReducedMotion, type HTMLMotionProps } from "framer-motion";
 
 import { cn } from "@/lib/utils";
-import { cardHoverMotion } from "@/shared/lib/motion";
 
 /**
- * Card — shadcn primitive, extended in Phase 10.3 to support a subtle
- * Framer Motion hover lift + tap nudge.
+ * Card — shadcn primitive with CSS-only hover/tap feedback for interactive
+ * cards.  Interactive cards get `hover:-translate-y-0.5 active:scale-[0.99]`
+ * via Tailwind; the shadow transition is handled by the `transition-all`
+ * class already in `interactiveClasses`.
  *
- * Behavior:
- *   • When the caller passes `onClick` (or the new `interactive` prop),
- *     the card becomes a motion.div that lifts on hover and eases back
- *     on tap. A tailwind shadow transition is added so the hover shadow
- *     fades smoothly alongside the lift.
- *   • When reduced-motion is enabled, the lift + tap are disabled but
- *     the shadow transition stays — it's purely a color change, not a
- *     movement.
- *   • Purely decorative (non-interactive) cards render an unchanged
- *     <div> so no existing consumers see a layout diff.
- *
- * The `interactive` prop is explicit so callers can opt-in even when
- * they don't hook up an onClick (e.g. when the whole card is wrapped
- * in a <Link>).
+ * Reduced-motion: CSS `@media (prefers-reduced-motion: reduce)` suppresses
+ * the transform so purely decorative movement is automatically skipped
+ * without any JS check.
  */
 
 type CardProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -30,43 +19,20 @@ type CardProps = React.HTMLAttributes<HTMLDivElement> & {
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, interactive, onClick, ...props }, ref) => {
-    const shouldReduceMotion = useReducedMotion();
     const isInteractive = interactive ?? typeof onClick === "function";
 
     const baseClasses =
       "rounded-xl border border-[var(--border-color)] bg-card text-card-foreground shadow-[var(--shadow-card)]";
     const interactiveClasses = isInteractive
-      ? "transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5"
+      ? "transition-all duration-100 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5 active:scale-[0.99] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100"
       : "";
 
-    if (!isInteractive) {
-      return (
-        <div
-          ref={ref}
-          className={cn(baseClasses, className)}
-          onClick={onClick}
-          {...props}
-        />
-      );
-    }
-
-    // Framer Motion's prop surface for `motion.div` diverges from React's
-    // native div props for a handful of legacy event names
-    // (`onAnimationStart`, `onDrag*`, `onPan*`). Those collisions force a
-    // double-cast through `unknown`; otherwise TS refuses the assignment
-    // even though every runtime prop we care about (id, className, data-*,
-    // aria-*, onClick) is structurally compatible.
-    const motionProps = props as unknown as HTMLMotionProps<"div">;
-
     return (
-      <motion.div
+      <div
         ref={ref}
-        onClick={onClick}
         className={cn(baseClasses, interactiveClasses, className)}
-        whileHover={shouldReduceMotion ? undefined : cardHoverMotion.whileHover}
-        whileTap={shouldReduceMotion ? undefined : cardHoverMotion.whileTap}
-        transition={cardHoverMotion.transition}
-        {...motionProps}
+        onClick={onClick}
+        {...props}
       />
     );
   },

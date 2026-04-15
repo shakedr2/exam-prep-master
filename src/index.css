@@ -208,3 +208,52 @@
 .animate-glow-pulse {
   animation: glow-pulse 3s ease-in-out infinite;
 }
+
+/* Skeleton shimmer — replaces framer-motion sweep */
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* Page entrance — replaces AnimatePresence + motion.div */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-page-enter {
+  animation: page-enter 0.2s cubic-bezier(0, 0, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-enter {
+    animation: none;
+  }
+}
+
+/* Fade-in-scale — simple card/panel entrance */
+@keyframes fade-in-scale {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in-scale {
+  animation: fade-in-scale 0.2s cubic-bezier(0, 0, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-scale {
+    animation: none;
+  }
+}

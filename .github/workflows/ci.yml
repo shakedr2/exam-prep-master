@@ -60,3 +60,21 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      - name: Check bundle size budget
+        # Fail if any single JS chunk exceeds 1 MB (uncompressed).
+        # The threshold can be tightened over time as the bundle shrinks.
+        run: |
+          BUDGET_BYTES=1048576
+          OVER_BUDGET=0
+          for f in dist/assets/*.js; do
+            SIZE=$(wc -c < "$f")
+            if [ "$SIZE" -gt "$BUDGET_BYTES" ]; then
+              echo "❌ Bundle exceeds budget: $f ($SIZE bytes > $BUDGET_BYTES bytes)"
+              OVER_BUDGET=1
+            fi
+          done
+          if [ "$OVER_BUDGET" -eq 1 ]; then
+            exit 1
+          fi
+          echo "✅ All JS chunks are within the 1 MB budget."

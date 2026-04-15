@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,11 +46,7 @@ const RegisterPage = () => {
   if (success) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-sm"
-        >
+        <div className="animate-fade-in-scale w-full max-w-sm">
           <Card className="border-foreground/10">
             <CardContent className="pt-6 text-center space-y-4">
               <div className="text-5xl">✉️</div>
@@ -67,18 +62,14 @@ const RegisterPage = () => {
               </Button>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-sm"
-      >
+      <div className="animate-fade-in-scale w-full max-w-sm">
         <Card className="border-foreground/10">
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-sm border border-foreground/20 bg-foreground text-background">
@@ -164,7 +155,7 @@ const RegisterPage = () => {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 };

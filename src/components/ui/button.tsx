@@ -1,13 +1,11 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { motion, useReducedMotion, type HTMLMotionProps } from "framer-motion";
 
 import { cn } from "@/lib/utils";
-import { buttonPressMotion } from "@/shared/lib/motion";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] transition-[transform,colors] duration-100",
   {
     variants: {
       variant: {
@@ -38,25 +36,8 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
-/**
- * Button — shadcn primitive, extended in Phase 10.3 with a subtle
- * Framer Motion `whileTap` scale so every button press gets tactile
- * feedback.
- *
- * Behavior:
- *   • When `asChild` is false (the vast majority of call sites), the
- *     button renders as `motion.button` and applies the press scale.
- *   • When `asChild` is true, we fall back to the original Radix `Slot`
- *     so the parent element's semantics are preserved — `motion(Slot)`
- *     is intentionally avoided because Slot forwards refs in a way that
- *     doesn't round-trip cleanly through framer-motion's HOC.
- *   • Reduced-motion users never see the scale transform; the button
- *     still responds to the usual Tailwind hover/focus classes.
- */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const shouldReduceMotion = useReducedMotion();
-
     if (asChild) {
       return (
         <Slot
@@ -67,20 +48,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       );
     }
 
-    // Framer Motion's prop surface for `motion.button` diverges from React's
-    // native button props for a handful of legacy event names
-    // (`onAnimationStart`, `onDrag*`, `onPan*`). Those collisions force a
-    // double-cast through `unknown`; this is the same pattern shadcn uses in
-    // its own motion wrappers.
-    const motionProps = props as unknown as HTMLMotionProps<"button">;
-
     return (
-      <motion.button
+      <button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        whileTap={shouldReduceMotion ? undefined : buttonPressMotion.whileTap}
-        transition={buttonPressMotion.transition}
-        {...motionProps}
+        {...props}
       />
     );
   },
