@@ -19,7 +19,6 @@ import { PageTransition } from "@/shared/components/PageTransition";
 import HomePage from "./pages/HomePage";
 import OnboardingPage from "./pages/OnboardingPage";
 import DashboardPage from "./pages/DashboardPage";
-import PracticePage from "./pages/PracticePage";
 import ExamMode from "./pages/ExamMode";
 import ProgressPage from "./pages/ProgressPage";
 import LoginPage from "./pages/LoginPage";
@@ -30,6 +29,7 @@ import NotFound from "./pages/NotFound";
 const ReviewMistakes = lazy(retryLazy(() => import("./pages/ReviewMistakes")));
 const LearnPage = lazy(retryLazy(() => import("./pages/LearnPage")));
 const DevOpsTrackPage = lazy(retryLazy(() => import("./pages/DevOpsTrackPage")));
+const PracticePage = lazy(retryLazy(() => import("./pages/PracticePage")));
 
 const LazyFallback = () => (
   <div className="flex items-center justify-center min-h-[50vh]">
@@ -102,7 +102,7 @@ function AnimatedRoutes() {
         <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
         <Route path="/auth/callback" element={<PageTransition><AuthCallbackPage /></PageTransition>} />
         <Route path="/dashboard" element={<AuthGuard><PageTransition><DashboardPage /></PageTransition></AuthGuard>} />
-        <Route path="/practice/:topicId" element={<AuthGuard><PageTransition><PracticePage /></PageTransition></AuthGuard>} />
+        <Route path="/practice/:topicId" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><PracticePage /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
         <Route path="/learn/:topicId" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><LearnPage /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
         <Route path="/exam" element={<AuthGuard><PageTransition><ExamMode /></PageTransition></AuthGuard>} />
         <Route path="/progress" element={<AuthGuard><PageTransition><ProgressPage /></PageTransition></AuthGuard>} />

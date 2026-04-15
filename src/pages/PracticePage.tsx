@@ -286,7 +286,24 @@ const PracticePage = () => {
     }
   }, [showTutorial, questionsLoading, allQuestions.length, tutorial, topicId, topic?.name]);
 
-  // Track quiz_completion when a session finishes
+  const filteredQuestions = useMemo(() => {
+    if (difficultyFilter) {
+      return allQuestions.filter((q) => q.difficulty === difficultyFilter);
+    }
+    return effectiveQueue;
+    // effectiveQueue is derived from adaptiveQueue + seeding branch;
+    // re-memoising on each render is cheap and correct.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adaptiveQueue, allQuestions, difficultyFilter, effectiveQueue]);
+
+  const [mistakeQuestions, setMistakeQuestions] = useState<Question[]>([]);
+  const activeQuestions = reviewMistakesMode ? mistakeQuestions : filteredQuestions;
+
+  // Track quiz_completion when a session finishes.
+  // NOTE: `activeQuestions` is declared above so the dependency array below
+  // does not hit a TDZ (issue #151) — `const`-declared bindings throw
+  // `ReferenceError: Cannot access 'X' before initialization` when read
+  // before their declaration, and a useEffect dep array evaluates eagerly.
   useEffect(() => {
     if (finished && Object.keys(answers).length > 0) {
       const correct = Object.values(answers).filter((a) => a.correct).length;
@@ -314,19 +331,6 @@ const PracticePage = () => {
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practicePhase, currentIndex, activeQuestions, answers, showHint]);
-
-  const filteredQuestions = useMemo(() => {
-    if (difficultyFilter) {
-      return allQuestions.filter((q) => q.difficulty === difficultyFilter);
-    }
-    return effectiveQueue;
-    // effectiveQueue is derived from adaptiveQueue + seeding branch;
-    // re-memoising on each render is cheap and correct.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adaptiveQueue, allQuestions, difficultyFilter, effectiveQueue]);
-
-  const [mistakeQuestions, setMistakeQuestions] = useState<Question[]>([]);
-  const activeQuestions = reviewMistakesMode ? mistakeQuestions : filteredQuestions;
 
   const getRandomEncouragement = useCallback(() => {
     let idx: number;
