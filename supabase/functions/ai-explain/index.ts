@@ -6,6 +6,42 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// In-memory rate limiter: per-caller budget of RATE_LIMIT_MAX requests per
+// RATE_LIMIT_WINDOW_MS. Keyed by authenticated user id when available, else
+// by client IP. Per-instance only (sufficient for the current low volume;
+// migrate to a Redis/Upstash counter if we scale out).
+const RATE_LIMIT_MAX = 30;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const rateBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimitKey(req: Request): string {
+  const auth = req.headers.get("Authorization") ?? "";
+  if (auth.startsWith("Bearer ")) {
+    // Hash-ish prefix so we don't keep raw tokens in memory.
+    return `u:${auth.slice(7, 32)}`;
+  }
+  return (
+    req.headers.get("cf-connecting-ip") ??
+    req.headers.get("x-forwarded-for") ??
+    req.headers.get("x-real-ip") ??
+    "anon"
+  );
+}
+
+function checkRateLimit(key: string): { ok: boolean; retryAfter: number } {
+  const now = Date.now();
+  const bucket = rateBuckets.get(key);
+  if (!bucket || bucket.resetAt < now) {
+    rateBuckets.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { ok: true, retryAfter: 0 };
+  }
+  if (bucket.count >= RATE_LIMIT_MAX) {
+    return { ok: false, retryAfter: Math.ceil((bucket.resetAt - now) / 1000) };
+  }
+  bucket.count += 1;
+  return { ok: true, retryAfter: 0 };
+}
+
 interface ExplainRequestBody {
   type: "explain";
   questionText: string;
@@ -229,6 +265,24 @@ serve(async (req) => {
   }
 
   try {
+    const { ok: rateOk, retryAfter } = checkRateLimit(rateLimitKey(req));
+    if (!rateOk) {
+      return new Response(
+        JSON.stringify({
+          error: "rate_limit",
+          message: "יותר מדי בקשות, נסה שוב בעוד רגע",
+        }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+            "Retry-After": String(retryAfter),
+          },
+        },
+      );
+    }
+
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
