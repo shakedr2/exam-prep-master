@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/hooks/useProgress";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
@@ -24,7 +24,7 @@ import { questions as staticQuestions } from "@/data/questions";
 
 const PRACTICE_TIP_DISMISSED_KEY = "practice_tip_dismissed";
 
-function TopicCard({
+const TopicCard = memo(function TopicCard({
   topic,
   questionCount,
   learnMap,
@@ -42,8 +42,8 @@ function TopicCard({
   getTopicCompletion: ReturnType<typeof useProgress>["getTopicCompletion"];
   isTopicUnlocked: (topicId: string) => boolean;
   isTopicComplete: (topicId: string) => boolean;
-  onLearn: () => void;
-  onPractice: () => void;
+  onLearn: (topicId: string) => void;
+  onPractice: (topicId: string) => void;
 }) {
   const completion = getTopicCompletion(topic.id, questionCount);
   const unlocked = isTopicUnlocked(topic.id);
@@ -109,7 +109,7 @@ function TopicCard({
             size="sm"
             variant="outline"
             className="flex-1 h-8 text-xs gap-1 border-blue-500/40 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:border-blue-400/30 dark:text-blue-400 dark:hover:bg-blue-950/30 touch-manipulation"
-            onClick={(e) => { e.stopPropagation(); onLearn(); }}
+            onClick={(e) => { e.stopPropagation(); onLearn(topic.id); }}
           >
             <BookOpen className="h-3 w-3" />
             למידה
@@ -124,7 +124,7 @@ function TopicCard({
             }`}
             onClick={(e) => {
               e.stopPropagation();
-              if (unlocked) onPractice();
+              if (unlocked) onPractice(topic.id);
             }}
             disabled={!unlocked}
             title={!unlocked ? "יש לסיים את הנושא הקודם כדי לפתוח נושא זה" : undefined}
@@ -136,9 +136,9 @@ function TopicCard({
       </CardContent>
     </Card>
   );
-}
+});
 
-function ModuleSection({
+const ModuleSection = memo(function ModuleSection({
   module,
   topics,
   questionCounts,
@@ -203,15 +203,15 @@ function ModuleSection({
               getTopicCompletion={getTopicCompletion}
               isTopicUnlocked={isTopicUnlocked}
               isTopicComplete={isTopicComplete}
-              onLearn={() => onLearn(topic.id)}
-              onPractice={() => onPractice(topic.id)}
+              onLearn={onLearn}
+              onPractice={onPractice}
             />
           ))}
         </div>
       </AccordionContent>
     </AccordionItem>
   );
-}
+});
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -252,20 +252,32 @@ const DashboardPage = () => {
     [activeModules]
   );
 
-  const lastExam = progress.examHistory.length > 0
-    ? progress.examHistory[progress.examHistory.length - 1]
-    : null;
+  const lastExam = useMemo(
+    () => progress.examHistory.length > 0
+      ? progress.examHistory[progress.examHistory.length - 1]
+      : null,
+    [progress.examHistory]
+  );
 
-  const lastActiveLabel = progress.lastActiveDate
-    ? (() => {
-        const today = new Date().toDateString();
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        if (progress.lastActiveDate === today) return "היום";
-        if (progress.lastActiveDate === yesterday.toDateString()) return "אתמול";
-        return new Date(progress.lastActiveDate).toLocaleDateString("he-IL");
-      })()
-    : null;
+  const lastActiveLabel = useMemo(() => {
+    if (!progress.lastActiveDate) return null;
+    const today = new Date().toDateString();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (progress.lastActiveDate === today) return "היום";
+    if (progress.lastActiveDate === yesterday.toDateString()) return "אתמול";
+    return new Date(progress.lastActiveDate).toLocaleDateString("he-IL");
+  }, [progress.lastActiveDate]);
+
+  const handleLearn = useCallback(
+    (topicId: string) => navigate(`/learn/${topicId}`),
+    [navigate]
+  );
+
+  const handlePractice = useCallback(
+    (topicId: string) => navigate(`/practice/${topicId}`),
+    [navigate]
+  );
 
   if (loading) {
     return (
@@ -407,8 +419,8 @@ const DashboardPage = () => {
                 getTopicCompletion={getTopicCompletion}
                 isTopicUnlocked={isTopicUnlocked}
                 isTopicComplete={isTopicComplete}
-                onLearn={(topicId) => navigate(`/learn/${topicId}`)}
-                onPractice={(topicId) => navigate(`/practice/${topicId}`)}
+                onLearn={handleLearn}
+                onPractice={handlePractice}
               />
             ))}
           </Accordion>
@@ -445,8 +457,8 @@ const DashboardPage = () => {
                     getTopicCompletion={getTopicCompletion}
                     isTopicUnlocked={isTopicUnlocked}
                     isTopicComplete={isTopicComplete}
-                    onLearn={() => navigate(`/learn/${topic.id}`)}
-                    onPractice={() => navigate(`/practice/${topic.id}`)}
+                    onLearn={handleLearn}
+                    onPractice={handlePractice}
                   />
                 ))}
               </div>

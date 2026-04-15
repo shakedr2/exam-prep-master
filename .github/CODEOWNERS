@@ -1,0 +1,25 @@
+# CODEOWNERS — defines required reviewers for security-sensitive files.
+# Syntax: <pattern> <owner> [<owner> ...]
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything not matched below
+*                           @shakedr2
+
+# CI/CD and security workflows
+.github/                    @shakedr2
+.github/workflows/          @shakedr2
+
+# Dependency manifests — changes must be reviewed for supply-chain safety
+package.json                @shakedr2
+package-lock.json           @shakedr2
+bun.lock                    @shakedr2
+bun.lockb                   @shakedr2
+
+# Supabase migrations — schema changes are irreversible
+supabase/migrations/        @shakedr2
+
+# Environment variable templates — no real secrets should appear here
+.env.example                @shakedr2
+
+# Vercel configuration
+vercel.json                 @shakedr2

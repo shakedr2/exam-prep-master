@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ interface Props {
   onAnswer: (answer: string, correct: boolean) => void;
 }
 
-function ExamCodingView({ q, currentAnswer, onAnswer }: { q: CodingQuestion; currentAnswer?: { answer: string; correct: boolean }; onAnswer: (answer: string, correct: boolean) => void }) {
+const ExamCodingView = memo(function ExamCodingView({ q, currentAnswer, onAnswer }: { q: CodingQuestion; currentAnswer?: { answer: string; correct: boolean }; onAnswer: (answer: string, correct: boolean) => void }) {
   const [code, setCode] = useState(currentAnswer?.answer || "");
   const [showSolution, setShowSolution] = useState(false);
   const [selfAssessed, setSelfAssessed] = useState<boolean | null>(currentAnswer?.correct ?? null);
@@ -91,16 +91,16 @@ function ExamCodingView({ q, currentAnswer, onAnswer }: { q: CodingQuestion; cur
       )}
     </div>
   );
-}
+});
 
-export function ExamQuestionRenderer({ question, currentAnswer, onAnswer }: Props) {
+export const ExamQuestionRenderer = memo(function ExamQuestionRenderer({ question, currentAnswer, onAnswer }: Props) {
   const isAnswered = !!currentAnswer;
 
-  const handleAnswer = (correct: boolean) => {
+  const handleAnswer = useCallback((correct: boolean) => {
     if (isAnswered) return; // prevent re-answering
     const answerText = correct ? "correct" : "incorrect";
     onAnswer(answerText, correct);
-  };
+  }, [isAnswered, onAnswer]);
 
   return (
     <div>
@@ -139,4 +139,4 @@ export function ExamQuestionRenderer({ question, currentAnswer, onAnswer }: Prop
       )}
     </div>
   );
-}
+});

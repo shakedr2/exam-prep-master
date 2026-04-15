@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { PythonCodeBlock } from "@/components/PythonCodeBlock";
 import { CommonMistakeWarning } from "@/features/questions/components/CommonMistakeWarning";
 import type { QuizQuestion } from "@/data/questions";
 
-export function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct: boolean) => void }) {
+export const QuizView = memo(function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct: boolean) => void }) {
   const [selected, setSelected] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const answered = submitted;
@@ -77,4 +77,4 @@ export function QuizView({ q, onAnswer }: { q: QuizQuestion; onAnswer: (correct:
       )}
     </div>
   );
-}
+});
