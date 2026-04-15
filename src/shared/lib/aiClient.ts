@@ -12,6 +12,14 @@
 
 export type AiErrorType = "timeout" | "rate-limit" | "server-error" | "network";
 
+/** i18n translation key for an AI error message. */
+export type AiErrorKey =
+  | "ai.error.timeout"
+  | "ai.error.rateLimit"
+  | "ai.error.serverError"
+  | "ai.error.network"
+  | "ai.error.generic";
+
 export class AiError extends Error {
   constructor(
     public readonly type: AiErrorType,
@@ -27,9 +35,7 @@ export class AiError extends Error {
  * Maps an `AiErrorType` to its i18n translation key (rooted at the
  * `ai.error` namespace in the locale files).
  */
-export function getAiErrorKey(
-  error: unknown,
-): "ai.error.timeout" | "ai.error.rateLimit" | "ai.error.serverError" | "ai.error.network" | "ai.error.generic" {
+export function getAiErrorKey(error: unknown): AiErrorKey {
   if (error instanceof AiError) {
     const map = {
       timeout: "ai.error.timeout",
@@ -95,9 +101,9 @@ function retryDelay(attempt: number, baseMs: number): number {
 
 function classifyHttpError(status: number): AiError {
   if (status === 429) {
-    return new AiError("rate-limit", "rate-limit", status);
+    return new AiError("rate-limit", "Rate limit exceeded", status);
   }
-  return new AiError("server-error", "server-error", status);
+  return new AiError("server-error", `Server error (HTTP ${status})`, status);
 }
 
 /**
@@ -169,11 +175,11 @@ export async function callAIFunction<T>(
       clearTimeout(timeoutId);
       if (e instanceof AiError) throw e; // already classified, propagate
       if ((e as Error).name === "AbortError") {
-        const timeoutError = new AiError("timeout", "timeout");
+        const timeoutError = new AiError("timeout", "Request timed out");
         console.warn(`[aiClient] attempt ${attempt} timed out`);
         lastError = timeoutError;
       } else {
-        const networkError = new AiError("network", "network");
+        const networkError = new AiError("network", "Network error");
         console.warn(`[aiClient] attempt ${attempt} network error:`, e);
         lastError = networkError;
       }
@@ -186,7 +192,7 @@ export async function callAIFunction<T>(
     }
   }
 
-  throw lastError ?? new AiError("server-error", "server-error");
+  throw lastError ?? new AiError("server-error", "Server error");
 }
 
 /**
@@ -250,11 +256,11 @@ export async function callAIFunctionStream(
       if ((e as Error).name === "AbortError") {
         // Distinguish user cancellation from timeout
         if (userSignal.aborted) throw e;
-        const timeoutError = new AiError("timeout", "timeout");
+        const timeoutError = new AiError("timeout", "Request timed out");
         console.warn(`[aiClient] stream attempt ${attempt} timed out`);
         lastError = timeoutError;
       } else {
-        const networkError = new AiError("network", "network");
+        const networkError = new AiError("network", "Network error");
         console.warn(`[aiClient] stream attempt ${attempt} network error:`, e);
         lastError = networkError;
       }
@@ -267,5 +273,5 @@ export async function callAIFunctionStream(
     }
   }
 
-  throw lastError ?? new AiError("server-error", "server-error");
+  throw lastError ?? new AiError("server-error", "Server error");
 }
