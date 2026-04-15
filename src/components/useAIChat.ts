@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { Question } from "@/data/questions";
-import { callAIFunctionStream, getHumanReadableError } from "@/shared/lib/aiClient";
+import { callAIFunctionStream, getAiErrorKey } from "@/shared/lib/aiClient";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -21,6 +22,7 @@ function buildQuestionContext(q: Question): string {
 }
 
 export function useAIChat(question: Question) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +114,7 @@ export function useAIChat(question: Question) {
       }
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
-      setError(getHumanReadableError(e));
+      setError(t(getAiErrorKey(e)));
       setMessages((prev) => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant" && !last.content) {

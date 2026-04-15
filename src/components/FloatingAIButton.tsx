@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Sparkles, Send, Lightbulb, ChevronDown, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -24,6 +25,7 @@ const QUICK_HINTS = [
 ] as const;
 
 export function FloatingAIButton({ question }: FloatingAIButtonProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -143,7 +145,7 @@ export function FloatingAIButton({ question }: FloatingAIButtonProps) {
                   onClick={retry}
                   disabled={streaming}
                 >
-                  נסה שוב
+                  {t("common.retry")}
                 </Button>
               </div>
             )}

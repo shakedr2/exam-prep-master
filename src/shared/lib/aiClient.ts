@@ -23,23 +23,43 @@ export class AiError extends Error {
   }
 }
 
-const HEBREW_MESSAGES: Record<AiErrorType, string> = {
-  timeout: "הבקשה ל-AI ארכה יותר מדי. אנא נסה שוב.",
-  "rate-limit": "שירות ה-AI עמוס כרגע. אנא המתן מעט ונסה שוב.",
-  "server-error": "שגיאה בשרת ה-AI. אנא נסה שוב.",
-  network: "בעיית רשת. אנא בדוק את החיבור לאינטרנט ונסה שוב.",
-};
-
-/** Returns a localised (Hebrew) error message suitable for display to the user. */
-export function getHumanReadableError(error: unknown): string {
+/**
+ * Maps an `AiErrorType` to its i18n translation key (rooted at the
+ * `ai.error` namespace in the locale files).
+ */
+export function getAiErrorKey(
+  error: unknown,
+): "ai.error.timeout" | "ai.error.rateLimit" | "ai.error.serverError" | "ai.error.network" | "ai.error.generic" {
   if (error instanceof AiError) {
-    return HEBREW_MESSAGES[error.type];
+    const map = {
+      timeout: "ai.error.timeout",
+      "rate-limit": "ai.error.rateLimit",
+      "server-error": "ai.error.serverError",
+      network: "ai.error.network",
+    } as const;
+    return map[error.type];
   }
   // DOMException("Aborted", "AbortError") may not pass instanceof Error in all envs
   if ((error as { name?: string })?.name === "AbortError") {
-    return HEBREW_MESSAGES.timeout;
+    return "ai.error.timeout";
   }
-  return "שגיאה בשירות AI. אנא נסה שוב.";
+  return "ai.error.generic";
+}
+
+/**
+ * Returns a Hebrew fallback error string.
+ * Prefer using `getAiErrorKey` + `t()` in React components.
+ * This helper is kept for use outside React contexts.
+ */
+export function getHumanReadableError(error: unknown): string {
+  const FALLBACK_MESSAGES = {
+    "ai.error.timeout": "הבקשה ל-AI ארכה יותר מדי. אנא נסה שוב.",
+    "ai.error.rateLimit": "שירות ה-AI עמוס כרגע. אנא המתן מעט ונסה שוב.",
+    "ai.error.serverError": "שגיאה בשרת ה-AI. אנא נסה שוב.",
+    "ai.error.network": "בעיית רשת. אנא בדוק את החיבור לאינטרנט ונסה שוב.",
+    "ai.error.generic": "שגיאה בשירות AI. אנא נסה שוב.",
+  } as const;
+  return FALLBACK_MESSAGES[getAiErrorKey(error)];
 }
 
 // ─── Options ────────────────────────────────────────────────────────────────
@@ -67,9 +87,9 @@ function sleep(ms: number): Promise<void> {
 
 function classifyHttpError(status: number): AiError {
   if (status === 429) {
-    return new AiError("rate-limit", HEBREW_MESSAGES["rate-limit"], status);
+    return new AiError("rate-limit", "rate-limit", status);
   }
-  return new AiError("server-error", HEBREW_MESSAGES["server-error"], status);
+  return new AiError("server-error", "server-error", status);
 }
 
 /**
@@ -141,11 +161,11 @@ export async function callAIFunction<T>(
       clearTimeout(timeoutId);
       if (e instanceof AiError) throw e; // already classified, propagate
       if ((e as Error).name === "AbortError") {
-        const timeoutError = new AiError("timeout", HEBREW_MESSAGES.timeout);
+        const timeoutError = new AiError("timeout", "timeout");
         console.warn(`[aiClient] attempt ${attempt} timed out`);
         lastError = timeoutError;
       } else {
-        const networkError = new AiError("network", HEBREW_MESSAGES.network);
+        const networkError = new AiError("network", "network");
         console.warn(`[aiClient] attempt ${attempt} network error:`, e);
         lastError = networkError;
       }
@@ -158,7 +178,7 @@ export async function callAIFunction<T>(
     }
   }
 
-  throw lastError ?? new AiError("server-error", HEBREW_MESSAGES["server-error"]);
+  throw lastError ?? new AiError("server-error", "server-error");
 }
 
 /**
@@ -222,11 +242,11 @@ export async function callAIFunctionStream(
       if ((e as Error).name === "AbortError") {
         // Distinguish user cancellation from timeout
         if (userSignal.aborted) throw e;
-        const timeoutError = new AiError("timeout", HEBREW_MESSAGES.timeout);
+        const timeoutError = new AiError("timeout", "timeout");
         console.warn(`[aiClient] stream attempt ${attempt} timed out`);
         lastError = timeoutError;
       } else {
-        const networkError = new AiError("network", HEBREW_MESSAGES.network);
+        const networkError = new AiError("network", "network");
         console.warn(`[aiClient] stream attempt ${attempt} network error:`, e);
         lastError = networkError;
       }
@@ -239,5 +259,5 @@ export async function callAIFunctionStream(
     }
   }
 
-  throw lastError ?? new AiError("server-error", HEBREW_MESSAGES["server-error"]);
+  throw lastError ?? new AiError("server-error", "server-error");
 }

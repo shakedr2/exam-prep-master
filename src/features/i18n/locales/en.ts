@@ -21,6 +21,15 @@ const en: Translations = {
     finish: "Finish",
     save: "Save",
   },
+  ai: {
+    error: {
+      timeout: "The AI request took too long. Please try again.",
+      rateLimit: "The AI service is busy right now. Please wait a moment and try again.",
+      serverError: "An AI server error occurred. Please try again.",
+      network: "A network error occurred. Please check your connection and try again.",
+      generic: "AI service error. Please try again.",
+    },
+  },
 };
 
 export default en;
