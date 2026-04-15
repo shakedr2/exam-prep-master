@@ -160,35 +160,20 @@ export function useRemoteProgress() {
       isCorrect: boolean;
     }) => {
       if (!userId) throw new Error("syncAnswer called without an authenticated user");
-      const at = new Date().toISOString();
 
-      // Read current attempts so we can increment, matching useSaveAnswer's
-      // behavior. The unique (user_id, question_id) constraint means a
-      // straight upsert with attempts=N would clobber prior tries.
-      const { data: existing, error: readError } = await supabase
-        .from("user_progress")
-        .select("attempts")
-        .eq("user_id", userId)
-        .eq("question_id", vars.questionId)
-        .maybeSingle();
-      if (readError) throw readError;
-      const nextAttempts = (existing?.attempts ?? 0) + 1;
+      // Single atomic DB call: INSERT … ON CONFLICT DO UPDATE increments
+      // attempts and returns the new count. Replaces the prior 2-query
+      // read-then-write pattern.
+      const { data, error } = await supabase.rpc("upsert_user_progress", {
+        p_user_id: userId,
+        p_question_id: vars.questionId,
+        p_topic_id: vars.topicId,
+        p_is_correct: vars.isCorrect,
+      });
+      if (error) throw error;
 
-      const { error: upsertError } = await supabase.from("user_progress").upsert(
-        {
-          user_id: userId,
-          question_id: vars.questionId,
-          topic_id: vars.topicId,
-          is_correct: vars.isCorrect,
-          answered_at: at,
-          attempts: nextAttempts,
-          last_attempted_at: at,
-        },
-        { onConflict: "user_id,question_id" }
-      );
-      if (upsertError) throw upsertError;
-
-      return { ...vars, attempts: nextAttempts, at };
+      const result = data as { attempts: number; answered_at: string };
+      return { ...vars, attempts: result.attempts, at: result.answered_at };
     },
     onMutate: async (vars) => {
       await queryClient.cancelQueries({ queryKey: progressKey(userId) });
