@@ -26,6 +26,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audit production dependencies (fail on high/critical)
+        # Omit dev-only packages (build tools) from the hard gate; they do not run in production.
+        # Dev-dep vulnerabilities are tracked separately via Dependabot alerts.
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Run linter
         run: npm run lint
 
