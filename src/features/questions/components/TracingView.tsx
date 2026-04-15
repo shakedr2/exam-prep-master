@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { CommonMistakeWarning } from "@/features/questions/components/CommonMist
 import { gradeTracingAnswer, type GradeResult } from "@/lib/grading";
 import type { TracingQuestion } from "@/data/questions";
 
-export function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (correct: boolean) => void }) {
+export const TracingView = memo(function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (correct: boolean) => void }) {
   const [answer, setAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -131,4 +131,4 @@ export function TracingView({ q, onAnswer }: { q: TracingQuestion; onAnswer: (co
       )}
     </div>
   );
-}
+});
