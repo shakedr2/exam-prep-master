@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { Question } from "@/data/questions";
+import { traceAICall } from "@/lib/sentry";
+import * as Sentry from "@sentry/react";
+import posthog from "posthog-js";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -47,69 +50,98 @@ export function useAIChat(question: Question) {
     const controller = new AbortController();
     abortRef.current = controller;
 
+    const callStart = Date.now();
+    posthog.capture("ai_tutor_message_sent", {
+      question_type: question.type,
+      topic: question.topic,
+    });
+
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      await traceAICall(
+        "ai-tutor",
+        async () => {
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-      const response = await fetch(`${supabaseUrl}/functions/v1/ai-tutor`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${supabaseKey}`,
-          apikey: supabaseKey,
-        },
-        body: JSON.stringify({
-          messages: newMessages,
-          questionContext: buildQuestionContext(question),
-        }),
-        signal: controller.signal,
-      });
+          const response = await fetch(`${supabaseUrl}/functions/v1/ai-tutor`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${supabaseKey}`,
+              apikey: supabaseKey,
+            },
+            body: JSON.stringify({
+              messages: newMessages,
+              questionContext: buildQuestionContext(question),
+            }),
+            signal: controller.signal,
+          });
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || "שגיאה בשירות AI");
-      }
-
-      if (!response.body) throw new Error("אין גוף תגובה מהשרת");
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let assistantText = "";
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const data = line.slice(6);
-          if (data === "[DONE]") break;
-          try {
-            const parsed = JSON.parse(data);
-            const delta = parsed.choices?.[0]?.delta?.content;
-            if (delta) {
-              assistantText += delta;
-              setMessages((prev) => {
-                const updated = [...prev];
-                updated[updated.length - 1] = {
-                  role: "assistant",
-                  content: assistantText,
-                };
-                return updated;
-              });
-            }
-          } catch {
-            // skip malformed SSE lines
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || "שגיאה בשירות AI");
           }
-        }
-      }
+
+          if (!response.body) throw new Error("אין גוף תגובה מהשרת");
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let assistantText = "";
+          let buffer = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? "";
+
+            for (const line of lines) {
+              if (!line.startsWith("data: ")) continue;
+              const data = line.slice(6);
+              if (data === "[DONE]") break;
+              try {
+                const parsed = JSON.parse(data);
+                const delta = parsed.choices?.[0]?.delta?.content;
+                if (delta) {
+                  assistantText += delta;
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    updated[updated.length - 1] = {
+                      role: "assistant",
+                      content: assistantText,
+                    };
+                    return updated;
+                  });
+                }
+              } catch {
+                // skip malformed SSE lines
+              }
+            }
+          }
+        },
+        { question_type: question.type, topic: question.topic },
+      );
+
+      // Fire after the full response is received so duration_ms is accurate
+      // and the event is not suppressed by mid-stream errors.
+      posthog.capture("ai_tutor_response_received", {
+        question_type: question.type,
+        topic: question.topic,
+        duration_ms: Date.now() - callStart,
+      });
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
-      setError(e instanceof Error ? e.message : "שגיאה בשירות AI");
+      const message = e instanceof Error ? e.message : "שגיאה בשירות AI";
+      Sentry.captureException(e, {
+        tags: { feature: "ai_tutor", question_type: question.type },
+      });
+      posthog.capture("ai_tutor_error", {
+        question_type: question.type,
+        topic: question.topic,
+        error: message,
+      });
+      setError(message);
       setMessages((prev) => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant" && !last.content) {

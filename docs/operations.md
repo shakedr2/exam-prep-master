@@ -2,6 +2,68 @@
 
 Short runbook for Sprint 2 operational tasks.
 
+---
+
+## Production Monitoring
+
+See [`docs/runbook.md`](./runbook.md) for full incident response procedures.
+
+### Sentry
+
+Sentry is initialised in `src/lib/sentry.ts` and wraps the entire app via
+`<Sentry.ErrorBoundary>` in `App.tsx`.
+
+Key configuration:
+- `environment` is set from `import.meta.env.MODE` (`production` / `development`).
+- `release` is set from `VITE_APP_VERSION` (inject the git SHA or semver tag in CI).
+- Session replays are captured for 10% of sessions and 100% of error sessions.
+- Performance traces are sampled at 20% in production; 100% in development.
+- Custom `ai.call` spans are added to every AI tutor request (see `src/components/useAIChat.ts`).
+
+**Alert rules to configure in the Sentry dashboard:**
+1. P0 — issue first seen **or** frequency > 10/min → notify Slack + email.
+2. P1 — `ai.call` span p95 latency > 10 000 ms → notify Slack.
+
+### PostHog
+
+PostHog is initialised in `src/lib/posthog.ts`.  
+Key events tracked:
+
+| Event | Where fired | Key properties |
+|-------|------------|----------------|
+| `$pageview` | `PostHogPageviewTracker` in `App.tsx` | path |
+| `exam_start` | `ExamMode.tsx` | `question_count` |
+| `exam_completion` | `ExamMode.tsx` | `earned_points`, `correct`, `total` |
+| `ai_tutor_message_sent` | `useAIChat.ts` | `question_type`, `topic` |
+| `ai_tutor_response_received` | `useAIChat.ts` | `question_type`, `topic`, `duration_ms` |
+| `ai_tutor_error` | `useAIChat.ts` | `question_type`, `topic`, `error` |
+| `lesson_completed` | `LearnPage.tsx` | `topic_id`, `topic_name` |
+| `guided_practice_graduated` | `PracticePage.tsx` | `topic_id` |
+
+**Recommended dashboards in PostHog:**
+1. Exam funnel — `exam_start` → `exam_completion`
+2. Practice engagement — `practice_answered` by topic
+3. AI tutor usage — `ai_tutor_message_sent` / error rate / p95 latency
+4. Onboarding funnel — `/onboarding` pageview → `/dashboard` pageview
+
+### Uptime monitoring
+
+Deploy the `health` edge function:
+```bash
+supabase functions deploy health
+```
+
+The endpoint returns HTTP 200 with `{ "status": "ok" }` when the database is
+reachable, and HTTP 503 with `{ "status": "degraded" }` otherwise.
+
+**UptimeRobot setup:**
+1. Create an HTTP monitor for the Vercel production URL (check every 1 min).
+2. Create an HTTP monitor for `https://<PROJECT_REF>.supabase.co/functions/v1/health`.
+3. Set alert contacts to the on-call email and a Slack webhook.
+4. Target uptime: **99.9%**.
+
+---
+
 ## Running the question-bank batch
 
 `scripts/insert-questions-batch2.sql` adds 72 reviewed Hebrew questions
