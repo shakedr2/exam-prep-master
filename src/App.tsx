@@ -14,24 +14,31 @@ import { AuthGuard } from "@/shared/components/AuthGuard";
 import { Navbar } from "@/shared/components/Navbar";
 import { BottomNav } from "@/shared/components/BottomNav";
 import { PageTransition } from "@/shared/components/PageTransition";
-import HomePage from "./pages/HomePage";
-import OnboardingPage from "./pages/OnboardingPage";
-import DashboardPage from "./pages/DashboardPage";
-import PracticePage from "./pages/PracticePage";
-import ExamMode from "./pages/ExamMode";
-import ProgressPage from "./pages/ProgressPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import AuthCallbackPage from "./pages/AuthCallbackPage";
-import NotFound from "./pages/NotFound";
+import { Skeleton } from "@/components/ui/skeleton";
 
+const HomePage = lazy(() => import("./pages/HomePage"));
+const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const PracticePage = lazy(() => import("./pages/PracticePage"));
+const ExamMode = lazy(() => import("./pages/ExamMode"));
+const ProgressPage = lazy(() => import("./pages/ProgressPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
+const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 const ReviewMistakes = lazy(() => import("./pages/ReviewMistakes"));
 const LearnPage = lazy(() => import("./pages/LearnPage"));
 const DevOpsTrackPage = lazy(() => import("./pages/DevOpsTrackPage"));
 
-const LazyFallback = () => (
-  <div className="flex items-center justify-center min-h-[50vh]">
-    <div className="text-muted-foreground">טוען...</div>
+const PageSkeleton = () => (
+  <div className="flex flex-col gap-4 p-6 min-h-[50vh]" dir="rtl">
+    <Skeleton className="h-8 w-1/3" />
+    <Skeleton className="h-4 w-2/3" />
+    <div className="grid gap-3 mt-4">
+      <Skeleton className="h-24 w-full rounded-xl" />
+      <Skeleton className="h-24 w-full rounded-xl" />
+      <Skeleton className="h-24 w-full rounded-xl" />
+    </div>
   </div>
 );
 
@@ -75,23 +82,25 @@ function AnimatedRoutes() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
-        <Route path="/onboarding" element={<PageTransition><OnboardingPage /></PageTransition>} />
-        <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
-        <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
-        <Route path="/auth/callback" element={<PageTransition><AuthCallbackPage /></PageTransition>} />
-        <Route path="/dashboard" element={<AuthGuard><PageTransition><DashboardPage /></PageTransition></AuthGuard>} />
-        <Route path="/practice/:topicId" element={<AuthGuard><PageTransition><PracticePage /></PageTransition></AuthGuard>} />
-        <Route path="/learn/:topicId" element={<AuthGuard><PageTransition><Suspense fallback={<LazyFallback />}><LearnPage /></Suspense></PageTransition></AuthGuard>} />
-        <Route path="/exam" element={<AuthGuard><PageTransition><ExamMode /></PageTransition></AuthGuard>} />
-        <Route path="/progress" element={<AuthGuard><PageTransition><ProgressPage /></PageTransition></AuthGuard>} />
-        <Route path="/review-mistakes" element={<AuthGuard><PageTransition><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></PageTransition></AuthGuard>} />
-        <Route path="/tracks/devops" element={<PageTransition><Suspense fallback={<LazyFallback />}><DevOpsTrackPage /></Suspense></PageTransition>} />
-        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
-      </Routes>
-    </AnimatePresence>
+    <Suspense fallback={<PageSkeleton />}>
+      <AnimatePresence mode="wait" initial={false}>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+          <Route path="/onboarding" element={<PageTransition><OnboardingPage /></PageTransition>} />
+          <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
+          <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
+          <Route path="/auth/callback" element={<PageTransition><AuthCallbackPage /></PageTransition>} />
+          <Route path="/dashboard" element={<AuthGuard><PageTransition><DashboardPage /></PageTransition></AuthGuard>} />
+          <Route path="/practice/:topicId" element={<AuthGuard><PageTransition><PracticePage /></PageTransition></AuthGuard>} />
+          <Route path="/learn/:topicId" element={<AuthGuard><PageTransition><LearnPage /></PageTransition></AuthGuard>} />
+          <Route path="/exam" element={<AuthGuard><PageTransition><ExamMode /></PageTransition></AuthGuard>} />
+          <Route path="/progress" element={<AuthGuard><PageTransition><ProgressPage /></PageTransition></AuthGuard>} />
+          <Route path="/review-mistakes" element={<AuthGuard><PageTransition><ReviewMistakes /></PageTransition></AuthGuard>} />
+          <Route path="/tracks/devops" element={<PageTransition><DevOpsTrackPage /></PageTransition>} />
+          <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+        </Routes>
+      </AnimatePresence>
+    </Suspense>
   );
 }
 
