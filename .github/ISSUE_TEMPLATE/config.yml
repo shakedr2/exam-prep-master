@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Sentry Dashboard
+    url: https://shaked-zp.sentry.io/issues/?project=4511196583297024
+    about: Check for production errors before opening an incident issue
+  - name: Roadmap
+    url: https://github.com/shakedr2/exam-prep-master/blob/main/ROADMAP.md
+    about: See the current product roadmap and phases

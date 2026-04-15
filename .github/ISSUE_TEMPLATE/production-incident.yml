@@ -1,0 +1,67 @@
+name: Production Incident
+description: Report a production-level bug or crash (P0/P1)
+title: "[INCIDENT] <short description>"
+labels: ["incident", "P0"]
+body:
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - P0 — Production down / crash
+        - P1 — Major degradation
+        - P2 — Minor issue
+    validations:
+      required: true
+  - type: input
+    id: sentry_link
+    attributes:
+      label: Sentry Issue Link
+      placeholder: https://shaked-zp.sentry.io/issues/...
+    validations:
+      required: false
+  - type: input
+    id: affected_route
+    attributes:
+      label: Affected Route(s)
+      placeholder: /practice/:id, /learn/:id
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Error Message
+      placeholder: Paste the full error/stack trace here
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction Steps
+      placeholder: |
+        1. Navigate to ...
+        2. Click ...
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - [ ] Route loads without crash
+        - [ ] No Sentry errors
+        - [ ] Existing tests pass
+    validations:
+      required: true
+  - type: textarea
+    id: validation_checklist
+    attributes:
+      label: Validation Checklist
+      value: |
+        - [ ] Tested locally
+        - [ ] No regressions on related routes
+        - [ ] Sentry issue resolved/muted
+        - [ ] PR linked
+    validations:
+      required: false
