@@ -1,7 +1,9 @@
 import { lazy, Suspense, useEffect } from "react";
 import * as Sentry from "@sentry/react";
-import { PostHogProvider } from "posthog-js/react";
+import { PostHogProvider, usePostHog } from "posthog-js/react";
 import { posthog } from "@/lib/posthog";
+import { retryLazy } from "@/lib/retryLazy";
+import { LazyRouteBoundary } from "@/shared/components/LazyRouteBoundary";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,9 +27,9 @@ import RegisterPage from "./pages/RegisterPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 import NotFound from "./pages/NotFound";
 
-const ReviewMistakes = lazy(() => import("./pages/ReviewMistakes"));
-const LearnPage = lazy(() => import("./pages/LearnPage"));
-const DevOpsTrackPage = lazy(() => import("./pages/DevOpsTrackPage"));
+const ReviewMistakes = lazy(retryLazy(() => import("./pages/ReviewMistakes")));
+const LearnPage = lazy(retryLazy(() => import("./pages/LearnPage")));
+const DevOpsTrackPage = lazy(retryLazy(() => import("./pages/DevOpsTrackPage")));
 
 const LazyFallback = () => (
   <div className="flex items-center justify-center min-h-[50vh]">
@@ -48,12 +50,29 @@ const SentryErrorFallback = () => (
   </div>
 );
 
+/**
+ * SPA pageview tracker.
+ *
+ * PostHog's automatic pageview capture is disabled in `initPostHog` because
+ * a single-page app only triggers a real `load` event once. Instead we use
+ * the `usePostHog()` hook (scoped to the <PostHogProvider>) and fire a
+ * `$pageview` event every time react-router reports a new location. We also
+ * fire `$pageleave` on unmount so session duration / bounce metrics in
+ * PostHog stay accurate when the user navigates away or closes the tab.
+ */
 function PostHogPageviewTracker() {
   const location = useLocation();
+  const posthogClient = usePostHog();
 
   useEffect(() => {
-    posthog.capture("$pageview");
-  }, [location.pathname]);
+    if (!posthogClient) return;
+    posthogClient.capture("$pageview", {
+      $current_url: window.location.href,
+    });
+    return () => {
+      posthogClient.capture("$pageleave");
+    };
+  }, [location.pathname, location.search, posthogClient]);
 
   return null;
 }
@@ -84,11 +103,11 @@ function AnimatedRoutes() {
         <Route path="/auth/callback" element={<PageTransition><AuthCallbackPage /></PageTransition>} />
         <Route path="/dashboard" element={<AuthGuard><PageTransition><DashboardPage /></PageTransition></AuthGuard>} />
         <Route path="/practice/:topicId" element={<AuthGuard><PageTransition><PracticePage /></PageTransition></AuthGuard>} />
-        <Route path="/learn/:topicId" element={<AuthGuard><PageTransition><Suspense fallback={<LazyFallback />}><LearnPage /></Suspense></PageTransition></AuthGuard>} />
+        <Route path="/learn/:topicId" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><LearnPage /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
         <Route path="/exam" element={<AuthGuard><PageTransition><ExamMode /></PageTransition></AuthGuard>} />
         <Route path="/progress" element={<AuthGuard><PageTransition><ProgressPage /></PageTransition></AuthGuard>} />
-        <Route path="/review-mistakes" element={<AuthGuard><PageTransition><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></PageTransition></AuthGuard>} />
-        <Route path="/tracks/devops" element={<PageTransition><Suspense fallback={<LazyFallback />}><DevOpsTrackPage /></Suspense></PageTransition>} />
+        <Route path="/review-mistakes" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
+        <Route path="/tracks/devops" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><DevOpsTrackPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
