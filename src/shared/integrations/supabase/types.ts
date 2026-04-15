@@ -224,6 +224,33 @@ export type Database = {
         }
         Relationships: []
       }
+      topic_progress: {
+        Row: {
+          id: number
+          user_id: string
+          topic_id: string
+          module_id: string
+          lesson_id: string
+          completed_at: string
+        }
+        Insert: {
+          id?: number
+          user_id: string
+          topic_id: string
+          module_id: string
+          lesson_id: string
+          completed_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          topic_id?: string
+          module_id?: string
+          lesson_id?: string
+          completed_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
