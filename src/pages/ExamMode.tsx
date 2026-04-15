@@ -5,7 +5,7 @@ import { Clock, Trophy, Flag, ChevronLeft, ArrowRight, Timer } from "lucide-reac
 import { FloatingAIButton } from "@/components/FloatingAIButton";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ExamResultsSkeleton } from "@/features/gamification/components/ExamResultsSkeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +25,15 @@ import { ExamReviewScreen } from "@/components/exam/ExamReviewScreen";
 import { useSupabaseExamQuestions } from "@/hooks/useSupabaseQuestions";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 import { useSaveAnswer } from "@/hooks/useSaveAnswer";
+import { useGamification } from "@/features/gamification/hooks/useGamification";
+import {
+  celebrateLevelUp,
+  celebrateMilestone,
+} from "@/features/gamification/components/Celebration";
+import {
+  XP_PER_EXAM_COMPLETE,
+  XP_PER_PERFECT_EXAM,
+} from "@/features/gamification/lib/constants";
 
 const EXAM_DURATION = 3 * 60 * 60;
 const EXAM_QUESTIONS = 6;
@@ -52,8 +61,9 @@ function buildPointMap(count: number): number[] {
 
 const ExamMode = () => {
   const navigate = useNavigate();
-  const { answerQuestion, addExamResult } = useProgress();
+  const { answerQuestion, addExamResult, progress } = useProgress();
   const { saveAnswer } = useSaveAnswer();
+  const { awardXp, claimMilestone } = useGamification();
   const [started, setStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(EXAM_DURATION);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -119,7 +129,37 @@ const ExamMode = () => {
         saveAnswer(q.id, q.topic, answers[i].correct, q.patternFamily, q.commonMistake);
       }
     });
-  }, [earnedPoints, score, totalQuestions, addExamResult, examQuestions, answers, answerQuestion, saveAnswer]);
+
+    // Issue #148: celebrate exam completion with XP + milestones.
+    (async () => {
+      const isPerfect = earnedPoints === EXAM_TOTAL_POINTS;
+      const xpAmount = isPerfect ? XP_PER_PERFECT_EXAM : XP_PER_EXAM_COMPLETE;
+      const result = await awardXp(xpAmount, isPerfect ? "perfect_exam" : "exam_complete", {
+        earned_points: earnedPoints,
+        total_points: EXAM_TOTAL_POINTS,
+      });
+
+      const isFirstExam = progress.examHistory.length === 0;
+      if (isFirstExam) {
+        const firstTime = await claimMilestone("first_exam");
+        if (firstTime) {
+          celebrateMilestone(
+            "המבחן הראשון הושלם! 📝",
+            `ציון: ${earnedPoints}/${EXAM_TOTAL_POINTS} — המשך להתאמן`
+          );
+        }
+      }
+      if (isPerfect) {
+        const firstTime = await claimMilestone("first_perfect_exam");
+        if (firstTime) {
+          celebrateMilestone("מבחן מושלם! 🏆", "100% — כל הכבוד");
+        }
+      }
+      if (result?.leveledUp) {
+        celebrateLevelUp(result.level);
+      }
+    })();
+  }, [earnedPoints, score, totalQuestions, addExamResult, examQuestions, answers, answerQuestion, saveAnswer, awardXp, claimMilestone, progress.examHistory.length]);
 
   // Start screen
   if (!started) {
@@ -156,11 +196,9 @@ const ExamMode = () => {
   if (questionsLoading || examQuestions.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4 pb-24">
-        <div className="w-full max-w-sm space-y-4 text-center">
-          <Skeleton className="h-8 w-48 mx-auto" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-64 w-full" />
-          <p className="text-sm text-muted-foreground">טוען שאלות...</p>
+        <div className="w-full max-w-md space-y-4">
+          <ExamResultsSkeleton />
+          <p className="text-sm text-muted-foreground text-center">טוען שאלות...</p>
         </div>
       </div>
     );

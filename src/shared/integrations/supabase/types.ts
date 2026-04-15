@@ -224,6 +224,126 @@ export type Database = {
         }
         Relationships: []
       }
+      user_xp: {
+        Row: {
+          user_id: string
+          xp: number
+          level: number
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          xp?: number
+          level?: number
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          xp?: number
+          level?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_xp_events: {
+        Row: {
+          id: number
+          user_id: string
+          amount: number
+          reason: string
+          metadata: Json
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          user_id: string
+          amount: number
+          reason: string
+          metadata?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          amount?: number
+          reason?: string
+          metadata?: Json
+          created_at?: string
+        }
+        Relationships: []
+      }
+      user_streaks: {
+        Row: {
+          user_id: string
+          current_streak: number
+          longest_streak: number
+          last_active_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          current_streak?: number
+          longest_streak?: number
+          last_active_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          current_streak?: number
+          longest_streak?: number
+          last_active_date?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_milestones: {
+        Row: {
+          user_id: string
+          milestone: string
+          achieved_at: string
+        }
+        Insert: {
+          user_id: string
+          milestone: string
+          achieved_at?: string
+        }
+        Update: {
+          user_id?: string
+          milestone?: string
+          achieved_at?: string
+        }
+        Relationships: []
+      }
+      user_onboarding: {
+        Row: {
+          user_id: string
+          completed: boolean
+          goal_daily_questions: number | null
+          goal_exam_date: string | null
+          preferred_topics: string[]
+          completed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          completed?: boolean
+          goal_daily_questions?: number | null
+          goal_exam_date?: string | null
+          preferred_topics?: string[]
+          completed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          completed?: boolean
+          goal_daily_questions?: number | null
+          goal_exam_date?: string | null
+          preferred_topics?: string[]
+          completed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -244,6 +364,26 @@ export type Database = {
           p_is_correct: boolean
         }
         Returns: { attempts: number; answered_at: string }
+      }
+      award_xp: {
+        Args: {
+          p_amount: number
+          p_reason: string
+          p_metadata?: Json
+        }
+        Returns: { xp: number; level: number; leveled_up: boolean }[]
+      }
+      touch_streak: {
+        Args: Record<string, never>
+        Returns: {
+          current_streak: number
+          longest_streak: number
+          incremented: boolean
+        }[]
+      }
+      claim_milestone: {
+        Args: { p_milestone: string }
+        Returns: boolean
       }
     }
     Enums: {
