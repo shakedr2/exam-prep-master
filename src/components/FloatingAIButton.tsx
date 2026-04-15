@@ -29,7 +29,7 @@ export function FloatingAIButton({ question }: FloatingAIButtonProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { messages, streaming, error, sendMessage } = useAIChat(question);
+  const { messages, streaming, error, sendMessage, retry } = useAIChat(question);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -134,8 +134,17 @@ export function FloatingAIButton({ question }: FloatingAIButtonProps) {
             </AnimatePresence>
 
             {error && (
-              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive text-right">
-                {error}
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive text-right space-y-2">
+                <p>{error}</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs border-destructive/40 text-destructive hover:bg-destructive/10"
+                  onClick={retry}
+                  disabled={streaming}
+                >
+                  נסה שוב
+                </Button>
               </div>
             )}
 

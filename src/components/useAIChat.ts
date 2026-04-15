@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { Question } from "@/data/questions";
+import { callAIFunctionStream, getHumanReadableError } from "@/shared/lib/aiClient";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -24,6 +25,12 @@ export function useAIChat(question: Question) {
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // Keep a ref in sync so callbacks always see the latest messages without
+  // causing unnecessary re-renders or stale-closure bugs.
+  const messagesRef = useRef<ChatMessage[]>([]);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     abortRef.current?.abort();
@@ -36,10 +43,11 @@ export function useAIChat(question: Question) {
     if (streaming || !userText.trim()) return;
 
     const newMessages: ChatMessage[] = [
-      ...messages,
+      ...messagesRef.current,
       { role: "user", content: userText },
     ];
     setMessages(newMessages);
+    messagesRef.current = newMessages;
     setError(null);
     setStreaming(true);
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
@@ -51,24 +59,19 @@ export function useAIChat(question: Question) {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-      const response = await fetch(`${supabaseUrl}/functions/v1/ai-tutor`, {
-        method: "POST",
-        headers: {
+      const response = await callAIFunctionStream(
+        `${supabaseUrl}/functions/v1/ai-tutor`,
+        {
+          messages: newMessages,
+          questionContext: buildQuestionContext(question),
+        },
+        {
           "Content-Type": "application/json",
           Authorization: `Bearer ${supabaseKey}`,
           apikey: supabaseKey,
         },
-        body: JSON.stringify({
-          messages: newMessages,
-          questionContext: buildQuestionContext(question),
-        }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || "שגיאה בשירות AI");
-      }
+        controller.signal,
+      );
 
       if (!response.body) throw new Error("אין גוף תגובה מהשרת");
 
@@ -109,7 +112,7 @@ export function useAIChat(question: Question) {
       }
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
-      setError(e instanceof Error ? e.message : "שגיאה בשירות AI");
+      setError(getHumanReadableError(e));
       setMessages((prev) => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant" && !last.content) {
@@ -120,7 +123,21 @@ export function useAIChat(question: Question) {
     } finally {
       setStreaming(false);
     }
-  }, [messages, question, streaming]);
+  }, [question, streaming]);
 
-  return { messages, streaming, error, sendMessage };
+  /** Re-sends the last user message. Useful for the retry button on error. */
+  const retry = useCallback(() => {
+    if (streaming) return;
+    const current = messagesRef.current;
+    const lastUserIdx = current.findLastIndex((m) => m.role === "user");
+    if (lastUserIdx === -1) return;
+    const lastUserText = current[lastUserIdx].content;
+    const trimmed = current.slice(0, lastUserIdx);
+    messagesRef.current = trimmed;
+    setMessages(trimmed);
+    setError(null);
+    sendMessage(lastUserText);
+  }, [streaming, sendMessage]);
+
+  return { messages, streaming, error, sendMessage, retry };
 }
