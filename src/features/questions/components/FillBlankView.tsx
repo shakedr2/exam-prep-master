@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { motion } from "framer-motion";
 import { Check, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { CommonMistakeWarning } from "@/features/questions/components/CommonMist
 import { gradeBlankAnswer, type GradeResult } from "@/lib/grading";
 import type { FillBlankQuestion } from "@/data/questions";
 
-export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer: (correct: boolean) => void }) {
+export const FillBlankView = memo(function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer: (correct: boolean) => void }) {
   const [answers, setAnswers] = useState<string[]>(new Array(q.blanks.length).fill(""));
   const [submitted, setSubmitted] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -218,4 +218,4 @@ export function FillBlankView({ q, onAnswer }: { q: FillBlankQuestion; onAnswer:
       )}
     </div>
   );
-}
+});
