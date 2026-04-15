@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import React, { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { Sparkles, Send, Lightbulb, ChevronDown, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -191,6 +191,13 @@ export function FloatingAIButton({ question }: FloatingAIButtonProps) {
   );
 }
 
+function formatBold(line: string): React.ReactNode {
+  const parts = line.split(/\*\*(.*?)\*\*/g);
+  return parts.map((part, i) =>
+    i % 2 === 1 ? <strong key={i}>{part}</strong> : part
+  );
+}
+
 function ExplanationRenderer({ text }: { text: string }) {
   const segments = text.split(/(```[\s\S]*?```)/g);
 
@@ -212,19 +219,11 @@ function ExplanationRenderer({ text }: { text: string }) {
         }
         return (
           <div key={i} className="whitespace-pre-wrap">
-            {segment.split("\n").map((line, j) => {
-              const formatted = line.replace(
-                /\*\*(.*?)\*\*/g,
-                "<strong>$1</strong>"
-              );
-              return (
-                <p
-                  key={j}
-                  className="mb-1"
-                  dangerouslySetInnerHTML={{ __html: formatted }}
-                />
-              );
-            })}
+            {segment.split("\n").map((line, j) => (
+              <p key={j} className="mb-1">
+                {formatBold(line)}
+              </p>
+            ))}
           </div>
         );
       })}
