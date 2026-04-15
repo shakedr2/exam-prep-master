@@ -7,12 +7,22 @@ const SCROLL_THRESHOLD = 140;
 /**
  * PythonHero — Premium hero section for the Python dashboard.
  *
+ * Phase 10.4 (Issue #146) upgrades:
+ *   • Python two-color logo — top fang tinted snake green, bottom tinted
+ *     Python yellow — to ground the brand identity.
+ *   • Layered ambient glows (violet + snake green) add depth without
+ *     feeling busy.
+ *   • Subtle grid pattern overlay reinforces the "programming education"
+ *     identity (mix-blend-overlay so it reads on any gradient).
+ *   • Spring-eased scroll-shrink for a premium tactile feel.
+ *
  * Features:
- *   • Inline SVG Python logo with CSS glow-pulse animation
- *   • Gradient background from design tokens (--hero-gradient)
+ *   • Inline SVG Python logo with glow-pulse animation
+ *   • Gradient background (--hero-gradient-python, dark-mode aware)
  *   • Framer Motion entrance: fade-in + slide-up (0.6s, easeOut)
  *   • Scroll-shrink: collapses to a compact 60px sticky header on scroll
  *   • Mobile responsive (full-width, no horizontal overflow)
+ *   • Reduced-motion: entrance skipped, scroll-shrink still works (CSS-only)
  */
 export function PythonHero() {
   const [isCompact, setIsCompact] = useState(false);
@@ -29,18 +39,39 @@ export function PythonHero() {
   return (
     <motion.div
       className={cn(
-        "sticky top-14 z-10 -mx-4 w-[calc(100%+2rem)] overflow-hidden transition-all duration-300 ease-out",
-        isCompact ? "py-3" : "py-8 sm:py-10"
+        "sticky top-14 z-10 -mx-4 w-[calc(100%+2rem)] overflow-hidden",
+        "transition-all duration-300 ease-out",
+        "rounded-b-[var(--radius-xl)] border-b border-white/10",
+        isCompact ? "py-3 shadow-premium" : "py-8 sm:py-10 shadow-premium-xl"
       )}
       style={{
         background:
-          "var(--hero-gradient, linear-gradient(135deg, #7c5cfc, #4c3acd, #1a1b2e))",
+          "var(--hero-gradient-python, linear-gradient(135deg, #4B8BBE, #7c5cfc, #3DDC84))",
       }}
       initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0, 0, 0.2, 1] }}
     >
-      <div className="mx-auto max-w-2xl px-6 flex items-center gap-4">
+      {/* Grid pattern overlay — reinforces programming identity */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-10 mix-blend-overlay bg-grid"
+        style={{ color: "white" }}
+        aria-hidden="true"
+      />
+
+      {/* Ambient glow orbs */}
+      <div
+        className="pointer-events-none absolute -top-16 right-8 h-40 w-40 rounded-full opacity-50 blur-3xl"
+        style={{ background: "rgba(61, 220, 132, 0.45)" }}
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute -bottom-12 left-8 h-32 w-32 rounded-full opacity-40 blur-3xl"
+        style={{ background: "rgba(124, 92, 252, 0.5)" }}
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 mx-auto max-w-2xl px-6 flex items-center gap-4">
         {/* Python Logo SVG with glow pulse */}
         <div
           className={cn(
@@ -52,6 +83,15 @@ export function PythonHero() {
         </div>
 
         <div className="flex-1 min-w-0">
+          <p
+            className={cn(
+              "font-mono text-[11px] tracking-wide text-white/70 transition-all duration-300",
+              isCompact ? "hidden" : "mb-1"
+            )}
+            dir="ltr"
+          >
+            // track.python-fundamentals
+          </p>
           <h2
             className={cn(
               "font-bold text-white transition-all duration-300",
@@ -59,7 +99,7 @@ export function PythonHero() {
                 ? "text-lg leading-tight"
                 : "text-[clamp(2rem,6vw,3rem)] leading-tight"
             )}
-            style={{ letterSpacing: "-0.02em", fontWeight: 700 }}
+            style={{ letterSpacing: "-0.025em", fontWeight: 700 }}
           >
             יסודות פייתון
           </h2>
@@ -70,7 +110,7 @@ export function PythonHero() {
               isCompact ? "max-h-0 opacity-0" : "max-h-20 opacity-100"
             )}
           >
-            <p className="text-white/70 text-sm sm:text-base mt-2">
+            <p className="text-white/80 text-sm sm:text-base mt-2">
               8 מודולים · ~4 שעות · מתחילים
             </p>
           </div>
@@ -82,8 +122,10 @@ export function PythonHero() {
 
 /**
  * Inline SVG of the Python two-snakes logo.
- * Uses white/light-purple gradients to match the hero's dark gradient BG.
- * The wrapper applies a glow-pulse CSS animation (defined in index.css).
+ * Top fang: snake green → white gradient.
+ * Bottom fang: Python yellow → white gradient.
+ * Together they evoke the official Python mark while fitting the hero's
+ * violet-leaning gradient background.
  */
 function PythonLogoSVG() {
   return (
@@ -97,7 +139,7 @@ function PythonLogoSVG() {
         <defs>
           <linearGradient id="heroLogoTop" x1="0.5" y1="0" x2="0.5" y2="1">
             <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="#c4b0ff" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#5FE89D" stopOpacity="0.9" />
           </linearGradient>
           <linearGradient
             id="heroLogoBottom"
@@ -106,7 +148,7 @@ function PythonLogoSVG() {
             x2="0.5"
             y2="1"
           >
-            <stop offset="0%" stopColor="#c4b0ff" stopOpacity="0.8" />
+            <stop offset="0%" stopColor="#FFE873" stopOpacity="0.9" />
             <stop offset="100%" stopColor="#ffffff" stopOpacity="0.95" />
           </linearGradient>
         </defs>
