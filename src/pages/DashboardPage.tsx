@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/hooks/useProgress";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
-import { useAllLearningProgress } from "@/hooks/useAllLearningProgress";
+import { useDashboardData } from "@/hooks/useDashboardData";
 import { useTopicCompletion } from "@/hooks/useTopicCompletion";
 import { MODULES, type Module } from "@/data/modules";
 import { getTutorialByTopicId } from "@/data/topicTutorials";
@@ -21,32 +21,8 @@ import {
 import { Flame, CheckCircle2, GraduationCap, BookOpen, Brain, X, Lock, ChevronLeft, Home } from "lucide-react";
 import { PythonHero } from "@/components/PythonHero";
 import { questions as staticQuestions } from "@/data/questions";
-import { supabase } from "@/shared/integrations/supabase/client";
 
 const PRACTICE_TIP_DISMISSED_KEY = "practice_tip_dismissed";
-
-function useTopicQuestionCounts() {
-  const [counts, setCounts] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    let cancelled = false;
-    async function fetch() {
-      const { data } = await supabase
-        .from("questions")
-        .select("topic_id");
-      if (cancelled || !data) return;
-      const map: Record<string, number> = {};
-      data.forEach((q) => {
-        map[q.topic_id] = (map[q.topic_id] || 0) + 1;
-      });
-      setCounts(map);
-    }
-    fetch();
-    return () => { cancelled = true; };
-  }, []);
-
-  return counts;
-}
 
 const TopicCard = memo(function TopicCard({
   topic,
@@ -241,8 +217,7 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const { progress, getTopicCompletion, totalCorrect, totalAnswered } = useProgress();
   const { topics, loading } = useSupabaseTopics();
-  const questionCounts = useTopicQuestionCounts();
-  const { learnMap } = useAllLearningProgress();
+  const { learnMap, questionCounts } = useDashboardData();
   const { isTopicUnlocked, isTopicComplete } = useTopicCompletion();
   const [tipDismissed, setTipDismissed] = useState(
     () => localStorage.getItem(PRACTICE_TIP_DISMISSED_KEY) === "true"

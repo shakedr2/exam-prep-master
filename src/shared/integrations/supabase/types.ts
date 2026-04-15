@@ -229,7 +229,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_dashboard_data: {
+        Args: { p_user_id: string }
+        Returns: {
+          learning: Array<{ topic_id: string; concept_index: number }>
+          topic_counts: Record<string, number>
+        }
+      }
+      upsert_user_progress: {
+        Args: {
+          p_user_id: string
+          p_question_id: string
+          p_topic_id: string
+          p_is_correct: boolean
+        }
+        Returns: { attempts: number; answered_at: string }
+      }
     }
     Enums: {
       [_ in never]: never
