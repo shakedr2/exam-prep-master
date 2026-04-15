@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { Question } from "@/data/questions";
+import { callAIFunctionStream, getAiErrorKey } from "@/shared/lib/aiClient";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -20,10 +22,26 @@ function buildQuestionContext(q: Question): string {
 }
 
 export function useAIChat(question: Question) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Refs so async callbacks always see the latest values without
+  // recreating the callback on every state/prop change.
+  const messagesRef = useRef<ChatMessage[]>([]);
+  const streamingRef = useRef(false);
+  const tRef = useRef(t);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+  useEffect(() => {
+    streamingRef.current = streaming;
+  }, [streaming]);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
 
   useEffect(() => {
     abortRef.current?.abort();
@@ -33,15 +51,17 @@ export function useAIChat(question: Question) {
   }, [question.id]);
 
   const sendMessage = useCallback(async (userText: string) => {
-    if (streaming || !userText.trim()) return;
+    if (streamingRef.current || !userText.trim()) return;
 
     const newMessages: ChatMessage[] = [
-      ...messages,
+      ...messagesRef.current,
       { role: "user", content: userText },
     ];
     setMessages(newMessages);
+    messagesRef.current = newMessages;
     setError(null);
     setStreaming(true);
+    streamingRef.current = true;
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
     const controller = new AbortController();
@@ -51,24 +71,19 @@ export function useAIChat(question: Question) {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-      const response = await fetch(`${supabaseUrl}/functions/v1/ai-tutor`, {
-        method: "POST",
-        headers: {
+      const response = await callAIFunctionStream(
+        `${supabaseUrl}/functions/v1/ai-tutor`,
+        {
+          messages: newMessages,
+          questionContext: buildQuestionContext(question),
+        },
+        {
           "Content-Type": "application/json",
           Authorization: `Bearer ${supabaseKey}`,
           apikey: supabaseKey,
         },
-        body: JSON.stringify({
-          messages: newMessages,
-          questionContext: buildQuestionContext(question),
-        }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || "שגיאה בשירות AI");
-      }
+        controller.signal,
+      );
 
       if (!response.body) throw new Error("אין גוף תגובה מהשרת");
 
@@ -109,7 +124,7 @@ export function useAIChat(question: Question) {
       }
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
-      setError(e instanceof Error ? e.message : "שגיאה בשירות AI");
+      setError(tRef.current(getAiErrorKey(e)));
       setMessages((prev) => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant" && !last.content) {
@@ -119,8 +134,23 @@ export function useAIChat(question: Question) {
       });
     } finally {
       setStreaming(false);
+      streamingRef.current = false;
     }
-  }, [messages, question, streaming]);
+  }, [question]);
 
-  return { messages, streaming, error, sendMessage };
+  /** Re-sends the last user message. Useful for the retry button on error. */
+  const retry = useCallback(() => {
+    if (streamingRef.current) return;
+    const current = messagesRef.current;
+    const lastUserIdx = current.findLastIndex((m) => m.role === "user");
+    if (lastUserIdx === -1) return;
+    const lastUserText = current[lastUserIdx].content;
+    const trimmed = current.slice(0, lastUserIdx);
+    messagesRef.current = trimmed;
+    setMessages(trimmed);
+    setError(null);
+    sendMessage(lastUserText);
+  }, [sendMessage]);
+
+  return { messages, streaming, error, sendMessage, retry };
 }
