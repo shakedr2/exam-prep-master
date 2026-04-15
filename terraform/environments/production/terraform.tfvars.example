@@ -1,0 +1,29 @@
+# Copy to terraform.tfvars and fill in real values, or export each as
+# TF_VAR_<name> in CI. Never commit the populated file.
+
+# Vercel
+vercel_api_token  = "vcl_xxx"
+vercel_team_id    = ""
+github_repo       = "shakedr2/exam-prep-master"
+production_branch = "main"
+
+# Domain (production uses the apex of custom_domain)
+custom_domain = "exam-prep-master.example.com"
+
+# Supabase
+supabase_access_token      = "sbp_xxx"
+supabase_organization_slug = "your-org-slug"
+supabase_project_ref       = "abcdefghijklmnop"
+supabase_db_password       = ""
+supabase_region            = "eu-central-1"
+supabase_url               = "https://abcdefghijklmnop.supabase.co"
+supabase_publishable_key   = "eyJhbGciOi..."
+
+# DNS (Cloudflare)
+cloudflare_api_token = "cf_xxx"
+cloudflare_zone_id   = "0123456789abcdef0123456789abcdef"
+
+# Observability (optional)
+sentry_dsn   = ""
+posthog_key  = ""
+posthog_host = "https://us.i.posthog.com"
