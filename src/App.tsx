@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 import * as Sentry from "@sentry/react";
-import { PostHogProvider } from "posthog-js/react";
+import { PostHogProvider, usePostHog } from "posthog-js/react";
 import { posthog } from "@/lib/posthog";
 import { retryLazy } from "@/lib/retryLazy";
 import { LazyRouteBoundary } from "@/shared/components/LazyRouteBoundary";
@@ -50,12 +50,29 @@ const SentryErrorFallback = () => (
   </div>
 );
 
+/**
+ * SPA pageview tracker.
+ *
+ * PostHog's automatic pageview capture is disabled in `initPostHog` because
+ * a single-page app only triggers a real `load` event once. Instead we use
+ * the `usePostHog()` hook (scoped to the <PostHogProvider>) and fire a
+ * `$pageview` event every time react-router reports a new location. We also
+ * fire `$pageleave` on unmount so session duration / bounce metrics in
+ * PostHog stay accurate when the user navigates away or closes the tab.
+ */
 function PostHogPageviewTracker() {
   const location = useLocation();
+  const posthogClient = usePostHog();
 
   useEffect(() => {
-    posthog.capture("$pageview");
-  }, [location.pathname]);
+    if (!posthogClient) return;
+    posthogClient.capture("$pageview", {
+      $current_url: window.location.href,
+    });
+    return () => {
+      posthogClient.capture("$pageleave");
+    };
+  }, [location.pathname, location.search, posthogClient]);
 
   return null;
 }
