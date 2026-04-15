@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import posthog from "posthog-js";
+import { trackExamStarted, trackQuestionCompleted } from "@/lib/analytics";
 import type { Question } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
@@ -103,7 +104,18 @@ const ExamMode = () => {
 
   const handleAnswer = useCallback((index: number, answer: string, correct: boolean) => {
     setAnswers(a => ({ ...a, [index]: { answer, correct } }));
-  }, []);
+    const q = examQuestions[index];
+    if (q) {
+      trackQuestionCompleted({
+        question_id: q.id,
+        topic_id: q.topic,
+        question_type: q.type,
+        difficulty: q.difficulty,
+        correct,
+        source: "exam",
+      });
+    }
+  }, [examQuestions]);
 
   const toggleFlag = useCallback((index: number) => {
     setFlagged(prev => {
@@ -179,7 +191,7 @@ const ExamMode = () => {
             <p>🚩 אפשר לסמן שאלות לחזרה</p>
           </div>
           <Button onClick={() => {
-            posthog.capture("exam_start", { question_count: EXAM_QUESTIONS });
+            trackExamStarted({ question_count: EXAM_QUESTIONS });
             setStarted(true);
           }} className="w-full text-lg py-6 rounded-lg">
             התחל מבחן

@@ -7,21 +7,28 @@ import { cn } from "@/lib/utils";
 import { buttonPressMotion } from "@/shared/lib/motion";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] text-sm font-medium ring-offset-background transition-[background,color,border-color,box-shadow,filter] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-primary-foreground hover:brightness-110 shadow-sm hover:shadow-md",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        default:
+          "bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-primary-foreground shadow-[var(--shadow-sm)] hover:brightness-110 hover:shadow-[var(--shadow-md)]",
+        destructive:
+          "bg-destructive text-destructive-foreground shadow-[var(--shadow-sm)] hover:bg-destructive/90 hover:shadow-[var(--shadow-md)]",
+        outline:
+          "border border-[var(--border-color-strong)] bg-background/50 backdrop-blur-sm text-foreground hover:border-primary/40 hover:bg-foreground/[0.03] hover:text-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-[var(--bg-surface-hover)]",
+        ghost:
+          "text-foreground hover:bg-foreground/[0.05] hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        snake:
+          "bg-gradient-to-r from-[var(--color-snake)] to-[var(--color-snake-light)] text-[#0a0b10] font-semibold shadow-[var(--shadow-sm)] hover:brightness-105 hover:shadow-[var(--glow-snake)]",
       },
       size: {
         default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
+        sm: "h-9 rounded-[var(--radius-md)] px-3",
+        lg: "h-11 rounded-[var(--radius-md)] px-8",
         icon: "h-10 w-10",
       },
     },

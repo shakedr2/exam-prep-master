@@ -32,6 +32,7 @@ import {
   type SelectableQuestion,
 } from "@/features/progress/lib/adaptiveSelection";
 import posthog from "posthog-js";
+import { trackQuestionCompleted } from "@/lib/analytics";
 import type { Difficulty, Question } from "@/data/questions";
 import { useGuestThreshold } from "@/features/guest/hooks/useGuestThreshold";
 import { SignupWall } from "@/features/guest/components/SignupWall";
@@ -468,6 +469,14 @@ const PracticePage = () => {
       answerQuestion(questionId, topicId, correct);
       const q = allQuestions.find((q) => q.id === questionId);
       saveAnswer(questionId, topicId, correct, q?.patternFamily, q?.commonMistake);
+      trackQuestionCompleted({
+        question_id: questionId,
+        topic_id: topicId,
+        question_type: q?.type,
+        difficulty: q?.difficulty,
+        correct,
+        source: reviewMistakesMode ? "review_mistakes" : "practice",
+      });
 
       // Issue #148: award XP only on the *first* correct answer for a
       // question (matching the existing useLocalProgress rule) and fire

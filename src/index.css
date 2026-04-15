@@ -24,13 +24,14 @@
     --muted: 240 6% 95%;
     --muted-foreground: 237 11% 37%;
 
-    --accent: 164 58% 45%;
+    /* Accent — Python snake green (light mode) */
+    --accent: 152 68% 42%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 164 58% 45%;
+    --success: 152 68% 42%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
@@ -43,7 +44,7 @@
     --input: 240 6% 90%;
     --ring: 258 72% 58%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -54,56 +55,82 @@
     --sidebar-border: 240 6% 91%;
     --sidebar-ring: 258 72% 58%;
 
-    /* Premium design tokens — light */
+    /* Premium design tokens — light (kept in sync with design-tokens.ts) */
     --bg-primary: #fafafa;
     --bg-surface: #ffffff;
-    --bg-surface-hover: #f0f0f5;
+    --bg-surface-hover: #f4f5f8;
+    --bg-surface-2: #f4f5f8;
+    --bg-surface-3: #edeef2;
+
     --color-primary: #6d4cdc;
     --color-primary-light: #8b6cf7;
+
+    /* Python snake green accent */
+    --color-snake: #22b873;
+    --color-snake-light: #3DDC84;
+    --color-snake-dark: #189157;
+    --color-python-yellow: #E8B30A;
+
     --text-primary: #1a1a2e;
-    --text-secondary: #55566a;
+    --text-secondary: #4a4b5e;
     --text-muted: #8b8b9e;
-    --border-color: rgba(0,0,0,0.08);
-    --shadow-card: 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
-    --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.06);
+
+    --border-color: rgba(0,0,0,0.07);
+    --border-color-strong: rgba(0,0,0,0.14);
+
+    /* Production-grade layered shadows */
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.06);
+    --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.08), 0 20px 32px -8px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.08);
+    --shadow-xl: 0 20px 40px -8px rgba(0,0,0,0.15), 0 8px 16px -6px rgba(0,0,0,0.1);
+
     --glow-primary: 0 0 20px rgba(109, 76, 220, 0.2);
-    --hero-gradient: linear-gradient(135deg, #7c5cfc, #9b7fff, #e8e0ff);
+    --glow-snake: 0 0 20px rgba(34, 184, 115, 0.2);
+
+    --hero-gradient: linear-gradient(135deg, #7c5cfc 0%, #9b7fff 50%, #e8e0ff 100%);
+    --hero-gradient-snake: linear-gradient(135deg, #3DDC84 0%, #22b873 50%, #e6f9f0 100%);
+    --hero-gradient-python: linear-gradient(135deg, #4B8BBE 0%, #7c5cfc 50%, #22b873 100%);
 
     /* Radius tokens */
     --radius-sm: 6px;
     --radius-md: 8px;
     --radius-lg: 12px;
     --radius-xl: 16px;
+    --radius-2xl: 20px;
   }
 
   .dark,
   [data-theme='dark'] {
-    --background: 240 12% 7%;
+    /* Deeper true-black surfaces with subtle blue hue for premium feel */
+    --background: 230 22% 5%;        /* #0a0b10 */
     --foreground: 240 20% 95%;
 
-    --card: 237 28% 14%;
+    --card: 232 18% 9%;              /* #13141c */
     --card-foreground: 240 20% 95%;
 
-    --popover: 237 28% 14%;
+    --popover: 232 18% 9%;
     --popover-foreground: 240 20% 95%;
 
     --primary: 252 96% 67%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 238 26% 18%;
+    --secondary: 232 16% 13%;        /* #1a1c27 */
     --secondary-foreground: 240 20% 95%;
 
-    --muted: 238 26% 18%;
-    --muted-foreground: 240 9% 58%;
+    --muted: 232 16% 13%;
+    --muted-foreground: 232 10% 65%;
 
-    --accent: 164 66% 50%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent — Python snake green (dark mode) */
+    --accent: 152 68% 55%;           /* #3DDC84 */
+    --accent-foreground: 0 0% 10%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 164 66% 50%;
-    --success-foreground: 0 0% 100%;
+    --success: 152 68% 55%;
+    --success-foreground: 0 0% 10%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 10%;
@@ -111,33 +138,54 @@
     --xp: 45 93% 55%;
     --xp-foreground: 0 0% 10%;
 
-    --border: 237 15% 20%;
-    --input: 237 15% 20%;
+    --border: 232 15% 16%;
+    --input: 232 15% 16%;
     --ring: 252 96% 67%;
 
-    --sidebar-background: 237 28% 10%;
+    --sidebar-background: 230 22% 5%;
     --sidebar-foreground: 240 20% 95%;
     --sidebar-primary: 252 96% 67%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 238 26% 16%;
+    --sidebar-accent: 232 16% 11%;
     --sidebar-accent-foreground: 240 20% 95%;
-    --sidebar-border: 237 15% 18%;
+    --sidebar-border: 232 15% 14%;
     --sidebar-ring: 252 96% 67%;
 
     /* Premium design tokens — dark */
-    --bg-primary: #0f0f13;
-    --bg-surface: #1a1b2e;
-    --bg-surface-hover: #22233a;
+    --bg-primary: #0a0b10;
+    --bg-surface: #13141c;
+    --bg-surface-hover: #1a1c27;
+    --bg-surface-2: #1a1c27;
+    --bg-surface-3: #222433;
+
     --color-primary: #7c5cfc;
     --color-primary-light: #9b7fff;
+
+    --color-snake: #3DDC84;
+    --color-snake-light: #5FE89D;
+    --color-snake-dark: #2BA968;
+    --color-python-yellow: #FFD43B;
+
     --text-primary: #f0f0f5;
-    --text-secondary: #8b8b9e;
-    --text-muted: #55566a;
+    --text-secondary: #a8a9b8;
+    --text-muted: #6b6c7a;
+
     --border-color: rgba(255,255,255,0.06);
-    --shadow-card: 0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
-    --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
-    --glow-primary: 0 0 20px rgba(124, 92, 252, 0.3);
-    --hero-gradient: linear-gradient(135deg, #7c5cfc, #4c3acd, #1a1b2e);
+    --border-color-strong: rgba(255,255,255,0.12);
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.35);
+    --shadow-card-hover: 0 2px 4px rgba(0,0,0,0.35), 0 16px 32px -4px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.35), 0 2px 4px -2px rgba(0,0,0,0.25);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.45), 0 4px 6px -4px rgba(0,0,0,0.3);
+    --shadow-xl: 0 20px 40px -8px rgba(0,0,0,0.55), 0 8px 16px -6px rgba(0,0,0,0.4);
+
+    --glow-primary: 0 0 24px rgba(124, 92, 252, 0.35);
+    --glow-snake: 0 0 24px rgba(61, 220, 132, 0.3);
+
+    --hero-gradient: linear-gradient(135deg, #7c5cfc 0%, #4c3acd 45%, #1a1c27 100%);
+    --hero-gradient-snake: linear-gradient(135deg, #3DDC84 0%, #2BA968 50%, #13141c 100%);
+    --hero-gradient-python: linear-gradient(135deg, #4B8BBE 0%, #7c5cfc 50%, #3DDC84 100%);
   }
 }
 
@@ -149,6 +197,10 @@
   html {
     direction: rtl;
     color-scheme: dark;
+    /* Smooth anti-aliased text for premium feel */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   html:not(.dark) {
@@ -157,54 +209,216 @@
 
   body {
     @apply bg-background text-foreground font-heebo;
-    transition: background-color 200ms ease, color 200ms ease;
+    transition: background-color 240ms cubic-bezier(0.4, 0, 0.2, 1),
+                color 240ms cubic-bezier(0.4, 0, 0.2, 1);
+    /* Subtle vertical gradient to prevent flat-dark-blob feel */
+    background-image:
+      radial-gradient(
+        ellipse 80% 50% at 50% 0%,
+        rgba(124, 92, 252, 0.06),
+        transparent 70%
+      );
+    background-attachment: fixed;
+  }
+
+  /* Refined heading rhythm */
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.015em;
+  }
+
+  /* Premium focus ring — softer, with glow */
+  :focus-visible {
+    outline: none;
+  }
+  *:focus-visible {
+    box-shadow: 0 0 0 2px hsl(var(--background)),
+                0 0 0 4px hsl(var(--ring) / 0.6);
+    border-radius: inherit;
+  }
+
+  /* Selection color matches Python snake green */
+  ::selection {
+    background: hsl(var(--accent) / 0.35);
+    color: hsl(var(--foreground));
   }
 }
 
 @layer utilities {
+  /* ── Gradient backgrounds ────────────────────────────── */
   .gradient-primary {
     background: linear-gradient(135deg, hsl(252 96% 67%), hsl(280 80% 55%));
   }
   .gradient-accent {
-    background: linear-gradient(135deg, hsl(164 66% 50%), hsl(180 70% 50%));
+    background: linear-gradient(135deg, hsl(152 68% 55%), hsl(164 66% 50%));
+  }
+  .gradient-snake {
+    background: var(--hero-gradient-snake);
+  }
+  .gradient-python {
+    background: var(--hero-gradient-python);
   }
   .gradient-xp {
     background: linear-gradient(135deg, hsl(38 92% 50%), hsl(45 93% 55%));
   }
   .gradient-success {
-    background: linear-gradient(135deg, hsl(164 66% 50%), hsl(160 72% 50%));
+    background: linear-gradient(135deg, hsl(152 68% 55%), hsl(164 66% 50%));
   }
   .gradient-streak {
-    background: linear-gradient(135deg, hsl(38 92% 50%), hsl(45 93% 55%), hsl(164 66% 50%));
+    background: linear-gradient(135deg, hsl(38 92% 50%), hsl(45 93% 55%), hsl(152 68% 55%));
   }
+
+  /* Gradient-clipped text */
   .text-gradient-primary {
     background: linear-gradient(135deg, hsl(252 96% 67%), hsl(280 80% 55%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+  .text-gradient-python {
+    background: var(--hero-gradient-python);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .text-gradient-snake {
+    background: linear-gradient(135deg, var(--color-snake-light), var(--color-snake));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
-  /* Smooth theme transition for common surface elements */
+  /* ── Premium surfaces ────────────────────────────────── */
+  .surface-1 {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+  }
+  .surface-2 {
+    background-color: var(--bg-surface-2);
+    border: 1px solid var(--border-color);
+  }
+  .surface-glass {
+    background-color: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid var(--border-color);
+  }
+
+  /* ── Shadow utilities (alias the tokens) ─────────────── */
+  .shadow-premium {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-premium-hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  /* ── Transitions ─────────────────────────────────────── */
   .theme-transition {
-    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+    transition:
+      background-color 240ms cubic-bezier(0.4, 0, 0.2, 1),
+      color 240ms cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 240ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Unified transition for interactive surfaces */
+  .transition-premium {
+    transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 220ms cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 220ms cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Hover lift — works alongside Framer Motion for CSS-only callers */
+  .hover-lift {
+    transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
   }
 
   /* Safe area padding for mobile bottom nav */
   .pb-safe {
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   }
+
+  /* Python dotted background pattern — adds identity to heroes */
+  .bg-dots {
+    background-image:
+      radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+
+  /* Grid background — subtle, for hero frames */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, currentColor 1px, transparent 1px),
+      linear-gradient(to bottom, currentColor 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
 }
 
-/* Glow-pulse animation for Python hero logo */
+/* ── Animations ────────────────────────────────────────── */
+
+/* Glow-pulse for Python hero logo */
 @keyframes glow-pulse {
   0%, 100% {
-    filter: drop-shadow(0 0 8px rgba(124, 92, 252, 0.4));
+    filter: drop-shadow(0 0 8px rgba(61, 220, 132, 0.4))
+            drop-shadow(0 0 2px rgba(124, 92, 252, 0.3));
   }
   50% {
-    filter: drop-shadow(0 0 20px rgba(124, 92, 252, 0.7));
+    filter: drop-shadow(0 0 24px rgba(61, 220, 132, 0.7))
+            drop-shadow(0 0 8px rgba(124, 92, 252, 0.5));
   }
 }
 
 .animate-glow-pulse {
-  animation: glow-pulse 3s ease-in-out infinite;
+  animation: glow-pulse 3.2s ease-in-out infinite;
+}
+
+/* Gentle float — for decorative hero elements */
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float-soft {
+  animation: float-soft 4s ease-in-out infinite;
+}
+
+/* Shimmer sweep for decorative premium CTAs */
+@keyframes shimmer-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep 2.4s ease-in-out infinite;
+}
+
+/* Fade-up — used for page section reveals */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0, 0, 0.2, 1) both;
+}
+
+/* Reduced-motion: disable decorative animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-glow-pulse,
+  .animate-float-soft,
+  .animate-shimmer,
+  .animate-fade-up {
+    animation: none !important;
+  }
 }

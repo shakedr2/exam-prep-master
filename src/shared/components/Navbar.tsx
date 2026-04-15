@@ -23,58 +23,75 @@ export function Navbar() {
     (user?.user_metadata?.name as string | undefined) ??
     user?.email;
 
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    cn(
+      "relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium",
+      "transition-[color,background-color,transform] duration-200 ease-out",
+      "hover:-translate-y-[1px] active:translate-y-0",
+      isActive
+        ? "text-foreground bg-foreground/[0.06]"
+        : "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04]"
+    );
+
   return (
-    <nav className="sticky top-0 z-50 border-b border-foreground/20 bg-background/95 backdrop-blur-sm">
+    <nav className="sticky top-0 z-50 border-b border-[var(--border-color)] bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto max-w-5xl px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link to="/dashboard" className="flex items-center gap-2 font-bold text-foreground hover:text-primary transition-colors">
-            <GraduationCap className="h-5 w-5 text-primary" />
-            <span className="text-base font-bold font-mono">ExamPrep Python</span>
+          <Link
+            to="/dashboard"
+            className="group flex items-center gap-2 font-bold text-foreground transition-colors duration-200"
+          >
+            <span className="relative flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 ring-1 ring-primary/20 transition-all duration-200 group-hover:bg-primary/15 group-hover:ring-primary/30">
+              <GraduationCap className="h-4 w-4 text-primary" />
+            </span>
+            <span className="text-base font-bold font-mono tracking-tight">
+              ExamPrep<span className="text-snake"> Python</span>
+            </span>
           </Link>
 
           {/* Desktop nav links — hidden on mobile, visible md+ */}
           <div className="hidden md:flex items-center gap-1">
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-                  isActive
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
-                )
-              }
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              ראשי
+            <NavLink to="/dashboard" className={navLinkClass}>
+              {({ isActive }) => (
+                <>
+                  <LayoutDashboard className="h-4 w-4" />
+                  ראשי
+                  {isActive && (
+                    <span
+                      className="absolute inset-x-3 -bottom-[9px] h-[2px] rounded-full bg-gradient-to-r from-primary to-accent"
+                      aria-hidden="true"
+                    />
+                  )}
+                </>
+              )}
             </NavLink>
-            <NavLink
-              to="/exam"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-                  isActive
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
-                )
-              }
-            >
-              <GraduationCap className="h-4 w-4" />
-              מבחן
+            <NavLink to="/exam" className={navLinkClass}>
+              {({ isActive }) => (
+                <>
+                  <GraduationCap className="h-4 w-4" />
+                  מבחן
+                  {isActive && (
+                    <span
+                      className="absolute inset-x-3 -bottom-[9px] h-[2px] rounded-full bg-gradient-to-r from-primary to-accent"
+                      aria-hidden="true"
+                    />
+                  )}
+                </>
+              )}
             </NavLink>
-            <NavLink
-              to="/progress"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-                  isActive
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
-                )
-              }
-            >
-              <Trophy className="h-4 w-4" />
-              התקדמות
+            <NavLink to="/progress" className={navLinkClass}>
+              {({ isActive }) => (
+                <>
+                  <Trophy className="h-4 w-4" />
+                  התקדמות
+                  {isActive && (
+                    <span
+                      className="absolute inset-x-3 -bottom-[9px] h-[2px] rounded-full bg-gradient-to-r from-primary to-accent"
+                      aria-hidden="true"
+                    />
+                  )}
+                </>
+              )}
             </NavLink>
           </div>
         </div>
@@ -86,11 +103,11 @@ export function Navbar() {
                 <img
                   src={avatarUrl}
                   alt={displayName ?? ""}
-                  className="h-8 w-8 rounded-full object-cover border border-foreground/20"
+                  className="h-8 w-8 rounded-full object-cover border border-[var(--border-color-strong)] ring-1 ring-primary/20 transition-transform duration-200 hover:scale-105"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="flex items-center justify-center h-8 w-8 rounded-full border border-foreground/20 bg-foreground text-background text-sm font-bold font-mono">
+                <div className="flex items-center justify-center h-8 w-8 rounded-full ring-1 ring-primary/20 bg-gradient-to-br from-primary to-accent text-primary-foreground text-sm font-bold font-mono transition-transform duration-200 hover:scale-105">
                   {(displayName ?? "?").charAt(0).toUpperCase()}
                 </div>
               )}

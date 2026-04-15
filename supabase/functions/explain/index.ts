@@ -16,12 +16,57 @@ interface ExplainRequest {
 // In-memory rate limiting: max 3 requests per question per edge function instance
 const requestCounts = new Map<string, number>();
 
+// Per-caller rate limit: sliding window of RATE_LIMIT_MAX requests per window.
+const RATE_LIMIT_MAX = 30;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const rateBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimitKey(req: Request): string {
+  const auth = req.headers.get("Authorization") ?? "";
+  if (auth.startsWith("Bearer ")) return `u:${auth.slice(7, 32)}`;
+  return (
+    req.headers.get("cf-connecting-ip") ??
+    req.headers.get("x-forwarded-for") ??
+    req.headers.get("x-real-ip") ??
+    "anon"
+  );
+}
+
+function checkRateLimit(key: string): { ok: boolean; retryAfter: number } {
+  const now = Date.now();
+  const bucket = rateBuckets.get(key);
+  if (!bucket || bucket.resetAt < now) {
+    rateBuckets.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { ok: true, retryAfter: 0 };
+  }
+  if (bucket.count >= RATE_LIMIT_MAX) {
+    return { ok: false, retryAfter: Math.ceil((bucket.resetAt - now) / 1000) };
+  }
+  bucket.count += 1;
+  return { ok: true, retryAfter: 0 };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const { ok: rateOk, retryAfter } = checkRateLimit(rateLimitKey(req));
+    if (!rateOk) {
+      return new Response(
+        JSON.stringify({ error: "rate_limit", message: "יותר מדי בקשות, נסה שוב בעוד רגע" }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+            "Retry-After": String(retryAfter),
+          },
+        },
+      );
+    }
+
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     if (!ANTHROPIC_API_KEY) {
       throw new Error("ANTHROPIC_API_KEY is not configured");
