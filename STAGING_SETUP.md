@@ -285,6 +285,13 @@ are configured:
 
 - `VITE_SUPABASE_URL` — staging value, used only by CI unit tests + builds.
 - `VITE_SUPABASE_PUBLISHABLE_KEY` — staging anon key.
+- `VERCEL_AUTOMATION_BYPASS_SECRET` — **required only if** Vercel Deployment
+  Protection is enabled on the project. Generate from Vercel → Project
+  Settings → Deployment Protection → *Protection Bypass for Automation*, then
+  paste the same value here. The preview smoke-test workflow sends it as the
+  `x-vercel-protection-bypass` header so the GitHub runner can reach the
+  preview URL without a human login. If Deployment Protection is off, leave
+  this secret unset.
 
 Production secrets live only in Vercel's Production scope and are never
 mirrored to GitHub Actions.
