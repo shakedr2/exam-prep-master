@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Trophy, Flag, ChevronLeft, ArrowRight, Timer } from "lucide-react";
@@ -85,23 +85,26 @@ const ExamMode = () => {
   const unansweredCount = totalQuestions - answeredCount;
 
   // 110-point scoring
-  const pointMap = buildPointMap(totalQuestions);
-  const earnedPoints = examQuestions.reduce((sum, _, i) => sum + (answers[i]?.correct ? pointMap[i] : 0), 0);
+  const pointMap = useMemo(() => buildPointMap(totalQuestions), [totalQuestions]);
+  const earnedPoints = useMemo(
+    () => examQuestions.reduce((sum, _, i) => sum + (answers[i]?.correct ? pointMap[i] : 0), 0),
+    [examQuestions, answers, pointMap]
+  );
 
-  const handleAnswer = (index: number, answer: string, correct: boolean) => {
+  const handleAnswer = useCallback((index: number, answer: string, correct: boolean) => {
     setAnswers(a => ({ ...a, [index]: { answer, correct } }));
-  };
+  }, []);
 
-  const toggleFlag = (index: number) => {
+  const toggleFlag = useCallback((index: number) => {
     setFlagged(prev => {
       const next = new Set(prev);
       if (next.has(index)) next.delete(index);
       else next.add(index);
       return next;
     });
-  };
+  }, []);
 
-  const handleFinish = () => {
+  const handleFinish = useCallback(() => {
     setFinished(true);
     posthog.capture("exam_completion", {
       earned_points: earnedPoints,
@@ -116,7 +119,7 @@ const ExamMode = () => {
         saveAnswer(q.id, q.topic, answers[i].correct, q.patternFamily, q.commonMistake);
       }
     });
-  };
+  }, [earnedPoints, score, totalQuestions, addExamResult, examQuestions, answers, answerQuestion, saveAnswer]);
 
   // Start screen
   if (!started) {
