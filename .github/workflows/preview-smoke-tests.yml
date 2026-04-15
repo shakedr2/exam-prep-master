@@ -1,0 +1,175 @@
+name: Preview Smoke Tests
+
+# Runs lightweight HTTP smoke tests against a Vercel preview deployment as
+# soon as the deployment is reported ready. Vercel publishes a
+# `deployment_status` event on every PR deployment, so no manual wiring is
+# required beyond enabling the Vercel GitHub integration.
+#
+# See STAGING_SETUP.md for details.
+
+on:
+  deployment_status:
+
+jobs:
+  smoke:
+    name: Smoke test preview URL
+    # Only run against successful Preview deployments (skip production promotes
+    # and in-flight / failed states). Vercel sets `environment` to "Preview"
+    # for PR builds.
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      (
+        github.event.deployment.environment == 'Preview' ||
+        startsWith(github.event.deployment.environment, 'preview')
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: read
+      statuses: write
+    timeout-minutes: 5
+
+    steps:
+      - name: Resolve preview URL
+        id: url
+        run: |
+          # Diagnostic: dump the fields Vercel actually populated on this
+          # deployment_status event. Helps debug future URL-resolution bugs.
+          echo "::group::deployment_status fields"
+          echo "environment       = ${{ github.event.deployment.environment }}"
+          echo "environment_url   = ${{ github.event.deployment_status.environment_url }}"
+          echo "target_url        = ${{ github.event.deployment_status.target_url }}"
+          echo "state             = ${{ github.event.deployment_status.state }}"
+          echo "creator           = ${{ github.event.deployment_status.creator.login }}"
+          echo "::endgroup::"
+
+          # environment_url is the live preview URL (e.g. *.vercel.app).
+          # target_url on Vercel deployment_status events points at the
+          # Vercel dashboard inspector, which requires login and is not
+          # what we want to smoke test.
+          URL="${{ github.event.deployment_status.environment_url }}"
+          if [ -z "$URL" ]; then
+            URL="${{ github.event.deployment_status.target_url }}"
+          fi
+          if [ -z "$URL" ]; then
+            echo "No preview URL on deployment_status event; skipping." >&2
+            exit 1
+          fi
+          # Strip any trailing slash for clean concatenation.
+          URL="${URL%/}"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Preview URL: $URL"
+
+      - name: Wait for preview to respond
+        env:
+          URL: ${{ steps.url.outputs.url }}
+          # Optional: set this repo secret when the Vercel project has
+          # Deployment Protection enabled. Without it, the preview URL will
+          # 401 for unauthenticated clients like GitHub runners.
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -n "${BYPASS:-}" ]; then
+            echo "Using VERCEL_AUTOMATION_BYPASS_SECRET for requests."
+            AUTH=(-H "x-vercel-protection-bypass: $BYPASS" \
+                  -H "x-vercel-set-bypass-cookie: true")
+          else
+            echo "VERCEL_AUTOMATION_BYPASS_SECRET not set; requests will be unauthenticated."
+            AUTH=()
+          fi
+
+          last_code=""
+          last_body=""
+          for attempt in 1 2 3 4 5 6; do
+            code=$(curl -sS -o /tmp/resp.html -w "%{http_code}" --max-time 15 \
+              "${AUTH[@]}" "$URL" || echo "000")
+            echo "Attempt $attempt: HTTP $code"
+            last_code="$code"
+            if [ "$code" = "200" ]; then
+              exit 0
+            fi
+            sleep $((attempt * 5))
+          done
+
+          echo "::error::Preview did not return HTTP 200 after 6 attempts (last: $last_code)"
+          echo "::group::Response headers (last attempt)"
+          curl -sSI --max-time 15 "${AUTH[@]}" "$URL" || true
+          echo "::endgroup::"
+          echo "::group::Response body (first 400 chars)"
+          head -c 400 /tmp/resp.html || true
+          echo
+          echo "::endgroup::"
+
+          # Classify common failure modes so the reader knows what to do.
+          if [ "$last_code" = "401" ] || [ "$last_code" = "403" ]; then
+            echo "::error::Looks like Vercel Deployment Protection is blocking the runner."
+            echo "::error::Set the VERCEL_AUTOMATION_BYPASS_SECRET repo secret — see STAGING_SETUP.md."
+          fi
+          exit 1
+
+      - name: Smoke - root loads HTML shell
+        env:
+          URL: ${{ steps.url.outputs.url }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -euo pipefail
+          AUTH_HEADER=()
+          if [ -n "${BYPASS:-}" ]; then
+            AUTH_HEADER=(-H "x-vercel-protection-bypass: $BYPASS")
+          fi
+          body=$(curl -sSL --max-time 15 "${AUTH_HEADER[@]}" "$URL")
+          # The production build ships a Hebrew RTL HTML document. Validate the
+          # document shell and that a Vite-built JS bundle is referenced.
+          echo "$body" | grep -qi '<html[^>]*dir="rtl"' \
+            || { echo "Missing RTL html tag"; exit 1; }
+          echo "$body" | grep -qiE 'src="/assets/.+\.js"' \
+            || { echo "Missing Vite asset bundle reference"; exit 1; }
+
+      - name: Smoke - SPA fallback returns index.html
+        env:
+          URL: ${{ steps.url.outputs.url }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -euo pipefail
+          AUTH_HEADER=()
+          if [ -n "${BYPASS:-}" ]; then
+            AUTH_HEADER=(-H "x-vercel-protection-bypass: $BYPASS")
+          fi
+          # The vercel.json rewrite sends any path to /index.html. A random
+          # deep link should therefore still return 200 with the same shell.
+          code=$(curl -sS -o /tmp/deep.html -w "%{http_code}" --max-time 15 \
+            "${AUTH_HEADER[@]}" "$URL/practice/variables_io")
+          echo "deep-link status: $code"
+          [ "$code" = "200" ] || { echo "SPA fallback broken"; exit 1; }
+          grep -qi '<html' /tmp/deep.html || { echo "Deep link did not return HTML"; exit 1; }
+
+      - name: Smoke - security headers present
+        env:
+          URL: ${{ steps.url.outputs.url }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -euo pipefail
+          AUTH_HEADER=()
+          if [ -n "${BYPASS:-}" ]; then
+            AUTH_HEADER=(-H "x-vercel-protection-bypass: $BYPASS")
+          fi
+          headers=$(curl -sSI --max-time 15 "${AUTH_HEADER[@]}" "$URL")
+          echo "$headers"
+          echo "$headers" | grep -qi '^content-security-policy:' \
+            || { echo "Missing CSP header"; exit 1; }
+          echo "$headers" | grep -qi '^x-frame-options:' \
+            || { echo "Missing X-Frame-Options header"; exit 1; }
+          echo "$headers" | grep -qi '^strict-transport-security:' \
+            || { echo "Missing HSTS header"; exit 1; }
+
+      - name: Summary
+        if: always()
+        env:
+          URL: ${{ steps.url.outputs.url }}
+        run: |
+          {
+            echo "## Preview Smoke Tests"
+            echo ""
+            echo "- Preview URL: $URL"
+            echo "- Status: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
