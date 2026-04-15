@@ -24,4 +24,11 @@ export default defineConfig(() => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Emit source maps so Sentry can symbolicate production stack traces.
+    // They are uploaded to Sentry and then deleted from `dist/` by the
+    // postbuild step in scripts/sentry-upload-sourcemaps.mjs so they are
+    // never served to end users.
+    sourcemap: true,
+  },
 }));

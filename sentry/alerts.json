@@ -1,0 +1,154 @@
+{
+  "_comment": [
+    "Declarative Sentry alert rule definitions for exam-prep-master.",
+    "",
+    "These rules are NOT applied automatically — Sentry's public API for",
+    "alert rules requires an org-level auth token that we do not keep in CI.",
+    "The intent of this file is twofold:",
+    "  1. Be the source of truth for the alerts we expect in production,",
+    "     so drift between code and Sentry UI is reviewable in git.",
+    "  2. Provide ready-to-use payloads for `sentry-cli issues alert create`",
+    "     or the Sentry REST API (POST /api/0/projects/{org}/{proj}/rules/).",
+    "",
+    "After editing this file, apply changes in the Sentry UI:",
+    "  Settings → Alerts → Create Alert → copy conditions from below.",
+    "See docs/monitoring.md for the step-by-step procedure."
+  ],
+  "project": "exam-prep-master",
+  "environment": "production",
+  "issue_alerts": [
+    {
+      "name": "Error spike: new issue burst",
+      "description": "Fires when a new issue surfaces more than 10 times in 1 hour. Catches regressions immediately after a deploy.",
+      "actionMatch": "all",
+      "filterMatch": "all",
+      "frequency": 60,
+      "conditions": [
+        {
+          "id": "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition"
+        },
+        {
+          "id": "sentry.rules.conditions.event_frequency.EventFrequencyCondition",
+          "interval": "1h",
+          "value": 10
+        }
+      ],
+      "actions": [
+        {
+          "id": "sentry.rules.actions.notify_event.NotifyEventAction",
+          "targetType": "IssueOwners"
+        }
+      ]
+    },
+    {
+      "name": "Error spike: sustained high volume",
+      "description": "Fires when any single issue fires 50+ times in 5 minutes — indicates a user-facing outage.",
+      "actionMatch": "all",
+      "filterMatch": "all",
+      "frequency": 5,
+      "conditions": [
+        {
+          "id": "sentry.rules.conditions.event_frequency.EventFrequencyCondition",
+          "interval": "5m",
+          "value": 50
+        }
+      ],
+      "actions": [
+        {
+          "id": "sentry.rules.actions.notify_event.NotifyEventAction",
+          "targetType": "IssueOwners"
+        }
+      ]
+    },
+    {
+      "name": "Regression: previously resolved issue reopened",
+      "description": "Fires when an issue we marked as resolved starts erroring again. Usually means a bad deploy or a revert.",
+      "actionMatch": "all",
+      "filterMatch": "all",
+      "frequency": 30,
+      "conditions": [
+        {
+          "id": "sentry.rules.conditions.regression_event.RegressionEventCondition"
+        }
+      ],
+      "actions": [
+        {
+          "id": "sentry.rules.actions.notify_event.NotifyEventAction",
+          "targetType": "IssueOwners"
+        }
+      ]
+    }
+  ],
+  "metric_alerts": [
+    {
+      "name": "Performance: frontend LCP degradation",
+      "description": "Largest Contentful Paint p75 exceeds 4s (Google 'poor' threshold) for 10 minutes. Signals a real UX regression, not a single slow session.",
+      "dataset": "transactions",
+      "aggregate": "p75(measurements.lcp)",
+      "query": "event.type:transaction",
+      "timeWindow": 10,
+      "triggers": [
+        {
+          "label": "critical",
+          "alertThreshold": 4000,
+          "thresholdType": 0
+        },
+        {
+          "label": "warning",
+          "alertThreshold": 2500,
+          "thresholdType": 0
+        }
+      ]
+    },
+    {
+      "name": "Performance: page-load transaction p95 > 5s",
+      "description": "Catches a widespread slowdown on the initial page load — e.g. a bad bundle-size regression or a CDN problem.",
+      "dataset": "transactions",
+      "aggregate": "p95(transaction.duration)",
+      "query": "event.type:transaction transaction.op:pageload",
+      "timeWindow": 15,
+      "triggers": [
+        {
+          "label": "critical",
+          "alertThreshold": 5000,
+          "thresholdType": 0
+        }
+      ]
+    },
+    {
+      "name": "Reliability: frontend error rate > 2%",
+      "description": "Ratio of error events to total sessions exceeds 2% for 10 minutes. Tuned to ignore single-user noise while flagging real incidents.",
+      "dataset": "sessions",
+      "aggregate": "percentage(sessions_errored, sessions)",
+      "query": "",
+      "timeWindow": 10,
+      "triggers": [
+        {
+          "label": "critical",
+          "alertThreshold": 2,
+          "thresholdType": 0
+        },
+        {
+          "label": "warning",
+          "alertThreshold": 1,
+          "thresholdType": 0
+        }
+      ]
+    },
+    {
+      "name": "Reliability: crash-free session rate < 98%",
+      "description": "Fires if the rolling crash-free session rate falls below 98% for 15 minutes. Our SLO target is 99.5%.",
+      "dataset": "sessions",
+      "aggregate": "percentage(sessions_crashed, sessions)",
+      "query": "",
+      "timeWindow": 15,
+      "triggers": [
+        {
+          "label": "critical",
+          "alertThreshold": 2,
+          "thresholdType": 0
+        }
+      ]
+    }
+  ]
+}

@@ -26,6 +26,7 @@ import {
   type SelectableQuestion,
 } from "@/features/progress/lib/adaptiveSelection";
 import posthog from "posthog-js";
+import { trackQuestionCompleted } from "@/lib/analytics";
 import type { Difficulty, Question } from "@/data/questions";
 import { useGuestThreshold } from "@/features/guest/hooks/useGuestThreshold";
 import { SignupWall } from "@/features/guest/components/SignupWall";
@@ -456,12 +457,20 @@ const PracticePage = () => {
 
   const handleAnswer = (questionId: string, answer: string, correct: boolean) => {
     setAnswers((prev) => ({ ...prev, [questionId]: { answer, correct } }));
-   
+
     incrementGuestCount();
     if (topicId) {
       answerQuestion(questionId, topicId, correct);
       const q = allQuestions.find((q) => q.id === questionId);
       saveAnswer(questionId, topicId, correct, q?.patternFamily, q?.commonMistake);
+      trackQuestionCompleted({
+        question_id: questionId,
+        topic_id: topicId,
+        question_type: q?.type,
+        difficulty: q?.difficulty,
+        correct,
+        source: reviewMistakesMode ? "review_mistakes" : "practice",
+      });
     }
     // Track the answer in session memory so the next adaptive pick sees
     // the updated state immediately (no waiting for a Supabase round-trip).
