@@ -16,6 +16,7 @@ import { MODULES } from "@/data/modules";
 import { questions as staticQuestions } from "@/data/questions";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { HeroFrame } from "@/shared/components/HeroFrame";
 import { cn } from "@/lib/utils";
 
 /**
@@ -256,56 +257,58 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24 pt-6" dir="rtl">
-      <div className="mx-auto max-w-5xl px-4">
-        {/* Hero / header */}
-        <motion.header
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="mb-8 space-y-3 sm:mb-10"
-        >
-          <p
-            className="font-mono text-xs tracking-wide text-muted-foreground"
-            dir="ltr"
-          >
-            // exam-prep-master / home
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            {greeting}
-          </h1>
-          <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-            בחר מסלול למידה כדי להתחיל. כל מסלול בנוי משלבים, מודולים ושאלות תרגול
-            — הכל בעברית, עם משוב מיידי.
-          </p>
-
-          {/* Quick stats strip (only if learner has activity) */}
-          {totalAnswered > 0 && (
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <div className="inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-card px-3 py-1.5 text-xs text-muted-foreground">
-                <Target className="h-3.5 w-3.5 text-primary" />
-                <span>
-                  <span className="font-mono font-semibold text-foreground">
-                    {totalCorrect}
+      <div className="mx-auto max-w-5xl px-4 space-y-8 sm:space-y-10">
+        {/* Premium hero frame */}
+        <HeroFrame
+          variant="python"
+          eyebrow="// exam-prep-master / home"
+          title={
+            <>
+              <span className="block">{greeting}</span>
+              <span className="block text-white/80 text-[0.85em] font-semibold mt-1">
+                בואו נתרגל פייתון
+              </span>
+            </>
+          }
+          subtitle={
+            <span className="text-white/80">
+              בחר מסלול למידה כדי להתחיל. כל מסלול בנוי משלבים, מודולים ושאלות
+              תרגול — הכל בעברית, עם משוב מיידי.
+            </span>
+          }
+          actions={
+            totalAnswered > 0 ? (
+              <>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 text-xs text-white/90">
+                  <Target className="h-3.5 w-3.5" />
+                  <span>
+                    <span className="font-mono font-semibold">
+                      {totalCorrect}
+                    </span>{" "}
+                    שאלות נפתרו נכון
                   </span>
-                  {" "}
-                  שאלות נפתרו נכון
-                </span>
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-card px-3 py-1.5 text-xs text-muted-foreground">
-                <BookOpen className="h-3.5 w-3.5 text-accent" />
-                <span>
-                  מתוך{" "}
-                  <span className="font-mono font-semibold text-foreground">
-                    {totalAnswered}
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 text-xs text-white/90">
+                  <BookOpen className="h-3.5 w-3.5" />
+                  <span>
+                    מתוך{" "}
+                    <span className="font-mono font-semibold">
+                      {totalAnswered}
+                    </span>
                   </span>
-                </span>
+                </div>
+              </>
+            ) : (
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 text-xs text-white/90">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>מוכנים לצאת לדרך?</span>
               </div>
-            </div>
-          )}
-        </motion.header>
+            )
+          }
+        />
 
         {/* Tracks section */}
-        <section aria-labelledby="tracks-heading" className="space-y-4">
+        <section aria-labelledby="tracks-heading" className="space-y-5">
           <h2
             id="tracks-heading"
             className="text-lg font-bold text-foreground sm:text-xl"

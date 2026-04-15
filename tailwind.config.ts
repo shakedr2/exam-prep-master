@@ -68,6 +68,11 @@ export default {
           DEFAULT: "hsl(var(--xp))",
           foreground: "hsl(var(--xp-foreground))",
         },
+        snake: {
+          DEFAULT: "var(--color-snake)",
+          light: "var(--color-snake-light)",
+          dark: "var(--color-snake-dark)",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -88,11 +93,16 @@ export default {
         "3xl": "calc(var(--radius) + 12px)",
       },
       boxShadow: {
-        "glow-primary": "0 0 20px hsl(252 96% 67% / 0.35)",
-        "glow-accent":  "0 0 20px hsl(164 66% 50% / 0.35)",
+        "glow-primary": "var(--glow-primary)",
+        "glow-accent":  "var(--glow-snake)",
+        "glow-snake":   "var(--glow-snake)",
         "glow-xp":      "0 0 20px hsl(45 93% 47% / 0.35)",
-        "card": "var(--shadow-card)",
-        "card-hover": "var(--shadow-card-hover)",
+        "premium-sm":   "var(--shadow-sm)",
+        "premium":      "var(--shadow-md)",
+        "premium-lg":   "var(--shadow-lg)",
+        "premium-xl":   "var(--shadow-xl)",
+        "card":         "var(--shadow-card)",
+        "card-hover":   "var(--shadow-card-hover)",
       },
       keyframes: {
         ...animation.keyframes,

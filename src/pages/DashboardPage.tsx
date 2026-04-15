@@ -1,6 +1,7 @@
-import { useState, useMemo, useCallback, memo } from "react";
+import { useState, useMemo, useCallback, memo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProgress } from "@/hooks/useProgress";
+import { trackDashboardViewed } from "@/lib/analytics";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useTopicCompletion } from "@/hooks/useTopicCompletion";
@@ -222,6 +223,18 @@ const DashboardPage = () => {
   const [tipDismissed, setTipDismissed] = useState(
     () => localStorage.getItem(PRACTICE_TIP_DISMISSED_KEY) === "true"
   );
+
+  // Fire dashboard_viewed exactly once per mount. Using a ref guards against
+  // StrictMode double-invocation in dev and any unrelated re-renders.
+  const dashboardViewedRef = useRef(false);
+  useEffect(() => {
+    if (dashboardViewedRef.current) return;
+    dashboardViewedRef.current = true;
+    trackDashboardViewed({
+      total_answered: totalAnswered,
+      total_correct: totalCorrect,
+    });
+  }, [totalAnswered, totalCorrect]);
 
   const hasPracticed = totalAnswered > 0;
   const hasLearnedAny = Object.values(learnMap).some((arr) => arr.length > 0);
