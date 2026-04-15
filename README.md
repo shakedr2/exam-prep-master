@@ -151,10 +151,14 @@ supabase functions deploy ai-tutor --project-ref txubfromrrlhqtyrxrei
 
 ### GitHub Actions CI
 
-בכל push/PR ל-`main` רץ workflow שמבצע:
-1. `npm run lint` — בדיקת קוד
-2. `npm test` — הרצת בדיקות Vitest
-3. `npm run build` — וידוא שהבנייה עוברת
+ה-CI מחולק לשני Workflows:
+
+**PR Checks** (`.github/workflows/pr-checks.yml`) — רץ על כל PR ל-`main`:
+- `npm run lint` ו-`npm test` רצים **במקביל** (יעד: פחות מ-2 דקות)
+
+**Main Branch CI** (`.github/workflows/ci.yml`) — רץ על כל push ל-`main`:
+1. `npm run lint` ו-`npm test` רצים **במקביל**
+2. `npm run build` — בנייה מלאה + ניתוח גודל חבילה + שמירת artifacts
 
 ---
 
