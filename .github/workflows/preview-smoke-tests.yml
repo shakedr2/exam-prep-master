@@ -33,6 +33,16 @@ jobs:
       - name: Resolve preview URL
         id: url
         run: |
+          # Diagnostic: dump the fields Vercel actually populated on this
+          # deployment_status event. Helps debug future URL-resolution bugs.
+          echo "::group::deployment_status fields"
+          echo "environment       = ${{ github.event.deployment.environment }}"
+          echo "environment_url   = ${{ github.event.deployment_status.environment_url }}"
+          echo "target_url        = ${{ github.event.deployment_status.target_url }}"
+          echo "state             = ${{ github.event.deployment_status.state }}"
+          echo "creator           = ${{ github.event.deployment_status.creator.login }}"
+          echo "::endgroup::"
+
           # environment_url is the live preview URL (e.g. *.vercel.app).
           # target_url on Vercel deployment_status events points at the
           # Vercel dashboard inspector, which requires login and is not
@@ -59,21 +69,42 @@ jobs:
           BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
           set -euo pipefail
-          AUTH_HEADER=()
           if [ -n "${BYPASS:-}" ]; then
-            AUTH_HEADER=(-H "x-vercel-protection-bypass: $BYPASS" \
-                         -H "x-vercel-set-bypass-cookie: true")
+            echo "Using VERCEL_AUTOMATION_BYPASS_SECRET for requests."
+            AUTH=(-H "x-vercel-protection-bypass: $BYPASS" \
+                  -H "x-vercel-set-bypass-cookie: true")
+          else
+            echo "VERCEL_AUTOMATION_BYPASS_SECRET not set; requests will be unauthenticated."
+            AUTH=()
           fi
+
+          last_code=""
+          last_body=""
           for attempt in 1 2 3 4 5 6; do
-            code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 15 \
-              "${AUTH_HEADER[@]}" "$URL" || echo "000")
+            code=$(curl -sS -o /tmp/resp.html -w "%{http_code}" --max-time 15 \
+              "${AUTH[@]}" "$URL" || echo "000")
             echo "Attempt $attempt: HTTP $code"
+            last_code="$code"
             if [ "$code" = "200" ]; then
               exit 0
             fi
             sleep $((attempt * 5))
           done
-          echo "Preview did not return HTTP 200 after 6 attempts" >&2
+
+          echo "::error::Preview did not return HTTP 200 after 6 attempts (last: $last_code)"
+          echo "::group::Response headers (last attempt)"
+          curl -sSI --max-time 15 "${AUTH[@]}" "$URL" || true
+          echo "::endgroup::"
+          echo "::group::Response body (first 400 chars)"
+          head -c 400 /tmp/resp.html || true
+          echo
+          echo "::endgroup::"
+
+          # Classify common failure modes so the reader knows what to do.
+          if [ "$last_code" = "401" ] || [ "$last_code" = "403" ]; then
+            echo "::error::Looks like Vercel Deployment Protection is blocking the runner."
+            echo "::error::Set the VERCEL_AUTOMATION_BYPASS_SECRET repo secret — see STAGING_SETUP.md."
+          fi
           exit 1
 
       - name: Smoke - root loads HTML shell
