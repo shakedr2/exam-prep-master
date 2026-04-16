@@ -253,6 +253,25 @@ export type Database = {
           reason: string
           metadata: Json
           created_at: string
+        }
+        Insert: {
+          id?: number
+          user_id: string
+          amount: number
+          reason: string
+          metadata?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          amount?: number
+          reason?: string
+          metadata?: Json
+          created_at?: string
+        }
+        Relationships: []
+      }
       topic_progress: {
         Row: {
           id: number
@@ -265,10 +284,6 @@ export type Database = {
         Insert: {
           id?: number
           user_id: string
-          amount: number
-          reason: string
-          metadata?: Json
-          created_at?: string
           topic_id: string
           module_id: string
           lesson_id: string
@@ -277,10 +292,10 @@ export type Database = {
         Update: {
           id?: number
           user_id?: string
-          amount?: number
-          reason?: string
-          metadata?: Json
-          created_at?: string
+          topic_id?: string
+          module_id?: string
+          lesson_id?: string
+          completed_at?: string
         }
         Relationships: []
       }
@@ -353,10 +368,6 @@ export type Database = {
           preferred_topics?: string[]
           completed_at?: string | null
           updated_at?: string
-          topic_id?: string
-          module_id?: string
-          lesson_id?: string
-          completed_at?: string
         }
         Relationships: []
       }
