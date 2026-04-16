@@ -26,6 +26,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 import NotFound from "./pages/NotFound";
+import TermsPage from "./pages/TermsPage";
 
 const ReviewMistakes = lazy(retryLazy(() => import("./pages/ReviewMistakes")));
 const LearnPage = lazy(retryLazy(() => import("./pages/LearnPage")));
@@ -129,6 +130,7 @@ function AnimatedRoutes() {
         <Route path="/topics/cicd" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><CICDPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/topics/cloud" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><CloudPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/topics/iac" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><IaCPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
