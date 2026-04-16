@@ -5,7 +5,6 @@
 // ReviewMistakes.tsx) so this is just a thin helper that centralizes the
 // visual so the rest of the app calls one function.
 
-import confetti from "canvas-confetti";
 import { toast } from "sonner";
 
 function prefersReducedMotion() {
@@ -13,9 +12,10 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function burst() {
+async function burst() {
   if (prefersReducedMotion()) return;
 
+  const { default: confetti } = await import("canvas-confetti");
   const defaults = {
     startVelocity: 30,
     spread: 360,

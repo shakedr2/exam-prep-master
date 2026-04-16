@@ -19,18 +19,19 @@ import { BottomNav } from "@/shared/components/BottomNav";
 import { AppFooter } from "@/shared/components/AppFooter";
 import { PageTransition } from "@/shared/components/PageTransition";
 import { CookieConsent } from "@/components/CookieConsent";
-import HomePage from "./pages/HomePage";
-import OnboardingPage from "./pages/OnboardingPage";
-import DashboardPage from "./pages/DashboardPage";
-import ExamMode from "./pages/ExamMode";
-import ProgressPage from "./pages/ProgressPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import AuthCallbackPage from "./pages/AuthCallbackPage";
-import NotFound from "./pages/NotFound";
-import PrivacyPage from "./pages/PrivacyPage";
-import TermsPage from "./pages/TermsPage";
 
+// All pages are lazy-loaded to reduce the initial bundle size.
+const HomePage = lazy(retryLazy(() => import("./pages/HomePage")));
+const OnboardingPage = lazy(retryLazy(() => import("./pages/OnboardingPage")));
+const DashboardPage = lazy(retryLazy(() => import("./pages/DashboardPage")));
+const ExamMode = lazy(retryLazy(() => import("./pages/ExamMode")));
+const ProgressPage = lazy(retryLazy(() => import("./pages/ProgressPage")));
+const LoginPage = lazy(retryLazy(() => import("./pages/LoginPage")));
+const RegisterPage = lazy(retryLazy(() => import("./pages/RegisterPage")));
+const AuthCallbackPage = lazy(retryLazy(() => import("./pages/AuthCallbackPage")));
+const NotFound = lazy(retryLazy(() => import("./pages/NotFound")));
+const PrivacyPage = lazy(retryLazy(() => import("./pages/PrivacyPage")));
+const TermsPage = lazy(retryLazy(() => import("./pages/TermsPage")));
 const ReviewMistakes = lazy(retryLazy(() => import("./pages/ReviewMistakes")));
 const LearnPage = lazy(retryLazy(() => import("./pages/LearnPage")));
 const DevOpsTrackPage = lazy(retryLazy(() => import("./pages/DevOpsTrackPage")));
@@ -120,16 +121,16 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
-        <Route path="/onboarding" element={<PageTransition><OnboardingPage /></PageTransition>} />
-        <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
-        <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
-        <Route path="/auth/callback" element={<PageTransition><AuthCallbackPage /></PageTransition>} />
-        <Route path="/dashboard" element={<AuthGuard><PageTransition><DashboardPage /></PageTransition></AuthGuard>} />
+        <Route path="/" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><HomePage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/onboarding" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><OnboardingPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/login" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><LoginPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/register" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><RegisterPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/auth/callback" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><AuthCallbackPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/dashboard" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><DashboardPage /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
         <Route path="/practice/:topicId" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><PracticePage /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
         <Route path="/learn/:topicId" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><LearnPage /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
-        <Route path="/exam" element={<AuthGuard><PageTransition><ExamMode /></PageTransition></AuthGuard>} />
-        <Route path="/progress" element={<AuthGuard><PageTransition><ProgressPage /></PageTransition></AuthGuard>} />
+        <Route path="/exam" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><ExamMode /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
+        <Route path="/progress" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><ProgressPage /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
         <Route path="/review-mistakes" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
         <Route path="/tracks/devops" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><DevOpsTrackPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/tracks/python-oop" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><OopTrackPage /></Suspense></LazyRouteBoundary></PageTransition>} />
@@ -141,9 +142,9 @@ function AnimatedRoutes() {
         <Route path="/topics/cicd" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><CICDPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/topics/cloud" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><CloudPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/topics/iac" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><IaCPage /></Suspense></LazyRouteBoundary></PageTransition>} />
-        <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
-        <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
-        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+        <Route path="/privacy" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><PrivacyPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/terms" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><TermsPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="*" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><NotFound /></Suspense></LazyRouteBoundary></PageTransition>} />
       </Routes>
     </AnimatePresence>
   );
