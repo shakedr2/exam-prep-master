@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef, Fragment } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp, ArrowLeft, HelpCircle, ClipboardCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp, ArrowLeft, HelpCircle, ClipboardCheck, BookOpen } from "lucide-react";
 import { FloatingAIButton } from "@/components/FloatingAIButton";
 import { TopicTutorial } from "@/components/TopicTutorial";
 import { Button } from "@/components/ui/button";
@@ -143,11 +143,15 @@ const PracticePage = () => {
   // Mini-quiz assessment mode — triggered from mastery banner
   const [miniQuizActive, setMiniQuizActive] = useState(false);
 
+  // Learn → Practice flow: show welcome banner when arriving from LearnPage
+  const fromLearn = searchParams.get("from") === "learn";
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(fromLearn);
+
   // Phase C / D pedagogy state
   // Entering from LearnPage (/practice/:topicId?from=learn) starts in guided_practice (Phase C).
   // Direct navigation from the dashboard skips to independent_practice (Phase D).
   const initialPhase: "guided_practice" | "independent_practice" =
-    searchParams.get("from") === "learn" ? "guided_practice" : "independent_practice";
+    fromLearn ? "guided_practice" : "independent_practice";
   const [practicePhase, setPracticePhase] = useState<"guided_practice" | "independent_practice">(initialPhase);
   const [showPhaseTransition, setShowPhaseTransition] = useState(false);
   // Tracks consecutive correct answers on easy questions in guided_practice mode.
@@ -911,15 +915,53 @@ const PracticePage = () => {
 
         {topic && (
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-primary">
-              {topic.icon ?? "📖"} {topic.name}
-              {reviewMistakesMode && (
-                <span className="text-destructive ms-2 text-xs">(חזרה על טעויות)</span>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold text-primary">
+                {topic.icon ?? "📖"} {topic.name}
+                {reviewMistakesMode && (
+                  <span className="text-destructive ms-2 text-xs">(חזרה על טעויות)</span>
+                )}
+              </p>
+              {/* Review theory back-link */}
+              {topicId && (
+                <button
+                  onClick={() => navigate(`/learn/${topicId}`)}
+                  className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <BookOpen className="h-3 w-3" />
+                  חזרה לתיאוריה
+                </button>
               )}
-            </p>
+            </div>
             <p className="text-xs text-muted-foreground">{answeredCount}/{totalTarget} נענו</p>
           </div>
         )}
+
+        {/* Welcome banner when arriving from Learn */}
+        <AnimatePresence>
+          {showWelcomeBanner && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10, height: 0 }}
+              className="rounded-lg bg-primary/5 border border-primary/20 p-3 flex items-center justify-between gap-2"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🎉</span>
+                <p className="text-sm text-primary font-medium">
+                  כל הכבוד על הלמידה! עכשיו בואו נבדוק את הידע שלך
+                </p>
+              </div>
+              <button
+                onClick={() => setShowWelcomeBanner(false)}
+                className="shrink-0 text-primary/60 hover:text-primary transition-colors"
+                aria-label="סגור"
+              >
+                <XIcon className="h-4 w-4" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Difficulty filter */}
         {!reviewMistakesMode && (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Lightbulb, BookOpen, Rocket, CheckCircle, AlertTriangle } from "lucide-react";
@@ -31,9 +31,20 @@ export default function LearnPage() {
   const tutorial = getTutorialByTopicId(resolved?.uuid ?? "");
   const topic = topics.find((t) => t.id === resolved?.slug);
   const topicId = resolved?.uuid ?? rawTopicId;
-  const { completedConcepts, markConceptComplete, guidedExampleCompleted, markGuidedExampleComplete } = useLearningProgress(topicId ?? "");
+  const { completedConcepts, markConceptComplete, loading: progressLoading, guidedExampleCompleted, markGuidedExampleComplete } = useLearningProgress(topicId ?? "");
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const conceptsList = tutorial?.concepts ?? [];
+  const totalConcepts = conceptsList.length;
+
+  // Resume from the first incomplete concept based on saved progress.
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    if (totalConcepts === 0) return 0;
+    const completed = new Set(completedConcepts);
+    for (let i = 0; i < totalConcepts; i++) {
+      if (!completed.has(i)) return i;
+    }
+    return totalConcepts - 1;
+  });
   const [hintOpen, setHintOpen] = useState(false);
   const [quizSelected, setQuizSelected] = useState<number | null>(null);
   const [quizSkipped, setQuizSkipped] = useState(false);
@@ -42,6 +53,31 @@ export default function LearnPage() {
   const [showGuidedExample, setShowGuidedExample] = useState(false);
   // Index into tutorial.guidedExamples[]
   const [guidedExampleIndex, setGuidedExampleIndex] = useState(0);
+
+  // When Supabase progress finishes loading, jump to the first incomplete concept.
+  const [hasResumed, setHasResumed] = useState(false);
+  useEffect(() => {
+    if (progressLoading || hasResumed || totalConcepts === 0) return;
+    setHasResumed(true);
+    const completed = new Set(completedConcepts);
+    for (let i = 0; i < totalConcepts; i++) {
+      if (!completed.has(i)) {
+        setCurrentIndex(i);
+        return;
+      }
+    }
+    // All concepts completed — stay on last
+    setCurrentIndex(totalConcepts - 1);
+  }, [progressLoading, hasResumed, completedConcepts, totalConcepts]);
+
+  // Auto-redirect to practice 3 seconds after completion
+  useEffect(() => {
+    if (!showCompletion || !topicId) return;
+    const timer = setTimeout(() => {
+      navigate(`/practice/${topicId}?from=learn`);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [showCompletion, topicId, navigate]);
 
   if (!tutorial || !topicId) {
     return (
@@ -66,12 +102,12 @@ export default function LearnPage() {
             סיימת את כל המושגים!
           </h1>
           <p className="text-muted-foreground text-lg max-w-md mx-auto">
-            סיימת את כל המושגים! בוא נתרגל כדי לחזק את מה שלמדת.
+            כל הכבוד! עוברים לתרגול כדי לחזק את מה שלמדת...
           </p>
           <div className="flex flex-col gap-3 w-full max-w-xs mx-auto">
             <Button size="lg" className="w-full text-base gap-2" onClick={() => navigate(`/practice/${topicId}?from=learn`)}>
               <Rocket className="h-5 w-5" />
-              בוא נתרגל
+              בוא נתרגל עכשיו
             </Button>
             <Button variant="outline" size="lg" className="w-full" onClick={() => navigate("/dashboard")}>
               חזרה לדשבורד
@@ -82,8 +118,6 @@ export default function LearnPage() {
     );
   }
 
-  const conceptsList = tutorial.concepts ?? [];
-  const totalConcepts = conceptsList.length;
   const safeIndex = Math.min(currentIndex, Math.max(totalConcepts - 1, 0));
   const concept = conceptsList[safeIndex];
   const isLast = safeIndex === totalConcepts - 1;

@@ -64,6 +64,55 @@ const TopicCard = memo(function TopicCard({
 
   const conceptsLearned = learnMap[topic.id]?.length ?? 0;
   const totalConcepts = getTutorialByTopicId(topic.id)?.concepts.length ?? 0;
+  const learnDone = totalConcepts > 0 && conceptsLearned >= totalConcepts;
+  const learnStarted = conceptsLearned > 0;
+  const practiceStarted = answeredCorrect > 0;
+
+  // Unified CTA logic
+  let ctaLabel: string;
+  let ctaIcon: React.ReactNode;
+  let ctaAction: () => void;
+  let ctaClass: string;
+  let ctaDisabled = false;
+
+  if (!unlocked && !completed) {
+    ctaLabel = "נעול";
+    ctaIcon = <Lock className="h-3 w-3" />;
+    ctaAction = () => {};
+    ctaClass = "border-muted text-muted-foreground cursor-not-allowed opacity-60";
+    ctaDisabled = true;
+  } else if (completed || completion >= 80) {
+    ctaLabel = "שולט בנושא! ✅";
+    ctaIcon = <CheckCircle2 className="h-3 w-3" />;
+    ctaAction = () => onPractice(topic.id);
+    ctaClass = "border-success/40 text-success hover:bg-success/10 dark:border-success/30 dark:hover:bg-success/10";
+  } else if (learnDone && practiceStarted) {
+    ctaLabel = `המשך לתרגל (${answeredCorrect}/${questionCount})`;
+    ctaIcon = <Brain className="h-3 w-3" />;
+    ctaAction = () => onPractice(topic.id);
+    ctaClass = "border-green-500/40 text-green-600 hover:bg-green-50 hover:text-green-700 dark:border-green-400/30 dark:text-green-400 dark:hover:bg-green-950/30";
+  } else if (learnDone && !practiceStarted) {
+    ctaLabel = "התחל לתרגל";
+    ctaIcon = <Brain className="h-3 w-3" />;
+    ctaAction = () => onPractice(topic.id);
+    ctaClass = "border-green-500/40 text-green-600 hover:bg-green-50 hover:text-green-700 dark:border-green-400/30 dark:text-green-400 dark:hover:bg-green-950/30";
+  } else if (learnStarted) {
+    ctaLabel = `המשך ללמוד (${conceptsLearned}/${totalConcepts})`;
+    ctaIcon = <BookOpen className="h-3 w-3" />;
+    ctaAction = () => onLearn(topic.id);
+    ctaClass = "border-blue-500/40 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:border-blue-400/30 dark:text-blue-400 dark:hover:bg-blue-950/30";
+  } else if (totalConcepts > 0) {
+    ctaLabel = "התחל ללמוד";
+    ctaIcon = <BookOpen className="h-3 w-3" />;
+    ctaAction = () => onLearn(topic.id);
+    ctaClass = "border-blue-500/40 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:border-blue-400/30 dark:text-blue-400 dark:hover:bg-blue-950/30";
+  } else {
+    // No tutorial content — go straight to practice
+    ctaLabel = practiceStarted ? `המשך לתרגל (${answeredCorrect}/${questionCount})` : "התחל לתרגל";
+    ctaIcon = <Brain className="h-3 w-3" />;
+    ctaAction = () => onPractice(topic.id);
+    ctaClass = "border-green-500/40 text-green-600 hover:bg-green-50 hover:text-green-700 dark:border-green-400/30 dark:text-green-400 dark:hover:bg-green-950/30";
+  }
 
   return (
     <Card className={`bg-card border hover:shadow-md transition-all group relative ${
@@ -110,35 +159,17 @@ const TopicCard = memo(function TopicCard({
             <p className="text-[11px] text-muted-foreground font-mono">{completion}%</p>
           </div>
         </div>
-        <div className="flex gap-2 pt-1">
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex-1 h-8 text-xs gap-1 border-blue-500/40 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:border-blue-400/30 dark:text-blue-400 dark:hover:bg-blue-950/30 touch-manipulation"
-            onClick={(e) => { e.stopPropagation(); onLearn(topic.id); }}
-          >
-            <BookOpen className="h-3 w-3" />
-            למידה
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className={`flex-1 h-8 text-xs gap-1 touch-manipulation ${
-              unlocked
-                ? "border-green-500/40 text-green-600 hover:bg-green-50 hover:text-green-700 dark:border-green-400/30 dark:text-green-400 dark:hover:bg-green-950/30"
-                : "border-muted text-muted-foreground cursor-not-allowed opacity-60"
-            }`}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (unlocked) onPractice(topic.id);
-            }}
-            disabled={!unlocked}
-            title={!unlocked ? "יש לסיים את הנושא הקודם כדי לפתוח נושא זה" : undefined}
-          >
-            {unlocked ? <Brain className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-            {unlocked ? "תרגול" : "נעול"}
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className={`w-full h-8 text-xs gap-1 touch-manipulation ${ctaClass}`}
+          onClick={(e) => { e.stopPropagation(); ctaAction(); }}
+          disabled={ctaDisabled}
+          title={ctaDisabled ? "יש לסיים את הנושא הקודם כדי לפתוח נושא זה" : undefined}
+        >
+          {ctaIcon}
+          {ctaLabel}
+        </Button>
       </CardContent>
     </Card>
   );
