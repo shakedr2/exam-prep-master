@@ -30,5 +30,18 @@ export default defineConfig(() => ({
     // postbuild step in scripts/sentry-upload-sourcemaps.mjs so they are
     // never served to end users.
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-sentry': ['@sentry/react'],
+          'vendor-posthog': ['posthog-js', 'posthog-js/react'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-i18n': ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
+          'vendor-query': ['@tanstack/react-query'],
+        },
+      },
+    },
   },
 }));
