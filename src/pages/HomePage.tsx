@@ -59,6 +59,53 @@ function PythonLogo({ className }: { className?: string }) {
   );
 }
 
+function OopLogo({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn("drop-shadow-[0_4px_12px_rgba(217,70,239,0.35)]", className)}
+      style={{
+        perspective: "600px",
+      }}
+    >
+      <svg
+        viewBox="0 0 110 110"
+        className="h-full w-full"
+        style={{
+          transform: "rotateY(-10deg) rotateX(6deg)",
+          transformStyle: "preserve-3d",
+        }}
+      >
+        <defs>
+          <linearGradient id="oop-grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#d946ef" />
+            <stop offset="100%" stopColor="#a855f7" />
+          </linearGradient>
+          <linearGradient id="oop-grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#7c3aed" />
+            <stop offset="100%" stopColor="#6d28d9" />
+          </linearGradient>
+        </defs>
+        {/* Outer class box */}
+        <rect x="8" y="8" width="94" height="94" rx="12" fill="url(#oop-grad2)" opacity="0.25" />
+        {/* Class header bar */}
+        <rect x="8" y="8" width="94" height="26" rx="10" fill="url(#oop-grad1)" />
+        {/* «class» keyword text area (abstract chevrons) */}
+        <text x="55" y="25" textAnchor="middle" fontSize="10" fill="white" fontFamily="monospace" fontWeight="bold">
+          class
+        </text>
+        {/* Inheritance arrow pointing down */}
+        <line x1="55" y1="38" x2="55" y2="70" stroke="url(#oop-grad1)" strokeWidth="3" strokeDasharray="4 2" />
+        <polygon points="49,68 55,78 61,68" fill="#d946ef" />
+        {/* Child class box */}
+        <rect x="26" y="78" width="58" height="24" rx="8" fill="url(#oop-grad1)" opacity="0.7" />
+        <text x="55" y="94" textAnchor="middle" fontSize="9" fill="white" fontFamily="monospace" fontWeight="bold">
+          object
+        </text>
+      </svg>
+    </div>
+  );
+}
+
 function DevOpsLogo({ className }: { className?: string }) {
   return (
     <div
@@ -258,7 +305,7 @@ const HomePage = () => {
 
   const pythonPercent = useMemo(() => {
     const pythonTopicIds = new Set(
-      MODULES.filter((m) => !m.comingSoon).flatMap((m) => m.topicIds),
+      MODULES.filter((m) => !m.comingSoon && m.track === "python-fundamentals").flatMap((m) => m.topicIds),
     );
     const pythonQuestionIds = new Set(
       staticQuestions
@@ -274,7 +321,27 @@ const HomePage = () => {
     return Math.round((answeredCorrect / pythonQuestionIds.size) * 100);
   }, [progress.answeredQuestions]);
 
-  const pythonModuleCount = MODULES.filter((m) => !m.comingSoon).length;
+  const pythonModuleCount = MODULES.filter((m) => !m.comingSoon && m.track === "python-fundamentals").length;
+
+  const oopPercent = useMemo(() => {
+    const oopTopicIds = new Set(
+      MODULES.filter((m) => !m.comingSoon && m.track === "python-oop").flatMap((m) => m.topicIds),
+    );
+    const oopQuestionIds = new Set(
+      staticQuestions
+        .filter((q) => oopTopicIds.has(q.topic))
+        .map((q) => q.id),
+    );
+    if (oopQuestionIds.size === 0) return 0;
+
+    const answeredCorrect = Object.entries(progress.answeredQuestions).filter(
+      ([id, v]) => oopQuestionIds.has(id) && v.correct,
+    ).length;
+
+    return Math.round((answeredCorrect / oopQuestionIds.size) * 100);
+  }, [progress.answeredQuestions]);
+
+  const oopModuleCount = MODULES.filter((m) => !m.comingSoon && m.track === "python-oop").length;
 
   const handlePythonTrack = () => {
     if (!user && !progress.username) {
@@ -392,7 +459,7 @@ const HomePage = () => {
                 description={t("home.devopsDescription")}
                 logo={<DevOpsLogo />}
                 accentColor="#7c5cfc"
-                comingSoon
+                moduleCount={18}
                 onSelect={() => navigate("/tracks/devops")}
               />
             </motion.div>
