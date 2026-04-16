@@ -1,536 +1,63 @@
+import { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import {
-  Terminal,
-  GitBranch,
-  Network,
-  Container,
-  GitMerge,
-  Cloud,
-  Code2,
-  FileCode2,
-  Home,
-  ChevronLeft,
-  Lock,
-  CheckCircle2,
-  Circle,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { useProgress } from "@/hooks/useProgress";
+import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { useTopicCompletion } from "@/hooks/useTopicCompletion";
+import { getModulesByTrack } from "@/data/modules";
 import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
-
-/**
- * DevOpsTrackPage — Phase 10.2 / Issue #117
- *
- * Placeholder page for the DevOps Engineer learning track.
- * Shows the full 3-block, 8-phase structure from ROADMAP.md.
- * All phases are "coming soon" except Phase 1 (Python Fundamentals)
- * which links to the existing /dashboard.
- *
- * Language: English content, Hebrew UI chrome (bilingual per ROADMAP).
- */
-
-interface DevOpsModule {
-  id: string;
-  titleHe: string;
-  title: string;
-  descriptionHe: string;
-  description: string;
-  icon: React.ReactNode;
-  lessonCount: number;
-  status: "available" | "coming_soon" | "locked";
-  route?: string;
-  unlockCriteria?: string;
-}
-
-interface DevOpsPhase {
-  id: string;
-  block: "Foundation" | "Core" | "Advanced";
-  phaseNumber: number;
-  titleHe: string;
-  title: string;
-  modules: DevOpsModule[];
-}
-
-const DEVOPS_PHASES: DevOpsPhase[] = [
-  {
-    id: "python-fundamentals",
-    block: "Foundation",
-    phaseNumber: 1,
-    titleHe: "יסודות פייתון",
-    title: "Python Fundamentals",
-    modules: [
-      {
-        id: "getting-started",
-        titleHe: "משתנים וקלט/פלט",
-        title: "Variables & I/O",
-        descriptionHe: "טיפוסים, קלט/פלט, אריתמטיקה",
-        description: "Types, input/output, arithmetic",
-        icon: <Code2 className="h-5 w-5" />,
-        lessonCount: 8,
-        status: "available",
-        route: "/dashboard",
-      },
-      {
-        id: "control-flow",
-        titleHe: "בקרת זרימה",
-        title: "Control Flow",
-        descriptionHe: "תנאים, לולאות, לוגיקה",
-        description: "Conditions, loops, logic",
-        icon: <GitMerge className="h-5 w-5" />,
-        lessonCount: 10,
-        status: "available",
-        route: "/dashboard",
-      },
-      {
-        id: "data-structures",
-        titleHe: "מבני נתונים",
-        title: "Data Structures",
-        descriptionHe: "מחרוזות, רשימות, מילונים, סטים",
-        description: "Strings, lists, dicts, sets",
-        icon: <FileCode2 className="h-5 w-5" />,
-        lessonCount: 12,
-        status: "available",
-        route: "/dashboard",
-      },
-    ],
-  },
-  {
-    id: "linux-bash",
-    block: "Foundation",
-    phaseNumber: 2,
-    titleHe: "לינוקס ובאש",
-    title: "Linux & Bash",
-    modules: [
-      {
-        id: "linux-basics",
-        titleHe: "יסודות לינוקס",
-        title: "Linux Basics",
-        descriptionHe: "cd, ls, pwd, ניווט במערכת הקבצים",
-        description: "cd, ls, pwd, file system navigation",
-        icon: <Terminal className="h-5 w-5" />,
-        lessonCount: 5,
-        status: "available",
-        route: "/topics/linux",
-      },
-      {
-        id: "bash-scripting",
-        titleHe: "תכנות Bash",
-        title: "Bash Scripting",
-        descriptionHe: "grep, צינורות, משתנים, סקריפטים",
-        description: "grep, pipes, variables, scripts",
-        icon: <Terminal className="h-5 w-5" />,
-        lessonCount: 5,
-        status: "available",
-        route: "/topics/linux",
-      },
-      {
-        id: "file-permissions",
-        titleHe: "הרשאות קבצים",
-        title: "File Permissions",
-        descriptionHe: "chmod, chown, משתמשים, קבוצות",
-        description: "chmod, chown, users, groups",
-        icon: <Terminal className="h-5 w-5" />,
-        lessonCount: 5,
-        status: "available",
-        route: "/topics/linux",
-      },
-    ],
-  },
-  {
-    id: "git",
-    block: "Foundation",
-    phaseNumber: 3,
-    titleHe: "Git ובקרת גרסאות",
-    title: "Git & Version Control",
-    modules: [
-      {
-        id: "git-basics",
-        titleHe: "יסודות Git",
-        title: "Git Basics",
-        descriptionHe: "init, add, commit, status, log",
-        description: "init, add, commit, status, log",
-        icon: <GitBranch className="h-5 w-5" />,
-        lessonCount: 8,
-        status: "coming_soon",
-      },
-      {
-        id: "git-branching",
-        titleHe: "ענפים ומיזוג",
-        title: "Branching & Merging",
-        descriptionHe: "branch, merge, rebase, קונפליקטים",
-        description: "branch, merge, rebase, conflicts",
-        icon: <GitBranch className="h-5 w-5" />,
-        lessonCount: 10,
-        status: "coming_soon",
-      },
-      {
-        id: "git-remote",
-        titleHe: "עבודה מרחוק",
-        title: "Remote Workflows",
-        descriptionHe: "GitHub, בקשות משיכה, סקירת קוד",
-        description: "GitHub, pull requests, code review",
-        icon: <GitBranch className="h-5 w-5" />,
-        lessonCount: 8,
-        status: "coming_soon",
-      },
-    ],
-  },
-  {
-    id: "networking",
-    block: "Core",
-    phaseNumber: 4,
-    titleHe: "יסודות רשתות",
-    title: "Networking Basics",
-    modules: [
-      {
-        id: "tcp-ip",
-        titleHe: "TCP/IP ו-DNS",
-        title: "TCP/IP & DNS",
-        descriptionHe: "כתובות IP, פורטים, פתרון שמות DNS",
-        description: "IP addresses, ports, DNS resolution",
-        icon: <Network className="h-5 w-5" />,
-        lessonCount: 8,
-        status: "locked",
-        unlockCriteria: "סיים את שלב Git ובקרת גרסאות",
-      },
-      {
-        id: "http",
-        titleHe: "HTTP ו-REST",
-        title: "HTTP & REST",
-        descriptionHe: "שיטות HTTP, קודי סטטוס, ממשקי API",
-        description: "HTTP methods, status codes, APIs",
-        icon: <Network className="h-5 w-5" />,
-        lessonCount: 8,
-        status: "locked",
-        unlockCriteria: "סיים את שלב Git ובקרת גרסאות",
-      },
-    ],
-  },
-  {
-    id: "docker",
-    block: "Core",
-    phaseNumber: 5,
-    titleHe: "Docker וקונטיינרים",
-    title: "Docker & Containers",
-    modules: [
-      {
-        id: "docker-basics",
-        titleHe: "יסודות Docker",
-        title: "Docker Basics",
-        descriptionHe: "תמונות, קונטיינרים, Dockerfile",
-        description: "images, containers, Dockerfile",
-        icon: <Container className="h-5 w-5" />,
-        lessonCount: 10,
-        status: "locked",
-        unlockCriteria: "סיים את שלב רשתות בסיסיות",
-      },
-      {
-        id: "docker-compose",
-        titleHe: "Docker Compose",
-        title: "Docker Compose",
-        descriptionHe: "אפליקציות מרובות קונטיינרים, רשתות",
-        description: "multi-container apps, networking",
-        icon: <Container className="h-5 w-5" />,
-        lessonCount: 8,
-        status: "locked",
-        unlockCriteria: "סיים את שלב רשתות בסיסיות",
-      },
-    ],
-  },
-  {
-    id: "cicd",
-    block: "Core",
-    phaseNumber: 6,
-    titleHe: "אינטגרציה ופריסה רציפה",
-    title: "CI/CD",
-    modules: [
-      {
-        id: "github-actions",
-        titleHe: "GitHub Actions",
-        title: "GitHub Actions",
-        descriptionHe: "תהליכי עבודה, משימות, טריגרים",
-        description: "workflows, jobs, triggers",
-        icon: <GitMerge className="h-5 w-5" />,
-        lessonCount: 10,
-        status: "locked",
-        unlockCriteria: "סיים את שלב Docker ומיכלים",
-      },
-      {
-        id: "jenkins",
-        titleHe: "Jenkins",
-        title: "Jenkins",
-        descriptionHe: "צינורות, סוכנים, תוספים",
-        description: "pipelines, agents, plugins",
-        icon: <GitMerge className="h-5 w-5" />,
-        lessonCount: 8,
-        status: "locked",
-        unlockCriteria: "סיים את שלב Docker ומיכלים",
-      },
-    ],
-  },
-  {
-    id: "cloud",
-    block: "Advanced",
-    phaseNumber: 7,
-    titleHe: "ענן (AWS/GCP)",
-    title: "Cloud (AWS/GCP)",
-    modules: [
-      {
-        id: "aws-basics",
-        titleHe: "יסודות AWS",
-        title: "AWS Fundamentals",
-        descriptionHe: "EC2, S3, IAM, VPC",
-        description: "EC2, S3, IAM, VPC",
-        icon: <Cloud className="h-5 w-5" />,
-        lessonCount: 12,
-        status: "locked",
-        unlockCriteria: "סיים את שלב CI/CD",
-      },
-      {
-        id: "gcp-basics",
-        titleHe: "יסודות GCP",
-        title: "GCP Fundamentals",
-        descriptionHe: "Compute Engine, GCS, IAM",
-        description: "Compute Engine, GCS, IAM",
-        icon: <Cloud className="h-5 w-5" />,
-        lessonCount: 10,
-        status: "locked",
-        unlockCriteria: "סיים את שלב CI/CD",
-      },
-    ],
-  },
-  {
-    id: "iac",
-    block: "Advanced",
-    phaseNumber: 8,
-    titleHe: "תשתית כקוד",
-    title: "Infrastructure as Code",
-    modules: [
-      {
-        id: "terraform-basics",
-        titleHe: "Terraform",
-        title: "Terraform",
-        descriptionHe: "ספקים, משאבים, מצב, מודולים",
-        description: "providers, resources, state, modules",
-        icon: <FileCode2 className="h-5 w-5" />,
-        lessonCount: 12,
-        status: "locked",
-        unlockCriteria: "סיים את שלב ענן (AWS/GCP)",
-      },
-    ],
-  },
-];
-
-const BLOCK_ORDER = ["Foundation", "Core", "Advanced"] as const;
-
-const blockConfig = {
-  Foundation: {
-    labelHe: "בלוק יסוד",
-    label: "Foundation Block",
-    sublabelHe: "כישורי ליבה שכל מהנדס DevOps צריך",
-    sublabel: "Core skills every DevOps engineer needs",
-    colorClass: "text-accent",
-    borderClass: "border-accent/30",
-    bgClass: "bg-accent/5",
-  },
-  Core: {
-    labelHe: "בלוק ליבה",
-    label: "Core Block",
-    sublabelHe: "כלים ופרקטיקות לשימוש יומיומי",
-    sublabel: "Tools and practices used daily",
-    colorClass: "text-primary",
-    borderClass: "border-primary/30",
-    bgClass: "bg-primary/5",
-  },
-  Advanced: {
-    labelHe: "בלוק מתקדם",
-    label: "Advanced Block",
-    sublabelHe: "תשתית בקנה מידה ענני",
-    sublabel: "Cloud-scale infrastructure",
-    colorClass: "text-warning",
-    borderClass: "border-warning/30",
-    bgClass: "bg-warning/5",
-  },
-} as const;
-
-function ModuleRow({
-  module,
-  phaseNumber,
-  moduleIndex,
-  onNavigate,
-}: {
-  module: DevOpsModule;
-  phaseNumber: number;
-  moduleIndex: number;
-  onNavigate?: () => void;
-}) {
-  const isAvailable = module.status === "available";
-  const isComingSoon = module.status === "coming_soon";
-  const isLocked = module.status === "locked";
-
-  return (
-    <motion.div
-      whileHover={isAvailable ? { x: -4 } : undefined}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-      className={cn(
-        "group flex items-center gap-4 rounded-xl border p-4 transition-colors duration-200",
-        isAvailable
-          ? "cursor-pointer border-foreground/10 bg-card hover:border-accent/40 hover:bg-accent/5"
-          : "cursor-default border-foreground/5 bg-card/50 opacity-60",
-      )}
-      onClick={isAvailable ? onNavigate : undefined}
-      role={isAvailable ? "button" : undefined}
-      tabIndex={isAvailable ? 0 : undefined}
-      onKeyDown={
-        isAvailable
-          ? (e) => {
-              if (e.key === "Enter" || e.key === " ") onNavigate?.();
-            }
-          : undefined
-      }
-    >
-      {/* Phase + icon */}
-      <div
-        className={cn(
-          "flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg",
-          isAvailable
-            ? "bg-accent/15 text-accent"
-            : "bg-muted/50 text-muted-foreground",
-        )}
-      >
-        {module.icon}
-      </div>
-
-      {/* Text */}
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] text-muted-foreground">
-            {`${phaseNumber}.${moduleIndex + 1}`}
-          </span>
-          {isComingSoon && (
-            <Badge
-              variant="secondary"
-              className="h-4 px-1.5 text-[10px] text-muted-foreground"
-            >
-              בקרוב
-            </Badge>
-          )}
-        </div>
-        <p className="truncate text-sm font-semibold text-foreground">
-          {module.titleHe}
-        </p>
-        <p className="truncate font-mono text-[10px] text-muted-foreground/70">
-          {module.title}
-        </p>
-        <p className="truncate text-xs text-muted-foreground">
-          {module.descriptionHe}
-        </p>
-        {isLocked && module.unlockCriteria && (
-          <p className="mt-0.5 text-[11px] text-muted-foreground/70 flex items-center gap-1">
-            🔓 {module.unlockCriteria}
-          </p>
-        )}
-      </div>
-
-      {/* Lesson count / status */}
-      <div className="flex flex-shrink-0 flex-col items-end gap-1">
-        {isLocked ? (
-          <Lock className="h-4 w-4 text-muted-foreground/50" />
-        ) : isAvailable ? (
-          <CheckCircle2 className="h-4 w-4 text-accent" />
-        ) : (
-          <Circle className="h-4 w-4 text-muted-foreground/40" />
-        )}
-        <span className="font-mono text-[11px] text-muted-foreground">
-          {module.lessonCount} שיעורים
-        </span>
-      </div>
-    </motion.div>
-  );
-}
-
-function PhaseSection({
-  phase,
-  navigate,
-}: {
-  phase: DevOpsPhase;
-  navigate: (path: string) => void;
-}) {
-  const totalModules = phase.modules.length;
-  const availableModules = phase.modules.filter(
-    (m) => m.status === "available",
-  ).length;
-  const progressPercent = Math.round((availableModules / totalModules) * 100);
-  const blockCfg = blockConfig[phase.block];
-
-  return (
-    <div className="space-y-3">
-      {/* Phase header */}
-      <div className="flex items-center gap-3">
-        <div
-          className={cn(
-            "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border font-mono text-sm font-bold",
-            blockCfg.borderClass,
-            blockCfg.bgClass,
-            blockCfg.colorClass,
-          )}
-        >
-          {phase.phaseNumber}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="font-semibold text-foreground">{phase.titleHe}</p>
-          <p className="font-mono text-[10px] text-muted-foreground/70">
-            {phase.title}
-          </p>
-          <Progress
-            value={progressPercent}
-            className="mt-1 h-1 bg-muted [&>div]:bg-accent"
-          />
-        </div>
-        <span className="font-mono text-xs text-muted-foreground">
-          {availableModules}/{totalModules}
-        </span>
-      </div>
-
-      {/* Module rows */}
-      <div className="space-y-2 ps-11">
-        {phase.modules.map((mod, index) => (
-          <ModuleRow
-            key={mod.id}
-            module={mod}
-            phaseNumber={phase.phaseNumber}
-            moduleIndex={index}
-            onNavigate={mod.route ? () => navigate(mod.route!) : undefined}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
+import { TrackModuleList } from "@/components/TrackModuleList";
+import { Home, ChevronLeft } from "lucide-react";
 
 const DevOpsTrackPage = () => {
   const navigate = useNavigate();
+  const { progress, getTopicCompletion } = useProgress();
+  const { topics, loading } = useSupabaseTopics();
+  const { learnMap, questionCounts } = useDashboardData();
+  const { isTopicUnlocked, isTopicComplete } = useTopicCompletion();
 
-  const totalModules = DEVOPS_PHASES.reduce(
-    (sum, p) => sum + p.modules.length,
-    0,
+  const devopsModules = useMemo(() => getModulesByTrack("devops"), []);
+
+  const overallCompletion = useMemo(() => {
+    const allTopicIds = devopsModules.flatMap((m) => m.topicIds);
+    if (allTopicIds.length === 0) return 0;
+    const total = allTopicIds.reduce(
+      (sum, tid) => sum + getTopicCompletion(tid, questionCounts[tid] ?? 0),
+      0
+    );
+    return Math.round(total / allTopicIds.length);
+  }, [devopsModules, questionCounts, getTopicCompletion]);
+
+  const handleLearn = useCallback(
+    (topicId: string) => navigate(`/learn/${topicId}`),
+    [navigate]
   );
-  const availableModules = DEVOPS_PHASES.reduce(
-    (sum, p) => sum + p.modules.filter((m) => m.status === "available").length,
-    0,
+
+  const handlePractice = useCallback(
+    (topicId: string) => navigate(`/practice/${topicId}`),
+    [navigate]
   );
-  const overallPercent = Math.round((availableModules / totalModules) * 100);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pb-24 pt-4">
+        <div className="mx-auto max-w-2xl px-4">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-48 rounded bg-muted" />
+            <div className="h-32 rounded-2xl bg-muted" />
+            <div className="h-20 rounded bg-muted" />
+            <div className="h-20 rounded bg-muted" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24 pt-4" dir="rtl">
       <div className="mx-auto max-w-2xl px-4 space-y-6">
         {/* Breadcrumb */}
-        <nav
-          aria-label="breadcrumb"
-          className="flex items-center gap-1 text-xs text-muted-foreground"
-          dir="rtl"
-        >
+        <nav aria-label="breadcrumb" className="flex items-center gap-1 text-xs text-muted-foreground">
           <button
             type="button"
             onClick={() => navigate("/")}
@@ -540,113 +67,59 @@ const DevOpsTrackPage = () => {
             <span>בית</span>
           </button>
           <ChevronLeft className="h-3.5 w-3.5 opacity-60" aria-hidden="true" />
-          <span className="px-1.5 py-1 font-semibold text-foreground">
-            מהנדס DevOps
-          </span>
+          <span className="px-1.5 py-1 font-semibold text-foreground">מהנדס DevOps</span>
         </nav>
 
-        {/* Hero header */}
-        <motion.header
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: "easeOut" }}
-          className="rounded-2xl border border-foreground/10 bg-gradient-to-br from-accent/20 to-accent/5 p-6"
-        >
-          <p className="font-mono text-xs tracking-wide text-muted-foreground">
-            // track.devops-engineer
+        {/* Hero banner */}
+        <header className="rounded-2xl border border-accent/20 bg-gradient-to-br from-accent/15 to-accent/5 p-6 space-y-3">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-accent/30 bg-accent/10 text-3xl shadow-[0_0_24px_rgba(124,92,252,0.15)]">
+              🔧
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+                מהנדס DevOps
+              </h1>
+              <p className="font-mono text-sm text-muted-foreground" dir="ltr">
+                DevOps Engineer
+              </p>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            לינוקס, Bash, הרשאות קבצים — יסודות DevOps מאפס.
           </p>
-          <h1 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">
-            מהנדס DevOps
-          </h1>
-          <p className="mt-1 font-mono text-xs text-muted-foreground/70">
-            DevOps Engineer
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            מפייתון ועד תשתית ענן. מסלול שלם מאפס למהנדס DevOps מוכן לעבודה.
-          </p>
-
-          {/* Overall progress */}
-          <div className="mt-4 space-y-1.5">
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">התקדמות כוללת</span>
-              <span className="font-mono font-semibold text-foreground">
-                {overallPercent}%
-              </span>
+              <span className="font-mono font-semibold text-accent">{overallCompletion}%</span>
             </div>
             <Progress
-              value={overallPercent}
-              className="h-2 bg-muted [&>div]:bg-accent"
+              value={overallCompletion}
+              className="h-1.5 bg-white/[0.06] [&>div]:bg-accent"
             />
             <p className="text-[11px] text-muted-foreground">
-              {availableModules} מתוך {totalModules} מודולים זמינים
+              {devopsModules.length} מודולים
             </p>
           </div>
-        </motion.header>
+        </header>
 
-        {/* Block sections */}
-        {BLOCK_ORDER.map((block) => {
-          const blockPhases = DEVOPS_PHASES.filter((p) => p.block === block);
-          const blockCfg = blockConfig[block];
+        {/* Module sections — same structure as Python Fundamentals */}
+        <div>
+          <h2 className="text-lg font-bold text-foreground mb-3">מסלול הלמידה</h2>
+          <TrackModuleList
+            modules={devopsModules}
+            topics={topics}
+            questionCounts={questionCounts}
+            learnMap={learnMap}
+            progress={progress}
+            getTopicCompletion={getTopicCompletion}
+            isTopicUnlocked={isTopicUnlocked}
+            isTopicComplete={isTopicComplete}
+            onLearn={handleLearn}
+            onPractice={handlePractice}
+          />
+        </div>
 
-          return (
-            <motion.section
-              key={block}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              aria-labelledby={`block-${block}`}
-              className="space-y-5"
-            >
-              {/* Block header */}
-              <div
-                className={cn(
-                  "flex items-center gap-3 rounded-xl border px-4 py-3",
-                  blockCfg.borderClass,
-                  blockCfg.bgClass,
-                )}
-              >
-                <div className="flex-1">
-                  <h2
-                    id={`block-${block}`}
-                    className={cn(
-                      "text-sm font-bold uppercase tracking-wider",
-                      blockCfg.colorClass,
-                    )}
-                  >
-                    {blockCfg.labelHe}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    {blockCfg.sublabelHe}
-                  </p>
-                  <p className="font-mono text-[10px] text-muted-foreground/60">
-                    {blockCfg.label}
-                  </p>
-                </div>
-                <span
-                  className={cn(
-                    "font-mono text-xs font-semibold",
-                    blockCfg.colorClass,
-                  )}
-                >
-                  {blockPhases.length} שלבים
-                </span>
-              </div>
-
-              {/* Phases */}
-              <div className="space-y-6">
-                {blockPhases.map((phase) => (
-                  <PhaseSection
-                    key={phase.id}
-                    phase={phase}
-                    navigate={navigate}
-                  />
-                ))}
-              </div>
-            </motion.section>
-          );
-        })}
-
-        {/* Footer note */}
         <p className="pt-2 text-center font-mono text-[11px] text-muted-foreground">
           // שלבים נוספים בקרוב — הישארו מעודכנים
         </p>
