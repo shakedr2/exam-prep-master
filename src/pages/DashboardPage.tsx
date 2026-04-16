@@ -5,11 +5,10 @@ import { trackDashboardViewed } from "@/lib/analytics";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useTopicCompletion } from "@/hooks/useTopicCompletion";
-import { MODULES, getModulesByTrack } from "@/data/modules";
+import { getModulesByTrack } from "@/data/modules";
 import { XpBadge } from "@/components/XpBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { StreakBadge } from "@/features/gamification/components/StreakBadge";
 import { DashboardStatsSkeleton } from "@/features/gamification/components/DashboardStatsSkeleton";
 import { useGamification } from "@/features/gamification/hooks/useGamification";
@@ -18,7 +17,7 @@ import { useDailyLogin } from "@/features/gamification/hooks/useDailyLogin";
 import { OnboardingWizard } from "@/features/onboarding/components/OnboardingWizard";
 import { Flame, CheckCircle2, GraduationCap, X, ChevronLeft, Home, Rocket } from "lucide-react";
 import { PythonHero } from "@/components/PythonHero";
-import { TrackModuleList, TopicCard } from "@/components/TrackModuleList";
+import { TrackModuleList } from "@/components/TrackModuleList";
 
 const PRACTICE_TIP_DISMISSED_KEY = "practice_tip_dismissed";
 
@@ -58,18 +57,6 @@ const DashboardPage = () => {
   const isNewUser = !hasPracticed && !hasLearnedAny;
 
   const pythonModules = useMemo(() => getModulesByTrack("python-fundamentals"), []);
-
-  // Collect topic IDs from ALL tracks so OOP/DevOps topics don't leak
-  // into the "ungrouped" section of the Python Fundamentals dashboard.
-  const allModuleTopicIds = useMemo(
-    () => new Set(MODULES.flatMap((m) => m.topicIds)),
-    []
-  );
-
-  const ungroupedTopics = useMemo(
-    () => topics.filter((t) => !allModuleTopicIds.has(t.id)),
-    [topics, allModuleTopicIds]
-  );
 
   const lastExam = useMemo(
     () => progress.examHistory.length > 0
@@ -281,29 +268,6 @@ const DashboardPage = () => {
             onLearn={handleLearn}
             onPractice={handlePractice}
           />
-
-          {/* Ungrouped topics fallback */}
-          {ungroupedTopics.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-sm font-bold text-muted-foreground mb-3">אחר</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {ungroupedTopics.map((topic) => (
-                  <TopicCard
-                    key={topic.id}
-                    topic={topic}
-                    questionCount={questionCounts[topic.id] ?? 0}
-                    learnMap={learnMap}
-                    progress={progress}
-                    getTopicCompletion={getTopicCompletion}
-                    isTopicUnlocked={isTopicUnlocked}
-                    isTopicComplete={isTopicComplete}
-                    onLearn={handleLearn}
-                    onPractice={handlePractice}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
