@@ -31,14 +31,14 @@ export const QuizView = memo(function QuizView({ q, onAnswer }: { q: QuizQuestio
                   ? "border-success bg-success/10 text-success"
                   : i === selected
                   ? "border-destructive bg-destructive/10 text-destructive"
-                  : "border-border bg-secondary opacity-50 text-foreground"
+                  : "border-border bg-white dark:bg-secondary opacity-50 text-foreground"
                 : i === selected
                 ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/30"
-                : "border-border bg-secondary hover:border-primary/50 text-foreground"
+                : "border-border bg-white dark:bg-secondary hover:border-primary/50 hover:bg-primary/5 text-foreground"
             }`}
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-bold text-foreground">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/60 border border-border/50 text-sm font-bold text-foreground">
                 {String.fromCharCode(1488 + i)}
               </span>
               <FormattedOptionText text={opt} className="text-sm font-medium" />

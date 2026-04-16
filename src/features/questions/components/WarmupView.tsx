@@ -176,14 +176,14 @@ export function WarmupView({ warmupQuestions, onComplete }: WarmupViewProps) {
                       ? "border-success bg-success/10 text-success"
                       : i === selected
                       ? "border-destructive bg-destructive/10 text-destructive"
-                      : "border-border bg-secondary opacity-40 text-foreground"
+                      : "border-border bg-white dark:bg-secondary opacity-40 text-foreground"
                     : i === selected
                     ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/30"
-                    : "border-primary/20 bg-secondary hover:border-primary/40 text-foreground"
+                    : "border-primary/20 bg-white dark:bg-secondary hover:border-primary/40 hover:bg-primary/5 text-foreground"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold text-foreground">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted/60 border border-border/50 text-xs font-bold text-foreground">
                     {String.fromCharCode(1488 + i)}
                   </span>
                   <span className="text-sm font-medium">{opt}</span>
