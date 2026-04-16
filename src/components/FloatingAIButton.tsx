@@ -1,7 +1,7 @@
 
 import { useTranslation } from "react-i18next";
 import React, { useState, useRef, useEffect, KeyboardEvent } from "react";
-import { Sparkles, Send, Lightbulb, ChevronDown, BookOpen } from "lucide-react";
+import { Sparkles, Send, Lightbulb, ChevronDown, BookOpen, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sheet,
@@ -15,6 +15,7 @@ import type { Question } from "@/data/questions";
 import type { TutorConfig } from "@/features/curriculum/types";
 import { getTutorConfig } from "@/features/curriculum/prompts";
 import { useAIChat } from "./useAIChat";
+import { useAIRequestManager } from "@/hooks/useAIRequestManager";
 
 interface FloatingAIButtonProps {
   question: Question;
@@ -24,6 +25,8 @@ interface FloatingAIButtonProps {
   tutorConfig?: TutorConfig;
   /** Topic / module ID used to auto-resolve the tutor when tutorConfig is not provided. */
   topicId?: string;
+  /** IDs of upcoming questions to prefetch AI explanations for. */
+  nextQuestionIds?: string[];
 }
 
 const QUICK_HINTS = [
@@ -32,7 +35,7 @@ const QUICK_HINTS = [
   { label: "📖 הסבר מפורט", message: "הסבר לי את הפתרון בפירוט" },
 ] as const;
 
-export function FloatingAIButton({ question, tutorConfig, topicId }: FloatingAIButtonProps) {
+export function FloatingAIButton({ question, tutorConfig, topicId, nextQuestionIds }: FloatingAIButtonProps) {
   const resolvedTutor = tutorConfig ?? getTutorConfig(topicId ?? question.topic);
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -40,7 +43,20 @@ export function FloatingAIButton({ question, tutorConfig, topicId }: FloatingAIB
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { messages, streaming, error, sendMessage, retry } = useAIChat(question);
+  const { messages, streaming, error, sendMessage, retry, cache } = useAIChat(question);
+  const { submit: debouncedSubmit, loading: debounceLoading, cancel: cancelDebounce } = useAIRequestManager({ debounceMs: 500 });
+
+  // Prefetch explanations for upcoming questions in the background
+  useEffect(() => {
+    if (nextQuestionIds && nextQuestionIds.length > 0) {
+      // generateFn is a no-op placeholder — actual generation happens when
+      // the user opens the AI panel for that question. The prefetch only
+      // warms the cache for questions that already have cached entries from
+      // prior sessions. For true background generation, a non-streaming
+      // endpoint would be needed.
+      cache.prefetchNext(nextQuestionIds, async () => "");
+    }
+  }, [nextQuestionIds, cache]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -51,7 +67,10 @@ export function FloatingAIButton({ question, tutorConfig, topicId }: FloatingAIB
     const text = input.trim();
     if (!text || streaming) return;
     setInput("");
-    sendMessage(text);
+    // Debounce rapid sends — only the last click/Enter within 500ms fires
+    debouncedSubmit(async () => {
+      await sendMessage(text);
+    });
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -63,7 +82,9 @@ export function FloatingAIButton({ question, tutorConfig, topicId }: FloatingAIB
 
   const handleQuickHint = (message: string) => {
     if (streaming) return;
-    sendMessage(message);
+    debouncedSubmit(async () => {
+      await sendMessage(message);
+    });
   };
 
   return (
@@ -198,11 +219,11 @@ export function FloatingAIButton({ question, tutorConfig, topicId }: FloatingAIB
             <Button
               size="icon"
               className="shrink-0 h-10 w-10 bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-              disabled={!input.trim() || streaming}
+              disabled={!input.trim() || streaming || debounceLoading}
               onClick={handleSend}
               aria-label="שלח"
             >
-              <Send className="h-4 w-4" />
+              {debounceLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
         </SheetContent>

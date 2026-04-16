@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { Question } from "@/data/questions";
 import { callAIFunctionStream, getAiErrorKey } from "@/shared/lib/aiClient";
+import { useExplanationCache } from "@/hooks/useExplanationCache";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -27,6 +28,7 @@ export function useAIChat(question: Question) {
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const cache = useExplanationCache();
 
   // Refs so async callbacks always see the latest values without
   // recreating the callback on every state/prop change.
@@ -43,11 +45,26 @@ export function useAIChat(question: Question) {
     tRef.current = t;
   }, [t]);
 
+  // On question change: restore cached explanation if available
   useEffect(() => {
     abortRef.current?.abort();
-    setMessages([]);
     setError(null);
     setStreaming(false);
+
+    const cached = cache.get(question.id);
+    if (cached) {
+      const restored: ChatMessage[] = [
+        { role: "user", content: "הסבר לי את הפתרון בפירוט" },
+        { role: "assistant", content: cached },
+      ];
+      setMessages(restored);
+      messagesRef.current = restored;
+    } else {
+      setMessages([]);
+      messagesRef.current = [];
+    }
+    // cache.get is stable (useCallback), safe to include
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question.id]);
 
   const sendMessage = useCallback(async (userText: string) => {
@@ -122,6 +139,11 @@ export function useAIChat(question: Question) {
           }
         }
       }
+
+      // Cache the completed explanation for offline fallback
+      if (assistantText) {
+        cache.set(question.id, assistantText);
+      }
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
       setError(tRef.current(getAiErrorKey(e)));
@@ -136,7 +158,7 @@ export function useAIChat(question: Question) {
       setStreaming(false);
       streamingRef.current = false;
     }
-  }, [question]);
+  }, [question, cache]);
 
   /** Re-sends the last user message. Useful for the retry button on error. */
   const retry = useCallback(() => {
@@ -152,5 +174,5 @@ export function useAIChat(question: Question) {
     sendMessage(lastUserText);
   }, [sendMessage]);
 
-  return { messages, streaming, error, sendMessage, retry };
+  return { messages, streaming, error, sendMessage, retry, cache };
 }
