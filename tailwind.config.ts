@@ -1,9 +1,9 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
-import { animation, typography } from "./src/styles/tokens";
+import { animation, borderRadius, shadows, tokens, typography } from "./src/styles/tokens";
 
 export default {
-  darkMode: ["class"],
+  darkMode: ["class", '[data-theme="dark"]'],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   prefix: "",
   theme: {
@@ -15,12 +15,21 @@ export default {
       },
     },
     extend: {
+      spacing: {
+        ...tokens.spacing,
+      },
       fontFamily: {
         heebo: typography.fontFamily.sans,
         mono: typography.fontFamily.mono,
       },
       fontSize: {
-        "2xs": typography.fontSize["2xs"],
+        ...typography.fontSize,
+      },
+      fontWeight: {
+        ...typography.fontWeight,
+      },
+      lineHeight: {
+        ...typography.lineHeight,
       },
       colors: {
         border: "hsl(var(--border))",
@@ -68,10 +77,13 @@ export default {
           DEFAULT: "hsl(var(--xp))",
           foreground: "hsl(var(--xp-foreground))",
         },
-        snake: {
-          DEFAULT: "var(--color-snake)",
-          light: "var(--color-snake-light)",
-          dark: "var(--color-snake-dark)",
+        indigo: {
+          DEFAULT: "hsl(var(--color-indigo))",
+          foreground: "hsl(var(--color-indigo-foreground))",
+        },
+        surface: {
+          DEFAULT: "hsl(var(--color-surface))",
+          elevated: "hsl(var(--color-surface-elevated))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -85,24 +97,19 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        xl: "calc(var(--radius) + 4px)",
-        "2xl": "calc(var(--radius) + 8px)",
-        "3xl": "calc(var(--radius) + 12px)",
+        ...borderRadius,
       },
       boxShadow: {
-        "glow-primary": "var(--glow-primary)",
-        "glow-accent":  "var(--glow-snake)",
-        "glow-snake":   "var(--glow-snake)",
-        "glow-xp":      "0 0 20px hsl(45 93% 47% / 0.35)",
-        "premium-sm":   "var(--shadow-sm)",
-        "premium":      "var(--shadow-md)",
-        "premium-lg":   "var(--shadow-lg)",
-        "premium-xl":   "var(--shadow-xl)",
-        "card":         "var(--shadow-card)",
-        "card-hover":   "var(--shadow-card-hover)",
+        ...shadows,
+      },
+      transitionDuration: {
+        fast: tokens.transitions.duration.fast,
+        normal: tokens.transitions.duration.normal,
+        slow: tokens.transitions.duration.slow,
+      },
+      transitionTimingFunction: {
+        standard: tokens.transitions.timing.standard,
+        emphasized: tokens.transitions.timing.emphasized,
       },
       keyframes: {
         ...animation.keyframes,
