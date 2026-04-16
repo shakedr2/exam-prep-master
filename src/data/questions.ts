@@ -2,7 +2,7 @@ import { pythonOopQuestionSeeds } from "./topicTutorials/python-oop";
 
 export type QuestionType = "quiz" | "tracing" | "coding" | "fill-blank";
 // The 8 official syllabus topics. "tracing" and "math" are legacy aliases kept until PR 1B remaps all questions.
-export type TopicId = "variables_io" | "arithmetic" | "conditions" | "loops" | "functions" | "strings" | "lists" | "tuples_sets_dicts" | "tracing" | "math" | "classes_objects" | "inheritance" | "polymorphism" | "files_exceptions" | "decorators_special" | "python_oop";
+export type TopicId = "variables_io" | "arithmetic" | "conditions" | "loops" | "functions" | "strings" | "lists" | "tuples_sets_dicts" | "tracing" | "math" | "classes_objects" | "inheritance" | "polymorphism" | "files_exceptions" | "decorators_special" | "python_oop" | "linux_basics" | "file_permissions" | "bash_scripting";
 export type Difficulty = "easy" | "medium" | "hard";
 
 export interface WarmupQuestion {

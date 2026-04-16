@@ -343,6 +343,8 @@ const HomePage = () => {
 
   const oopModuleCount = MODULES.filter((m) => !m.comingSoon && m.track === "python-oop").length;
 
+  const devopsModuleCount = MODULES.filter((m) => !m.comingSoon && m.track === "devops").length;
+
   const handlePythonTrack = () => {
     if (!user && !progress.username) {
       navigate("/onboarding");
@@ -459,7 +461,7 @@ const HomePage = () => {
                 description={t("home.devopsDescription")}
                 logo={<DevOpsLogo />}
                 accentColor="#7c5cfc"
-                moduleCount={18}
+                moduleCount={devopsModuleCount}
                 onSelect={() => navigate("/tracks/devops")}
               />
             </motion.div>
