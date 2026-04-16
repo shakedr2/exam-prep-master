@@ -32,7 +32,9 @@ import { cn } from "@/lib/utils";
 
 interface DevOpsModule {
   id: string;
+  titleHe: string;
   title: string;
+  descriptionHe: string;
   description: string;
   icon: React.ReactNode;
   lessonCount: number;
@@ -44,6 +46,7 @@ interface DevOpsPhase {
   id: string;
   block: "Foundation" | "Core" | "Advanced";
   phaseNumber: number;
+  titleHe: string;
   title: string;
   modules: DevOpsModule[];
 }
@@ -53,11 +56,14 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
     id: "python-fundamentals",
     block: "Foundation",
     phaseNumber: 1,
+    titleHe: "יסודות פייתון",
     title: "Python Fundamentals",
     modules: [
       {
         id: "getting-started",
+        titleHe: "משתנים וקלט/פלט",
         title: "Variables & I/O",
+        descriptionHe: "טיפוסים, קלט/פלט, אריתמטיקה",
         description: "Types, input/output, arithmetic",
         icon: <Code2 className="h-5 w-5" />,
         lessonCount: 8,
@@ -66,7 +72,9 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
       },
       {
         id: "control-flow",
+        titleHe: "בקרת זרימה",
         title: "Control Flow",
+        descriptionHe: "תנאים, לולאות, לוגיקה",
         description: "Conditions, loops, logic",
         icon: <GitMerge className="h-5 w-5" />,
         lessonCount: 10,
@@ -75,7 +83,9 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
       },
       {
         id: "data-structures",
+        titleHe: "מבני נתונים",
         title: "Data Structures",
+        descriptionHe: "מחרוזות, רשימות, מילונים, סטים",
         description: "Strings, lists, dicts, sets",
         icon: <FileCode2 className="h-5 w-5" />,
         lessonCount: 12,
@@ -88,11 +98,14 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
     id: "linux-bash",
     block: "Foundation",
     phaseNumber: 2,
+    titleHe: "לינוקס ובאש",
     title: "Linux & Bash",
     modules: [
       {
         id: "linux-basics",
+        titleHe: "יסודות לינוקס",
         title: "Linux Basics",
+        descriptionHe: "cd, ls, pwd, ניווט במערכת הקבצים",
         description: "cd, ls, pwd, file system navigation",
         icon: <Terminal className="h-5 w-5" />,
         lessonCount: 8,
@@ -100,7 +113,9 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
       },
       {
         id: "bash-scripting",
+        titleHe: "תכנות Bash",
         title: "Bash Scripting",
+        descriptionHe: "grep, צינורות, משתנים, סקריפטים",
         description: "grep, pipes, variables, scripts",
         icon: <Terminal className="h-5 w-5" />,
         lessonCount: 10,
@@ -108,7 +123,9 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
       },
       {
         id: "file-permissions",
+        titleHe: "הרשאות קבצים",
         title: "File Permissions",
+        descriptionHe: "chmod, chown, משתמשים, קבוצות",
         description: "chmod, chown, users, groups",
         icon: <Terminal className="h-5 w-5" />,
         lessonCount: 6,
@@ -120,11 +137,14 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
     id: "git",
     block: "Foundation",
     phaseNumber: 3,
+    titleHe: "Git ובקרת גרסאות",
     title: "Git & Version Control",
     modules: [
       {
         id: "git-basics",
+        titleHe: "יסודות Git",
         title: "Git Basics",
+        descriptionHe: "init, add, commit, status, log",
         description: "init, add, commit, status, log",
         icon: <GitBranch className="h-5 w-5" />,
         lessonCount: 8,
@@ -132,7 +152,9 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
       },
       {
         id: "git-branching",
+        titleHe: "ענפים ומיזוג",
         title: "Branching & Merging",
+        descriptionHe: "branch, merge, rebase, קונפליקטים",
         description: "branch, merge, rebase, conflicts",
         icon: <GitBranch className="h-5 w-5" />,
         lessonCount: 10,
@@ -140,7 +162,9 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
       },
       {
         id: "git-remote",
+        titleHe: "עבודה מרחוק",
         title: "Remote Workflows",
+        descriptionHe: "GitHub, בקשות משיכה, סקירת קוד",
         description: "GitHub, pull requests, code review",
         icon: <GitBranch className="h-5 w-5" />,
         lessonCount: 8,
@@ -152,11 +176,14 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
     id: "networking",
     block: "Core",
     phaseNumber: 4,
+    titleHe: "יסודות רשתות",
     title: "Networking Basics",
     modules: [
       {
         id: "tcp-ip",
+        titleHe: "TCP/IP ו-DNS",
         title: "TCP/IP & DNS",
+        descriptionHe: "כתובות IP, פורטים, פתרון שמות DNS",
         description: "IP addresses, ports, DNS resolution",
         icon: <Network className="h-5 w-5" />,
         lessonCount: 8,
@@ -164,7 +191,9 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
       },
       {
         id: "http",
+        titleHe: "HTTP ו-REST",
         title: "HTTP & REST",
+        descriptionHe: "שיטות HTTP, קודי סטטוס, ממשקי API",
         description: "HTTP methods, status codes, APIs",
         icon: <Network className="h-5 w-5" />,
         lessonCount: 8,
@@ -176,11 +205,14 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
     id: "docker",
     block: "Core",
     phaseNumber: 5,
+    titleHe: "Docker וקונטיינרים",
     title: "Docker & Containers",
     modules: [
       {
         id: "docker-basics",
+        titleHe: "יסודות Docker",
         title: "Docker Basics",
+        descriptionHe: "תמונות, קונטיינרים, Dockerfile",
         description: "images, containers, Dockerfile",
         icon: <Container className="h-5 w-5" />,
         lessonCount: 10,
@@ -188,7 +220,9 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
       },
       {
         id: "docker-compose",
+        titleHe: "Docker Compose",
         title: "Docker Compose",
+        descriptionHe: "אפליקציות מרובות קונטיינרים, רשתות",
         description: "multi-container apps, networking",
         icon: <Container className="h-5 w-5" />,
         lessonCount: 8,
@@ -200,11 +234,14 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
     id: "cicd",
     block: "Core",
     phaseNumber: 6,
+    titleHe: "אינטגרציה ופריסה רציפה",
     title: "CI/CD",
     modules: [
       {
         id: "github-actions",
+        titleHe: "GitHub Actions",
         title: "GitHub Actions",
+        descriptionHe: "תהליכי עבודה, משימות, טריגרים",
         description: "workflows, jobs, triggers",
         icon: <GitMerge className="h-5 w-5" />,
         lessonCount: 10,
@@ -212,7 +249,9 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
       },
       {
         id: "jenkins",
+        titleHe: "Jenkins",
         title: "Jenkins",
+        descriptionHe: "צינורות, סוכנים, תוספים",
         description: "pipelines, agents, plugins",
         icon: <GitMerge className="h-5 w-5" />,
         lessonCount: 8,
@@ -224,11 +263,14 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
     id: "cloud",
     block: "Advanced",
     phaseNumber: 7,
+    titleHe: "ענן (AWS/GCP)",
     title: "Cloud (AWS/GCP)",
     modules: [
       {
         id: "aws-basics",
+        titleHe: "יסודות AWS",
         title: "AWS Fundamentals",
+        descriptionHe: "EC2, S3, IAM, VPC",
         description: "EC2, S3, IAM, VPC",
         icon: <Cloud className="h-5 w-5" />,
         lessonCount: 12,
@@ -236,7 +278,9 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
       },
       {
         id: "gcp-basics",
+        titleHe: "יסודות GCP",
         title: "GCP Fundamentals",
+        descriptionHe: "Compute Engine, GCS, IAM",
         description: "Compute Engine, GCS, IAM",
         icon: <Cloud className="h-5 w-5" />,
         lessonCount: 10,
@@ -248,11 +292,14 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
     id: "iac",
     block: "Advanced",
     phaseNumber: 8,
+    titleHe: "תשתית כקוד",
     title: "Infrastructure as Code",
     modules: [
       {
         id: "terraform-basics",
+        titleHe: "Terraform",
         title: "Terraform",
+        descriptionHe: "ספקים, משאבים, מצב, מודולים",
         description: "providers, resources, state, modules",
         icon: <FileCode2 className="h-5 w-5" />,
         lessonCount: 12,
@@ -266,21 +313,27 @@ const BLOCK_ORDER = ["Foundation", "Core", "Advanced"] as const;
 
 const blockConfig = {
   Foundation: {
+    labelHe: "בלוק יסוד",
     label: "Foundation Block",
+    sublabelHe: "כישורי ליבה שכל מהנדס DevOps צריך",
     sublabel: "Core skills every DevOps engineer needs",
     colorClass: "text-accent",
     borderClass: "border-accent/30",
     bgClass: "bg-accent/5",
   },
   Core: {
+    labelHe: "בלוק ליבה",
     label: "Core Block",
+    sublabelHe: "כלים ופרקטיקות לשימוש יומיומי",
     sublabel: "Tools and practices used daily",
     colorClass: "text-primary",
     borderClass: "border-primary/30",
     bgClass: "bg-primary/5",
   },
   Advanced: {
+    labelHe: "בלוק מתקדם",
     label: "Advanced Block",
+    sublabelHe: "תשתית בקנה מידה ענני",
     sublabel: "Cloud-scale infrastructure",
     colorClass: "text-warning",
     borderClass: "border-warning/30",
@@ -347,15 +400,18 @@ function ModuleRow({
               variant="secondary"
               className="h-4 px-1.5 text-[10px] text-muted-foreground"
             >
-              Coming Soon
+              בקרוב
             </Badge>
           )}
         </div>
         <p className="truncate text-sm font-semibold text-foreground">
+          {module.titleHe}
+        </p>
+        <p className="truncate font-mono text-[10px] text-muted-foreground/70">
           {module.title}
         </p>
         <p className="truncate text-xs text-muted-foreground">
-          {module.description}
+          {module.descriptionHe}
         </p>
       </div>
 
@@ -369,7 +425,7 @@ function ModuleRow({
           <Circle className="h-4 w-4 text-muted-foreground/40" />
         )}
         <span className="font-mono text-[11px] text-muted-foreground">
-          {module.lessonCount} lessons
+          {module.lessonCount} שיעורים
         </span>
       </div>
     </motion.div>
@@ -405,7 +461,10 @@ function PhaseSection({
           {phase.phaseNumber}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-foreground">{phase.title}</p>
+          <p className="font-semibold text-foreground">{phase.titleHe}</p>
+          <p className="font-mono text-[10px] text-muted-foreground/70">
+            {phase.title}
+          </p>
           <Progress
             value={progressPercent}
             className="mt-1 h-1 bg-muted [&>div]:bg-accent"
@@ -446,7 +505,7 @@ const DevOpsTrackPage = () => {
   const overallPercent = Math.round((availableModules / totalModules) * 100);
 
   return (
-    <div className="min-h-screen bg-background pb-24 pt-4" dir="ltr">
+    <div className="min-h-screen bg-background pb-24 pt-4" dir="rtl">
       <div className="mx-auto max-w-2xl px-4 space-y-6">
         {/* Breadcrumb */}
         <nav
@@ -464,7 +523,7 @@ const DevOpsTrackPage = () => {
           </button>
           <ChevronLeft className="h-3.5 w-3.5 opacity-60" aria-hidden="true" />
           <span className="px-1.5 py-1 font-semibold text-foreground">
-            DevOps Engineer
+            מהנדס DevOps
           </span>
         </nav>
 
@@ -479,17 +538,19 @@ const DevOpsTrackPage = () => {
             // track.devops-engineer
           </p>
           <h1 className="mt-1 text-2xl font-bold text-foreground sm:text-3xl">
-            DevOps Engineer
+            מהנדס DevOps
           </h1>
+          <p className="mt-1 font-mono text-xs text-muted-foreground/70">
+            DevOps Engineer
+          </p>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            From Python scripting to cloud infrastructure. A complete path from
-            zero to a job-ready DevOps engineer.
+            מפייתון ועד תשתית ענן. מסלול שלם מאפס למהנדס DevOps מוכן לעבודה.
           </p>
 
           {/* Overall progress */}
           <div className="mt-4 space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Overall progress</span>
+              <span className="text-muted-foreground">התקדמות כוללת</span>
               <span className="font-mono font-semibold text-foreground">
                 {overallPercent}%
               </span>
@@ -499,7 +560,7 @@ const DevOpsTrackPage = () => {
               className="h-2 bg-muted [&>div]:bg-accent"
             />
             <p className="text-[11px] text-muted-foreground">
-              {availableModules} of {totalModules} modules available
+              {availableModules} מתוך {totalModules} מודולים זמינים
             </p>
           </div>
         </motion.header>
@@ -534,10 +595,13 @@ const DevOpsTrackPage = () => {
                       blockCfg.colorClass,
                     )}
                   >
-                    {blockCfg.label}
+                    {blockCfg.labelHe}
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    {blockCfg.sublabel}
+                    {blockCfg.sublabelHe}
+                  </p>
+                  <p className="font-mono text-[10px] text-muted-foreground/60">
+                    {blockCfg.label}
                   </p>
                 </div>
                 <span
@@ -546,7 +610,7 @@ const DevOpsTrackPage = () => {
                     blockCfg.colorClass,
                   )}
                 >
-                  {blockPhases.length} phases
+                  {blockPhases.length} שלבים
                 </span>
               </div>
 
@@ -566,7 +630,7 @@ const DevOpsTrackPage = () => {
 
         {/* Footer note */}
         <p className="pt-2 text-center font-mono text-[11px] text-muted-foreground">
-          // more phases coming soon — stay tuned
+          // שלבים נוספים בקרוב — הישארו מעודכנים
         </p>
       </div>
     </div>
