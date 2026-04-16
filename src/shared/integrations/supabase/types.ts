@@ -50,6 +50,9 @@ export type Database = {
           expected_output: string | null
           pattern_family: string | null
           common_mistake: string | null
+          general_hint_he: string | null
+          specific_hint_he: string | null
+          detailed_explanation_he: string | null
         }
         Insert: {
           id?: string
@@ -67,6 +70,9 @@ export type Database = {
           expected_output?: string | null
           pattern_family?: string | null
           common_mistake?: string | null
+          general_hint_he?: string | null
+          specific_hint_he?: string | null
+          detailed_explanation_he?: string | null
         }
         Update: {
           id?: string
@@ -84,6 +90,9 @@ export type Database = {
           expected_output?: string | null
           pattern_family?: string | null
           common_mistake?: string | null
+          general_hint_he?: string | null
+          specific_hint_he?: string | null
+          detailed_explanation_he?: string | null
         }
         Relationships: [
           {

@@ -85,15 +85,6 @@ export function PythonHero() {
         </div>
 
         <div className="flex-1 min-w-0">
-          <p
-            className={cn(
-              "font-mono text-[11px] tracking-wide text-white/70 transition-all duration-300",
-              isCompact ? "hidden" : "mb-1"
-            )}
-            dir="ltr"
-          >
-            // track.python-fundamentals
-          </p>
           <h2
             className={cn(
               "font-bold text-white transition-all duration-300",

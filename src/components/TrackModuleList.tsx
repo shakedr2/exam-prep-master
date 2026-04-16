@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/accordion";
 import { CheckCircle2, BookOpen, Brain, Lock } from "lucide-react";
 import { questions as staticQuestions } from "@/data/questions";
+import { resolveTopicId } from "@/data/topicTutorials";
 
 export const TopicCard = memo(function TopicCard({
   topic,
@@ -181,14 +182,34 @@ export const ModuleSection = memo(function ModuleSection({
   onLearn: (topicId: string) => void;
   onPractice: (topicId: string) => void;
 }) {
+  // Module topic IDs in modules.ts are stable slugs (e.g. "variables_io"),
+  // while the DB `topics` table keys rows by UUID. Resolve each slug to its
+  // UUID (via the canonical slug↔UUID map) before looking up the DB row, and
+  // fall back to a direct id match so UUID-only callers keep working.
+  // Downstream consumers (localStorage, static question filter, sequential
+  // unlock order) are slug-based, so normalize the returned topic's `id` to
+  // the module's slug.
   const moduleTopics = module.topicIds
-    .map((tid) => topics.find((t) => t.id === tid))
+    .map((slug) => {
+      const uuid = resolveTopicId(slug)?.uuid;
+      const dbTopic = topics.find((t) => t.id === uuid || t.id === slug);
+      if (!dbTopic) return null;
+      return { ...dbTopic, id: slug };
+    })
     .filter(Boolean) as typeof topics;
+
+  // questionCounts is produced by the `get_dashboard_data` RPC which keys the
+  // aggregate by UUID. Look up by UUID first, then fall back to the slug for
+  // topics that are slug-keyed (e.g. legacy local-only rows).
+  const getQuestionCount = (slug: string): number => {
+    const uuid = resolveTopicId(slug)?.uuid;
+    return (uuid && questionCounts[uuid]) ?? questionCounts[slug] ?? 0;
+  };
 
   const moduleCompletion = moduleTopics.length > 0
     ? Math.min(100, Math.round(
         moduleTopics.reduce(
-          (sum, t) => sum + getTopicCompletion(t.id, questionCounts[t.id] ?? 0),
+          (sum, t) => sum + getTopicCompletion(t.id, getQuestionCount(t.id)),
           0
         ) / moduleTopics.length
       ))
@@ -217,7 +238,7 @@ export const ModuleSection = memo(function ModuleSection({
             <TopicCard
               key={topic.id}
               topic={topic}
-              questionCount={questionCounts[topic.id] ?? 0}
+              questionCount={getQuestionCount(topic.id)}
               learnMap={learnMap}
               progress={progress}
               getTopicCompletion={getTopicCompletion}
