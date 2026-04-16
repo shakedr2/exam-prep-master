@@ -12,11 +12,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { Question } from "@/data/questions";
+import type { TutorConfig } from "@/features/curriculum/types";
+import { getTutorConfig } from "@/features/curriculum/prompts";
 import { useAIChat } from "./useAIChat";
 
 interface FloatingAIButtonProps {
   question: Question;
   userAnswer?: string;
+  /** Override the AI tutor persona shown in the panel header.
+   *  If omitted, the panel resolves the tutor from the question's topic field. */
+  tutorConfig?: TutorConfig;
+  /** Topic / module ID used to auto-resolve the tutor when tutorConfig is not provided. */
+  topicId?: string;
 }
 
 const QUICK_HINTS = [
@@ -25,7 +32,8 @@ const QUICK_HINTS = [
   { label: "📖 הסבר מפורט", message: "הסבר לי את הפתרון בפירוט" },
 ] as const;
 
-export function FloatingAIButton({ question }: FloatingAIButtonProps) {
+export function FloatingAIButton({ question, tutorConfig, topicId }: FloatingAIButtonProps) {
+  const resolvedTutor = tutorConfig ?? getTutorConfig(topicId ?? question.topic);
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -90,7 +98,7 @@ export function FloatingAIButton({ question }: FloatingAIButtonProps) {
           <SheetHeader className="shrink-0 border-b px-4 py-3 text-right">
             <SheetTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-purple-500" />
-              מדריך AI — פרופ׳ פייתון
+              מדריך AI — {resolvedTutor.name}
             </SheetTitle>
           </SheetHeader>
 
