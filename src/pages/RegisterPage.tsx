@@ -162,6 +162,11 @@ const RegisterPage = () => {
                 המשך בלי חשבון ←
               </Link>
             </div>
+            <div className="mt-3 text-center">
+              <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                תנאי שירות
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </motion.div>

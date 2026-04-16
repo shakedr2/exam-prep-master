@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -403,6 +403,13 @@ const HomePage = () => {
             // more tracks coming soon — stay tuned
           </p>
         </section>
+
+        {/* Footer */}
+        <footer className="pt-4 pb-2 text-center text-xs text-muted-foreground/60 space-x-3 space-x-reverse">
+          <Link to="/terms" className="hover:text-muted-foreground transition-colors">
+            תנאי שירות
+          </Link>
+        </footer>
       </div>
     </div>
   );
