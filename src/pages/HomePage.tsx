@@ -302,7 +302,7 @@ const HomePage = () => {
 
   const pythonPercent = useMemo(() => {
     const pythonTopicIds = new Set(
-      MODULES.filter((m) => !m.comingSoon && m.track !== "python-oop").flatMap((m) => m.topicIds),
+      MODULES.filter((m) => !m.comingSoon && m.track === "python-fundamentals").flatMap((m) => m.topicIds),
     );
     const pythonQuestionIds = new Set(
       staticQuestions
@@ -318,7 +318,7 @@ const HomePage = () => {
     return Math.round((answeredCorrect / pythonQuestionIds.size) * 100);
   }, [progress.answeredQuestions]);
 
-  const pythonModuleCount = MODULES.filter((m) => !m.comingSoon && m.track !== "python-oop").length;
+  const pythonModuleCount = MODULES.filter((m) => !m.comingSoon && m.track === "python-fundamentals").length;
 
   const oopPercent = useMemo(() => {
     const oopTopicIds = new Set(
