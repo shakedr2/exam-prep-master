@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { getModulesByTrack } from "@/data/modules";
 
 const SCROLL_THRESHOLD = 140;
 
@@ -27,6 +28,7 @@ const SCROLL_THRESHOLD = 140;
 export function PythonHero() {
   const [isCompact, setIsCompact] = useState(false);
   const shouldReduceMotion = useReducedMotion();
+  const moduleCount = useMemo(() => getModulesByTrack("python-fundamentals").length, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -111,7 +113,7 @@ export function PythonHero() {
             )}
           >
             <p className="text-white/80 text-sm sm:text-base mt-2">
-              8 מודולים · ~4 שעות · מתחילים
+              {moduleCount} מודולים · ~4 שעות · מתחילים
             </p>
           </div>
         </div>
