@@ -1137,6 +1137,11 @@ const SLUG_TO_UUID: Record<string, string> = {
   strings: "11111111-0006-0000-0000-000000000000",
   lists: "11111111-0007-0000-0000-000000000000",
   tuples_sets_dicts: "11111111-0008-0000-0000-000000000000",
+  classes_objects: "11111111-0009-0000-0000-000000000000",
+  inheritance: "11111111-000a-0000-0000-000000000000",
+  polymorphism: "11111111-000b-0000-0000-000000000000",
+  files_exceptions: "11111111-000c-0000-0000-000000000000",
+  decorators_special: "11111111-000d-0000-0000-000000000000",
 };
 
 const UUID_TO_SLUG: Record<string, string> = Object.fromEntries(

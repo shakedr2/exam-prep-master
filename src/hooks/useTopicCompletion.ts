@@ -25,6 +25,11 @@ export const SYLLABUS_ORDER: string[] = [
   "strings",
   "lists",
   "tuples_sets_dicts",
+  "classes_objects",
+  "inheritance",
+  "polymorphism",
+  "files_exceptions",
+  "decorators_special",
 ];
 
 function loadLocal(): Record<string, boolean> {

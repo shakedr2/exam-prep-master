@@ -52,13 +52,20 @@ export const MODULES: Module[] = [
     icon: "🔍",
   },
   {
-    id: "advanced",
-    title: "מתקדם",
-    description: "OOP, קבצים וחריגות",
-    topicIds: [],
+    id: "oop_basics",
+    title: "תכנות מונחה-עצמים",
+    description: "מחלקות, ירושה ופולימורפיזם",
+    topicIds: ["classes_objects", "inheritance", "polymorphism"],
     order: 6,
-    icon: "🚀",
-    comingSoon: true,
+    icon: "🏛️",
+  },
+  {
+    id: "advanced",
+    title: "קבצים, חריגות ודקורטורים",
+    description: "טיפול בקבצים, try/except, מתודות מיוחדות",
+    topicIds: ["files_exceptions", "decorators_special"],
+    order: 7,
+    icon: "✨",
   },
 ];
 
