@@ -1,6 +1,8 @@
+import { pythonOopQuestionSeeds } from "./topicTutorials/python-oop";
+
 export type QuestionType = "quiz" | "tracing" | "coding" | "fill-blank";
 // The 8 official syllabus topics. "tracing" and "math" are legacy aliases kept until PR 1B remaps all questions.
-export type TopicId = "variables_io" | "arithmetic" | "conditions" | "loops" | "functions" | "strings" | "lists" | "tuples_sets_dicts" | "tracing" | "math" | "classes_objects" | "inheritance" | "polymorphism" | "files_exceptions" | "decorators_special";
+export type TopicId = "variables_io" | "arithmetic" | "conditions" | "loops" | "functions" | "strings" | "lists" | "tuples_sets_dicts" | "tracing" | "math" | "classes_objects" | "inheritance" | "polymorphism" | "files_exceptions" | "decorators_special" | "python_oop";
 export type Difficulty = "easy" | "medium" | "hard";
 
 export interface WarmupQuestion {
@@ -108,6 +110,7 @@ export const topics: Topic[] = [
   { id: "strings", name: "מחרוזות", icon: "🔤", description: "indexing, slicing, methods", color: "from-violet-500 to-purple-600" },
   { id: "lists", name: "רשימות", icon: "📋", description: "append, pop, slicing, comprehensions", color: "from-green-500 to-emerald-600" },
   { id: "tuples_sets_dicts", name: "טאפלים, קבוצות ומילונים", icon: "🗂️", description: "tuple, set, dict ופעולות עליהם", color: "from-indigo-500 to-purple-600" },
+  { id: "python_oop", name: "Python OOP מתקדם", icon: "🏛️", description: "קורס OOP מלא: מחלקות, ירושה, פולימורפיזם ותבניות", color: "from-fuchsia-500 to-indigo-600" },
 ];
 
 export const questions: Question[] = [
@@ -3924,6 +3927,7 @@ print(mystery(4321).strip())`,
     correctIndex: 0,
     explanation: "האופרטור ** מחשב חזקה. לדוגמה: 2 ** 3 מחזיר 8, כי 2 בחזקת 3 = 8.",
   },
+  ...pythonOopQuestionSeeds,
 ];
 
 export function getQuestionsByTopic(topicId: TopicId): Question[] {
@@ -3941,7 +3945,7 @@ export function getRandomQuestions(count: number): Question[] {
 
 export function getBalancedExamQuestions(count: number): Question[] {
   // Includes legacy "tracing" and "math" until PR 1B remaps existing questions.
-  const topicIds: TopicId[] = ["variables_io", "arithmetic", "conditions", "loops", "functions", "strings", "lists", "tuples_sets_dicts", "tracing", "math"];
+  const topicIds: TopicId[] = ["variables_io", "arithmetic", "conditions", "loops", "functions", "strings", "lists", "tuples_sets_dicts", "tracing", "math", "python_oop"];
   const typeIds: QuestionType[] = ["quiz", "tracing", "coding", "fill-blank"];
   
   const byTopic: Record<string, Question[]> = {};
