@@ -1,15 +1,26 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { GraduationCap, LogIn, LogOut, LayoutDashboard, Trophy } from "lucide-react";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { GraduationCap, LogIn, LogOut, LayoutDashboard, Trophy, Terminal } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
+const DEVOPS_PATHS = ["/tracks/devops", "/topics/linux", "/topics/git", "/topics/networking", "/topics/docker", "/topics/cicd", "/topics/cloud", "/topics/iac"];
+const PYTHON_PATHS = ["/dashboard", "/exam", "/progress", "/review-mistakes", "/topics/python"];
+
+function useActiveTrack(): "python" | "devops" | null {
+  const { pathname } = useLocation();
+  if (DEVOPS_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) return "devops";
+  if (PYTHON_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/")) || pathname.startsWith("/practice/") || pathname.startsWith("/learn/")) return "python";
+  return null;
+}
+
 export function Navbar() {
   const { progress } = useProgress();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const track = useActiveTrack();
   const username = progress.username;
 
   const handleSignOut = async () => {
@@ -41,11 +52,22 @@ export function Navbar() {
             to="/dashboard"
             className="group flex items-center gap-2 font-bold text-foreground transition-colors duration-200"
           >
-            <span className="relative flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 ring-1 ring-primary/20 transition-all duration-200 group-hover:bg-primary/15 group-hover:ring-primary/30">
-              <GraduationCap className="h-4 w-4 text-primary" />
+            <span className={cn(
+              "relative flex h-7 w-7 items-center justify-center rounded-md transition-all duration-200",
+              track === "devops"
+                ? "bg-accent/15 ring-1 ring-accent/25 group-hover:bg-accent/20 group-hover:ring-accent/35"
+                : "bg-primary/10 ring-1 ring-primary/20 group-hover:bg-primary/15 group-hover:ring-primary/30"
+            )}>
+              {track === "devops" ? (
+                <Terminal className="h-4 w-4 text-accent" />
+              ) : (
+                <GraduationCap className="h-4 w-4 text-primary" />
+              )}
             </span>
             <span className="text-base font-bold font-mono tracking-tight">
-              ExamPrep<span className="text-snake"> Python</span>
+              ExamPrep
+              {track === "python" && <span className="text-gradient-snake"> Python</span>}
+              {track === "devops" && <span className="text-accent"> DevOps</span>}
             </span>
           </Link>
 
