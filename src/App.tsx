@@ -15,6 +15,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/shared/components/AuthGuard";
 import { Navbar } from "@/shared/components/Navbar";
 import { BottomNav } from "@/shared/components/BottomNav";
+import { AppFooter } from "@/shared/components/AppFooter";
 import { PageTransition } from "@/shared/components/PageTransition";
 import HomePage from "./pages/HomePage";
 import OnboardingPage from "./pages/OnboardingPage";
@@ -25,6 +26,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 import NotFound from "./pages/NotFound";
+import PrivacyPage from "./pages/PrivacyPage";
 
 const ReviewMistakes = lazy(retryLazy(() => import("./pages/ReviewMistakes")));
 const LearnPage = lazy(retryLazy(() => import("./pages/LearnPage")));
@@ -128,6 +130,7 @@ function AnimatedRoutes() {
         <Route path="/topics/cicd" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><CICDPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/topics/cloud" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><CloudPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/topics/iac" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><IaCPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
@@ -145,6 +148,7 @@ const AppContent = () => {
         <PostHogPageviewTracker />
         <Navbar />
         <AnimatedRoutes />
+        <AppFooter />
         <BottomNav />
       </BrowserRouter>
     </div>
