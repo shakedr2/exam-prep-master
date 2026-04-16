@@ -17,6 +17,7 @@ import { Navbar } from "@/shared/components/Navbar";
 import { BottomNav } from "@/shared/components/BottomNav";
 import { AppFooter } from "@/shared/components/AppFooter";
 import { PageTransition } from "@/shared/components/PageTransition";
+import { CookieConsent } from "@/components/CookieConsent";
 import HomePage from "./pages/HomePage";
 import OnboardingPage from "./pages/OnboardingPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -27,6 +28,7 @@ import RegisterPage from "./pages/RegisterPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 import NotFound from "./pages/NotFound";
 import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
 
 const ReviewMistakes = lazy(retryLazy(() => import("./pages/ReviewMistakes")));
 const LearnPage = lazy(retryLazy(() => import("./pages/LearnPage")));
@@ -131,6 +133,7 @@ function AnimatedRoutes() {
         <Route path="/topics/cloud" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><CloudPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/topics/iac" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><IaCPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
+        <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
@@ -150,6 +153,7 @@ const AppContent = () => {
         <AnimatedRoutes />
         <AppFooter />
         <BottomNav />
+        <CookieConsent />
       </BrowserRouter>
     </div>
   );
