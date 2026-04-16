@@ -24,7 +24,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { Flame, CheckCircle2, GraduationCap, BookOpen, Brain, X, Lock, ChevronLeft, Home } from "lucide-react";
+import { Flame, CheckCircle2, GraduationCap, BookOpen, Brain, X, Lock, ChevronLeft, Home, Rocket } from "lucide-react";
 import { PythonHero } from "@/components/PythonHero";
 import { questions as staticQuestions } from "@/data/questions";
 
@@ -287,6 +287,7 @@ const DashboardPage = () => {
   const hasPracticed = totalAnswered > 0;
   const hasLearnedAny = Object.values(learnMap).some((arr) => arr.length > 0);
   const showPracticeTip = hasPracticed && !hasLearnedAny && !tipDismissed;
+  const isNewUser = !hasPracticed && !hasLearnedAny;
 
   const activeModules = useMemo(
     () => MODULES.filter((m) => !m.comingSoon).sort((a, b) => a.order - b.order),
@@ -373,9 +374,11 @@ const DashboardPage = () => {
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono truncate">
-              שלום, {progress.username}
+              {isNewUser ? `ברוכים הבאים, ${progress.username}!` : `שלום, ${progress.username}`}
             </h1>
-            <p className="text-muted-foreground mt-1">הנה סקירת הלימודים שלך.</p>
+            <p className="text-muted-foreground mt-1">
+              {isNewUser ? "בואו נתחיל ללמוד Python 🐍" : "הנה סקירת הלימודים שלך."}
+            </p>
           </div>
           <div className="flex flex-col items-end gap-2 shrink-0">
             <XpBadge
@@ -394,40 +397,71 @@ const DashboardPage = () => {
           onClose={() => setShowOnboarding(false)}
         />
 
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          <Card className="bg-card border border-foreground/10">
-            <CardContent className="p-2 sm:p-3 text-center">
-              <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{totalCorrect}</p>
-              <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">שאלות נכונות</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card border border-foreground/10">
-            <CardContent className="p-2 sm:p-3 text-center">
-              <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{totalAnswered}</p>
-              <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">סה״כ נפתרו</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card border border-foreground/10">
-            <CardContent className="p-2 sm:p-3 text-center flex flex-col items-center">
-              {progress.streak > 0 ? (
-                <>
-                  <div className="flex items-center gap-1">
-                    <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
-                    <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{progress.streak}</p>
-                  </div>
-                  <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">ימים רצופים</p>
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mb-0.5" />
-                  <p className="text-[10px] sm:text-[11px] text-muted-foreground">
-                    {lastActiveLabel ? `פעיל ${lastActiveLabel}` : "התחל לתרגל!"}
+        {isNewUser ? (
+          /* New user — recommended first step card */
+          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-2xl">
+                  🐍
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-1">מאיפה מתחילים?</p>
+                  <h2 className="font-bold text-foreground text-base leading-snug mb-1">
+                    משתנים, טיפוסים וקלט/פלט
+                  </h2>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    הנושא הראשון בקורס — int, float, str, bool, input() ו-print()
                   </p>
-                </>
-              )}
+                  <Button
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => navigate("/learn/variables_io")}
+                  >
+                    <Rocket className="h-4 w-4" />
+                    התחל ללמוד
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
-        </div>
+        ) : (
+          /* Returning user — progress stats */
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <Card className="bg-card border border-foreground/10">
+              <CardContent className="p-2 sm:p-3 text-center">
+                <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{totalCorrect}</p>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">שאלות נכונות</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border border-foreground/10">
+              <CardContent className="p-2 sm:p-3 text-center">
+                <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{totalAnswered}</p>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">סה״כ נפתרו</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border border-foreground/10">
+              <CardContent className="p-2 sm:p-3 text-center flex flex-col items-center">
+                {progress.streak > 0 ? (
+                  <>
+                    <div className="flex items-center gap-1">
+                      <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+                      <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{progress.streak}</p>
+                    </div>
+                    <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">ימים רצופים</p>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mb-0.5" />
+                    <p className="text-[10px] sm:text-[11px] text-muted-foreground">
+                      {lastActiveLabel ? `פעיל ${lastActiveLabel}` : "התחל לתרגל!"}
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Quick exam CTA */}
         <Card
