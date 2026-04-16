@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Check, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { QuestionText } from "@/components/QuestionText";
 import { CommonMistakeWarning } from "@/features/questions/components/CommonMistakeWarning";
 import { gradeBlankAnswer, type GradeResult } from "@/lib/grading";
 import type { FillBlankQuestion } from "@/data/questions";
@@ -213,7 +214,7 @@ export const FillBlankView = memo(function FillBlankView({ q, onAnswer }: { q: F
               );
             })}
           </div>
-          <p className="text-sm text-muted-foreground">{q.solutionExplanation}</p>
+          <QuestionText text={q.solutionExplanation} className="text-sm text-muted-foreground" />
         </motion.div>
       )}
     </div>

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
+import { QuestionText, FormattedOptionText } from "@/components/QuestionText";
 import { CommonMistakeWarning } from "@/features/questions/components/CommonMistakeWarning";
 import type { QuizQuestion } from "@/data/questions";
 
@@ -13,7 +14,7 @@ export const QuizView = memo(function QuizView({ q, onAnswer }: { q: QuizQuestio
 
   return (
     <div className="space-y-4">
-      <p className="text-lg font-semibold text-card-foreground">{q.question}</p>
+      <QuestionText text={q.question} className="text-lg font-semibold text-card-foreground" />
       {q.code && <PythonCodeBlock code={q.code} />}
       <div className="space-y-2">
         {q.options.map((opt, i) => (
@@ -40,7 +41,7 @@ export const QuizView = memo(function QuizView({ q, onAnswer }: { q: QuizQuestio
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-bold text-foreground">
                 {String.fromCharCode(1488 + i)}
               </span>
-              <span className="text-sm font-medium">{opt}</span>
+              <FormattedOptionText text={opt} className="text-sm font-medium" />
               {answered && i === q.correctIndex && <Check className="ms-auto h-5 w-5 text-success" />}
               {answered && i === selected && i !== q.correctIndex && <X className="ms-auto h-5 w-5 text-destructive" />}
             </div>
@@ -68,7 +69,7 @@ export const QuizView = memo(function QuizView({ q, onAnswer }: { q: QuizQuestio
             className={`rounded-xl p-4 ${selected === q.correctIndex ? "bg-success/10 border border-success/30" : "bg-destructive/10 border border-destructive/30"}`}
           >
             <p className="text-sm font-semibold mb-1">{selected === q.correctIndex ? "✅ נכון!" : "❌ לא נכון"}</p>
-            <p className="text-sm text-muted-foreground">{q.explanation}</p>
+            <QuestionText text={q.explanation} className="text-sm text-muted-foreground" />
           </motion.div>
           {selected !== q.correctIndex && (
             <CommonMistakeWarning mistake={q.commonMistake} />

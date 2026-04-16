@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
+import { QuestionText, FormattedOptionText } from "@/components/QuestionText";
 import type { Question, QuizQuestion, TracingQuestion, CodingQuestion, FillBlankQuestion } from "@/data/questions";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 
@@ -44,9 +45,10 @@ function ReviewItem({ q, answer, index, topicName, topicIcon, points, maxPoints 
         </div>
       </div>
 
-      <p className="text-sm text-foreground">
-        {q.type === "coding" ? (q as CodingQuestion).title : q.type === "fill-blank" ? (q as FillBlankQuestion).title : (q as QuizQuestion | TracingQuestion).question}
-      </p>
+      <QuestionText
+        text={q.type === "coding" ? (q as CodingQuestion).title : q.type === "fill-blank" ? (q as FillBlankQuestion).title : (q as QuizQuestion | TracingQuestion).question}
+        className="text-sm text-foreground"
+      />
 
       {expanded && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-2 pt-2 border-t border-border">
@@ -56,7 +58,7 @@ function ReviewItem({ q, answer, index, topicName, topicIcon, points, maxPoints 
             <div className="space-y-1">
               {(q as QuizQuestion).options.map((opt, i) => (
                 <p key={i} className={`text-sm px-2 py-1 rounded ${i === (q as QuizQuestion).correctIndex ? "bg-success/10 text-success font-semibold" : "text-muted-foreground"}`}>
-                  {String.fromCharCode(1488 + i)}. {opt}
+                  {String.fromCharCode(1488 + i)}. <FormattedOptionText text={opt} />
                 </p>
               ))}
             </div>
@@ -83,12 +85,15 @@ function ReviewItem({ q, answer, index, topicName, topicIcon, points, maxPoints 
 
           <div className="rounded-lg bg-muted/50 p-3">
             <p className="text-xs font-semibold mb-1">💡 הסבר:</p>
-            <p className="text-xs text-muted-foreground">
-              {q.type === "quiz" ? (q as QuizQuestion).explanation :
-               q.type === "tracing" ? (q as TracingQuestion).explanation :
-               q.type === "coding" ? (q as CodingQuestion).solutionExplanation :
-               (q as FillBlankQuestion).solutionExplanation}
-            </p>
+            <QuestionText
+              text={
+                q.type === "quiz" ? (q as QuizQuestion).explanation :
+                q.type === "tracing" ? (q as TracingQuestion).explanation :
+                q.type === "coding" ? (q as CodingQuestion).solutionExplanation :
+                (q as FillBlankQuestion).solutionExplanation
+              }
+              className="text-xs text-muted-foreground"
+            />
           </div>
         </motion.div>
       )}

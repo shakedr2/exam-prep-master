@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
+import { QuestionText } from "@/components/QuestionText";
 import type { TopicTutorial as TopicTutorialData } from "@/data/topicTutorials";
 
 interface TopicTutorialProps {
@@ -188,9 +189,7 @@ export function TopicTutorial({
                     <p className="text-xs text-muted-foreground">נסה/י לענות לפני שמתחילים בתרגול</p>
                   </div>
                 </div>
-                <p className="text-base font-medium text-foreground leading-relaxed">
-                  {warmupQuestion.question}
-                </p>
+                <QuestionText text={warmupQuestion.question} className="text-base font-medium text-foreground leading-relaxed" />
                 <div className="space-y-2">
                   {warmupQuestion.options.map((option, idx) => {
                     const isCorrect = idx === warmupQuestion.correctAnswer;

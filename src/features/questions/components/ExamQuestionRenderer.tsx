@@ -6,6 +6,7 @@ import { QuizView } from "@/components/QuizView";
 import { TracingView } from "@/components/TracingView";
 import { FillBlankView } from "@/components/FillBlankView";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
+import { QuestionText } from "@/components/QuestionText";
 import { Textarea } from "@/components/ui/textarea";
 import { CommonMistakeWarning } from "@/features/questions/components/CommonMistakeWarning";
 import type { Question, CodingQuestion } from "@/data/questions";
@@ -24,7 +25,7 @@ const ExamCodingView = memo(function ExamCodingView({ q, currentAnswer, onAnswer
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-card-foreground">{q.title}</h3>
-      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{q.description}</p>
+      <QuestionText text={q.description} className="text-sm text-muted-foreground" />
       {q.sampleInput && (
         <div className="rounded-xl bg-secondary p-3 text-sm border border-border text-foreground">
           <span className="font-semibold">דוגמה: </span>
@@ -56,7 +57,7 @@ const ExamCodingView = memo(function ExamCodingView({ q, currentAnswer, onAnswer
           <PythonCodeBlock code={q.solution} />
           <div className="rounded-xl bg-primary/5 border border-primary/20 p-4">
             <p className="text-sm font-semibold mb-1">💡 הסבר:</p>
-            <p className="text-sm text-muted-foreground">{q.solutionExplanation}</p>
+            <QuestionText text={q.solutionExplanation} className="text-sm text-muted-foreground" />
           </div>
           {selfAssessed === null && (
             <div className="rounded-xl bg-muted/50 border border-border p-4 space-y-2">
