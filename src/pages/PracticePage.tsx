@@ -1183,6 +1183,11 @@ const PracticePage = () => {
         question={current}
         userAnswer={answers[current.id]?.answer}
         topicId={rawTopicId}
+        nextQuestionIds={
+          activeQuestions
+            .slice(currentIndex + 1, currentIndex + 4)
+            .map((q) => q.id)
+        }
       />
     </div>
     </Fragment>

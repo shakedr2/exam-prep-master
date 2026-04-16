@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { Send, Sparkles, RotateCcw } from "lucide-react";
+import { Send, Sparkles, RotateCcw, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { Topic } from "../types";
 import { useTutorChat } from "../hooks/useTutorChat";
+import { useAIRequestManager } from "@/hooks/useAIRequestManager";
 
 interface TutorChatProps {
   topic: Topic;
@@ -36,6 +37,7 @@ export function TutorChat({ topic, activeLessonId, className }: TutorChatProps) 
     topic,
     activeLessonId,
   });
+  const { submit: debouncedSubmit, loading: debounceLoading } = useAIRequestManager({ debounceMs: 500 });
 
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -49,7 +51,9 @@ export function TutorChat({ topic, activeLessonId, className }: TutorChatProps) 
     const text = input.trim();
     if (!text || streaming) return;
     setInput("");
-    sendMessage(text);
+    debouncedSubmit(async () => {
+      await sendMessage(text);
+    });
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -179,11 +183,11 @@ export function TutorChat({ topic, activeLessonId, className }: TutorChatProps) 
             "shrink-0 h-10 w-10 bg-gradient-to-br",
             topic.accent.gradient,
           )}
-          disabled={!input.trim() || streaming}
+          disabled={!input.trim() || streaming || debounceLoading}
           onClick={handleSend}
           aria-label="Send"
         >
-          <Send className="h-4 w-4" />
+          {debounceLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </Button>
       </div>
     </div>
