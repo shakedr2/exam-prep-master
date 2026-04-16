@@ -72,11 +72,21 @@ serve(async (req) => {
       );
     }
 
-    const { messages, questionContext } = await req.json();
+    const { messages, questionContext, systemPrompt: customSystemPrompt, topicId, topicName } =
+      await req.json();
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
 
-    const systemPrompt = `אתה מורה פרטי לתכנות Python בשם "פרופ' פייתון". 
+    // The default persona is the legacy Prof. Python tutor used by the
+    // per-question FloatingAIButton. Topic-specific pages send their own
+    // `systemPrompt` (one of the 8 Prof. X personas under
+    // src/features/curriculum/prompts). We log the topicId for per-tutor
+    // usage tracking.
+    if (topicId) {
+      console.log(`[ai-tutor] topicId=${topicId} topicName=${topicName ?? ""}`);
+    }
+
+    const defaultPrompt = `אתה מורה פרטי לתכנות Python בשם "פרופ' פייתון".
 אתה עוזר לסטודנטים להתכונן למבחנים בקורס "כנות בסיסית" (Python) של ד"ר רמי רשקוביץ.
 
 כללים חשובים מאוד:
@@ -90,9 +100,16 @@ serve(async (req) => {
 8. אם התלמיד ממש נתקע אחרי כמה ניסיונות, תוכל לתת רמז יותר ישיר אבל עדיין לא את התשובה המלאה.
 9. התאם את רמת ההסבר לרמת התלמיד.
 
-${questionContext ? `הקשר השאלה הנוכחית:\n${questionContext}` : ""}
-
 זכור: המטרה שלך היא ללמד, לא לפתור! 🎓`;
+
+    const basePrompt =
+      typeof customSystemPrompt === "string" && customSystemPrompt.trim().length > 0
+        ? customSystemPrompt
+        : defaultPrompt;
+
+    const systemPrompt = questionContext
+      ? `${basePrompt}\n\n# Context\n${questionContext}`
+      : basePrompt;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",

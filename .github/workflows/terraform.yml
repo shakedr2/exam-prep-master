@@ -1,0 +1,161 @@
+name: Terraform
+
+on:
+  pull_request:
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: terraform-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fmt-validate:
+    name: fmt + validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+          terraform_wrapper: false
+
+      - name: Terraform fmt (recursive)
+        run: terraform fmt -check -recursive terraform
+
+      - name: Terraform validate (staging)
+        working-directory: terraform/environments/staging
+        run: |
+          terraform init -backend=false
+          terraform validate
+
+      - name: Terraform validate (production)
+        working-directory: terraform/environments/production
+        run: |
+          terraform init -backend=false
+          terraform validate
+
+  plan:
+    name: plan (${{ matrix.environment }})
+    needs: fmt-validate
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [staging, production]
+    env:
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: '0'
+      TF_CLI_ARGS: '-no-color'
+      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+
+      # Provider credentials — injected from repo secrets.
+      TF_VAR_vercel_api_token:       ${{ secrets.VERCEL_API_TOKEN }}
+      TF_VAR_vercel_team_id:         ${{ secrets.VERCEL_TEAM_ID }}
+      TF_VAR_supabase_access_token:  ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      TF_VAR_cloudflare_api_token:   ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      # Non-sensitive config — shared across environments.
+      TF_VAR_github_repo:                 ${{ github.repository }}
+      TF_VAR_supabase_organization_slug:  ${{ secrets.SUPABASE_ORG_SLUG }}
+      TF_VAR_cloudflare_zone_id:          ${{ secrets.CLOUDFLARE_ZONE_ID }}
+      TF_VAR_custom_domain:               ${{ secrets.CUSTOM_DOMAIN }}
+
+      # Per-env overrides — GitHub environment secrets give us staging vs. prod values.
+      TF_VAR_production_branch:           ${{ vars.PRODUCTION_BRANCH || 'main' }}
+      TF_VAR_supabase_project_ref:        ${{ secrets.SUPABASE_PROJECT_REF }}
+      TF_VAR_supabase_url:                ${{ secrets.SUPABASE_URL }}
+      TF_VAR_supabase_publishable_key:    ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+      TF_VAR_supabase_region:             ${{ vars.SUPABASE_REGION || 'eu-central-1' }}
+      TF_VAR_sentry_dsn:                  ${{ secrets.SENTRY_DSN }}
+      TF_VAR_posthog_key:                 ${{ secrets.POSTHOG_KEY }}
+
+    environment: ${{ matrix.environment }}
+    defaults:
+      run:
+        working-directory: terraform/environments/${{ matrix.environment }}
+
+    steps:
+      - name: Preflight — check for Terraform Cloud token
+        id: preflight
+        # Override the job-level default working-directory, which points at a
+        # path that only exists after checkout.
+        working-directory: ${{ github.workspace }}
+        env:
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+        run: |
+          if [ -z "$TF_API_TOKEN" ]; then
+            echo "::notice::TF_API_TOKEN not configured — skipping plan. Add Terraform Cloud secrets to enable remote planning for PRs."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.preflight.outputs.skip != 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        if: steps.preflight.outputs.skip != 'true'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          terraform_wrapper: false
+
+      - name: Terraform init
+        if: steps.preflight.outputs.skip != 'true'
+        run: terraform init
+
+      - name: Terraform plan
+        id: plan
+        if: steps.preflight.outputs.skip != 'true'
+        run: |
+          set +e
+          terraform plan -detailed-exitcode -out=tfplan | tee plan.txt
+          code=${PIPESTATUS[0]}
+          echo "exitcode=$code" >> "$GITHUB_OUTPUT"
+          # 0 = no changes, 2 = changes present, 1 = error.
+          if [ "$code" = "1" ]; then exit 1; fi
+
+      - name: Post plan summary
+        if: always() && steps.preflight.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        env:
+          PLAN_ENV: ${{ matrix.environment }}
+          PLAN_EXIT: ${{ steps.plan.outputs.exitcode }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = `terraform/environments/${process.env.PLAN_ENV}/plan.txt`;
+            let body = `### Terraform plan — \`${process.env.PLAN_ENV}\`\n`;
+            body += `Exit code: \`${process.env.PLAN_EXIT}\` (0 = no changes, 2 = changes)\n\n`;
+            if (fs.existsSync(path)) {
+              const raw = fs.readFileSync(path, 'utf8');
+              const trimmed = raw.length > 60000 ? raw.slice(-60000) + '\n...(truncated)' : raw;
+              body += '```hcl\n' + trimmed + '\n```';
+            } else {
+              body += '_plan.txt not produced_';
+            }
+            if (context.payload.pull_request) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body,
+              });
+            }

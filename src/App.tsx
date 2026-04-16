@@ -31,6 +31,18 @@ const LearnPage = lazy(retryLazy(() => import("./pages/LearnPage")));
 const DevOpsTrackPage = lazy(retryLazy(() => import("./pages/DevOpsTrackPage")));
 const PracticePage = lazy(retryLazy(() => import("./pages/PracticePage")));
 
+// Multi-topic tutor pages — one per expert tutor (Prof. Python, Prof. Linux, …).
+// Lazy-loaded to keep the initial bundle small; each page ships the topic's
+// full curriculum + tutor persona.
+const PythonPage = lazy(retryLazy(() => import("./pages/topics/PythonPage")));
+const LinuxPage = lazy(retryLazy(() => import("./pages/topics/LinuxPage")));
+const GitPage = lazy(retryLazy(() => import("./pages/topics/GitPage")));
+const NetworkingPage = lazy(retryLazy(() => import("./pages/topics/NetworkingPage")));
+const DockerPage = lazy(retryLazy(() => import("./pages/topics/DockerPage")));
+const CICDPage = lazy(retryLazy(() => import("./pages/topics/CICDPage")));
+const CloudPage = lazy(retryLazy(() => import("./pages/topics/CloudPage")));
+const IaCPage = lazy(retryLazy(() => import("./pages/topics/IaCPage")));
+
 const LazyFallback = () => (
   <div className="flex items-center justify-center min-h-[50vh]">
     <div className="text-muted-foreground">טוען...</div>
@@ -108,6 +120,14 @@ function AnimatedRoutes() {
         <Route path="/progress" element={<AuthGuard><PageTransition><ProgressPage /></PageTransition></AuthGuard>} />
         <Route path="/review-mistakes" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
         <Route path="/tracks/devops" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><DevOpsTrackPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/topics/python" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><PythonPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/topics/linux" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><LinuxPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/topics/git" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><GitPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/topics/networking" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><NetworkingPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/topics/docker" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><DockerPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/topics/cicd" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><CICDPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/topics/cloud" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><CloudPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/topics/iac" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><IaCPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>

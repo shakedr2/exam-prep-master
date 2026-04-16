@@ -253,6 +253,14 @@ export type Database = {
           reason: string
           metadata: Json
           created_at: string
+      topic_progress: {
+        Row: {
+          id: number
+          user_id: string
+          topic_id: string
+          module_id: string
+          lesson_id: string
+          completed_at: string
         }
         Insert: {
           id?: number
@@ -261,6 +269,10 @@ export type Database = {
           reason: string
           metadata?: Json
           created_at?: string
+          topic_id: string
+          module_id: string
+          lesson_id: string
+          completed_at?: string
         }
         Update: {
           id?: number
@@ -341,6 +353,10 @@ export type Database = {
           preferred_topics?: string[]
           completed_at?: string | null
           updated_at?: string
+          topic_id?: string
+          module_id?: string
+          lesson_id?: string
+          completed_at?: string
         }
         Relationships: []
       }
