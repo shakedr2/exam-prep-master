@@ -33,6 +33,7 @@ import TermsPage from "./pages/TermsPage";
 const ReviewMistakes = lazy(retryLazy(() => import("./pages/ReviewMistakes")));
 const LearnPage = lazy(retryLazy(() => import("./pages/LearnPage")));
 const DevOpsTrackPage = lazy(retryLazy(() => import("./pages/DevOpsTrackPage")));
+const OopTrackPage = lazy(retryLazy(() => import("./pages/OopTrackPage")));
 const PracticePage = lazy(retryLazy(() => import("./pages/PracticePage")));
 
 // Multi-topic tutor pages — one per expert tutor (Prof. Python, Prof. Linux, …).
@@ -124,6 +125,7 @@ function AnimatedRoutes() {
         <Route path="/progress" element={<AuthGuard><PageTransition><ProgressPage /></PageTransition></AuthGuard>} />
         <Route path="/review-mistakes" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><ReviewMistakes /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
         <Route path="/tracks/devops" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><DevOpsTrackPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/tracks/python-oop" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><OopTrackPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/topics/python" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><PythonPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/topics/linux" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><LinuxPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/topics/git" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LazyFallback />}><GitPage /></Suspense></LazyRouteBoundary></PageTransition>} />

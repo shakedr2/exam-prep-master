@@ -8,6 +8,7 @@ export interface Module {
   order: number;
   icon: string;
   comingSoon?: boolean;
+  track?: "python-fundamentals" | "python-oop";
 }
 
 export const MODULES: Module[] = [
@@ -58,6 +59,7 @@ export const MODULES: Module[] = [
     topicIds: ["classes_objects", "inheritance", "polymorphism"],
     order: 6,
     icon: "🏛️",
+    track: "python-oop",
   },
   {
     id: "advanced",
