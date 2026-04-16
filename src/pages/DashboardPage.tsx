@@ -5,7 +5,7 @@ import { trackDashboardViewed } from "@/lib/analytics";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useTopicCompletion } from "@/hooks/useTopicCompletion";
-import { getModulesByTrack } from "@/data/modules";
+import { MODULES, getModulesByTrack } from "@/data/modules";
 import { XpBadge } from "@/components/XpBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -59,9 +59,11 @@ const DashboardPage = () => {
 
   const pythonModules = useMemo(() => getModulesByTrack("python-fundamentals"), []);
 
+  // Collect topic IDs from ALL tracks so OOP/DevOps topics don't leak
+  // into the "ungrouped" section of the Python Fundamentals dashboard.
   const allModuleTopicIds = useMemo(
-    () => new Set(pythonModules.flatMap((m) => m.topicIds)),
-    [pythonModules]
+    () => new Set(MODULES.flatMap((m) => m.topicIds)),
+    []
   );
 
   const ungroupedTopics = useMemo(
