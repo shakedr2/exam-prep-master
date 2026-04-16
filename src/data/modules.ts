@@ -8,6 +8,7 @@ export interface Module {
   order: number;
   icon: string;
   comingSoon?: boolean;
+  track?: "python-fundamentals" | "python-oop";
 }
 
 export const MODULES: Module[] = [
@@ -18,6 +19,7 @@ export const MODULES: Module[] = [
     topicIds: ["variables_io", "arithmetic"],
     order: 1,
     icon: "👣",
+    track: "python-fundamentals",
   },
   {
     id: "control_flow",
@@ -26,6 +28,7 @@ export const MODULES: Module[] = [
     topicIds: ["conditions", "loops"],
     order: 2,
     icon: "🔀",
+    track: "python-fundamentals",
   },
   {
     id: "data_structures",
@@ -34,6 +37,7 @@ export const MODULES: Module[] = [
     topicIds: ["strings", "lists", "tuples_sets_dicts"],
     order: 3,
     icon: "🗃️",
+    track: "python-fundamentals",
   },
   {
     id: "functions_module",
@@ -42,6 +46,7 @@ export const MODULES: Module[] = [
     topicIds: ["functions"],
     order: 4,
     icon: "🧩",
+    track: "python-fundamentals",
   },
   {
     id: "code_tracing",
@@ -50,6 +55,7 @@ export const MODULES: Module[] = [
     topicIds: ["tracing", "math"],
     order: 5,
     icon: "🔍",
+    track: "python-fundamentals",
   },
   {
     id: "oop_basics",
@@ -58,6 +64,7 @@ export const MODULES: Module[] = [
     topicIds: ["classes_objects", "inheritance", "polymorphism"],
     order: 6,
     icon: "🏛️",
+    track: "python-oop",
   },
   {
     id: "advanced",
@@ -66,6 +73,7 @@ export const MODULES: Module[] = [
     topicIds: ["files_exceptions", "decorators_special"],
     order: 7,
     icon: "✨",
+    track: "python-fundamentals",
   },
 ];
 
