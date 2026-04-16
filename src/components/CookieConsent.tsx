@@ -64,6 +64,12 @@ export function CookieConsent() {
     [applyConsent, analyticsChecked]
   );
 
+  /** Close the customize modal without changing stored consent. */
+  const closeCustomize = useCallback(() => {
+    setVisible(false);
+    setShowIcon(true);
+  }, []);
+
   const openSettings = useCallback(() => {
     const existing = getStoredConsent();
     setAnalyticsChecked(existing?.analytics ?? false);
@@ -101,7 +107,7 @@ export function CookieConsent() {
       {visible && view === "customize" && (
         <div
           className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
-          onClick={handleRejectNonEssential}
+          onClick={hasConsented() ? closeCustomize : undefined}
           aria-hidden="true"
         />
       )}
@@ -132,7 +138,7 @@ export function CookieConsent() {
             </div>
             {view === "customize" && (
               <button
-                onClick={handleRejectNonEssential}
+                onClick={closeCustomize}
                 aria-label="סגור"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -309,7 +315,7 @@ function CookieCategory({
           <span
             className={cn(
               "inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200",
-              checked ? "translate-x-1" : "translate-x-6"
+              checked ? "translate-x-6" : "translate-x-1"
             )}
           />
           <span className="sr-only">{checked ? "פעיל" : "כבוי"}</span>
