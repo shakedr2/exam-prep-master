@@ -172,12 +172,12 @@ const ModuleSection = memo(function ModuleSection({
     .filter(Boolean) as typeof topics;
 
   const moduleCompletion = moduleTopics.length > 0
-    ? Math.round(
+    ? Math.min(100, Math.round(
         moduleTopics.reduce(
           (sum, t) => sum + getTopicCompletion(t.id, questionCounts[t.id] ?? 0),
           0
         ) / moduleTopics.length
-      )
+      ))
     : 0;
 
   if (moduleTopics.length === 0) return null;

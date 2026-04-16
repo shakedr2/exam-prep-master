@@ -325,7 +325,7 @@ export function useRemoteProgress() {
   const getTopicCompletion = useCallback(
     (topicId: string, totalQuestions: number) => {
       const correct = rows.filter((r) => r.topic_id === topicId && r.is_correct).length;
-      return Math.round((correct / Math.max(totalQuestions, 1)) * 100);
+      return Math.min(100, Math.round((correct / Math.max(totalQuestions, 1)) * 100));
     },
     [rows]
   );

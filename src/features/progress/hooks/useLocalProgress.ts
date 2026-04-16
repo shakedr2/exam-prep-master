@@ -131,7 +131,7 @@ export function useLocalProgress() {
     const answered = Object.entries(progress.answeredQuestions)
       .filter(([id]) => topicQuestionIds.has(id))
       .filter(([, v]) => v.correct).length;
-    return Math.round((answered / Math.max(totalQuestions, 1)) * 100);
+    return Math.min(100, Math.round((answered / Math.max(totalQuestions, 1)) * 100));
   }, [progress.answeredQuestions]);
 
   const getIncorrectQuestions = useCallback(() => {
