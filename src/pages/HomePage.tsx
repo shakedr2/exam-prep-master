@@ -291,7 +291,7 @@ const HomePage = () => {
         {/* Hero */}
         <HeroFrame
           variant="python"
-          eyebrow="// exam-prep-master / home"
+          eyebrow="בית > מסלולי למידה"
           title={
             <>
               <span className="block">{greeting}</span>
