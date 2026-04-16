@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAnonUserId } from "@/lib/anonUserId";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
 
 export interface TopicStats {
   topicId: string;
@@ -24,6 +25,7 @@ export interface SupabaseProgress {
 
 export function useSupabaseProgress(): SupabaseProgress {
   const { user } = useAuth();
+  const { stats: precomputed } = useDashboardStats();
   const [totalAnswered, setTotalAnswered] = useState(0);
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [topicStats, setTopicStats] = useState<TopicStats[]>([]);
@@ -94,11 +96,14 @@ export function useSupabaseProgress(): SupabaseProgress {
     fetchProgress();
   }, [fetchProgress]);
 
-  const overallAccuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
+  // Prefer precomputed totals from dashboard_stats (issue #161)
+  const effectiveAnswered = precomputed?.totalQuestionsAnswered ?? totalAnswered;
+  const effectiveCorrect = precomputed?.correctAnswers ?? totalCorrect;
+  const overallAccuracy = effectiveAnswered > 0 ? Math.round((effectiveCorrect / effectiveAnswered) * 100) : 0;
 
   return {
-    totalAnswered,
-    totalCorrect,
+    totalAnswered: effectiveAnswered,
+    totalCorrect: effectiveCorrect,
     overallAccuracy,
     topicStats,
     loading,
