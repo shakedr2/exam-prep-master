@@ -1,6 +1,6 @@
 export type QuestionType = "quiz" | "tracing" | "coding" | "fill-blank";
 // The 8 official syllabus topics. "tracing" and "math" are legacy aliases kept until PR 1B remaps all questions.
-export type TopicId = "variables_io" | "arithmetic" | "conditions" | "loops" | "functions" | "strings" | "lists" | "tuples_sets_dicts" | "tracing" | "math";
+export type TopicId = "variables_io" | "arithmetic" | "conditions" | "loops" | "functions" | "strings" | "lists" | "tuples_sets_dicts" | "tracing" | "math" | "classes_objects" | "inheritance" | "polymorphism" | "files_exceptions" | "decorators_special";
 export type Difficulty = "easy" | "medium" | "hard";
 
 export interface WarmupQuestion {
