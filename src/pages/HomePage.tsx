@@ -390,7 +390,7 @@ const HomePage = () => {
                 description="Linux, Git, רשתות, Docker, CI/CD, ענן ו‑Infrastructure as Code. מסלול שלם מ‑0 למהנדס."
                 logo={<DevOpsLogo />}
                 accentColor="#7c5cfc"
-                comingSoon
+                moduleCount={18}
                 onSelect={() => navigate("/tracks/devops")}
               />
             </motion.div>
