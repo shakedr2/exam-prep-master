@@ -1,6 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/shared/integrations/supabase/client";
+import * as Sentry from "@sentry/react";
+
+const AUTH_RETRY_DELAY_MS = 1500;
+const AUTH_MAX_RETRIES = 2;
 
 const AuthCallbackPage = () => {
   const navigate = useNavigate();
@@ -10,8 +14,27 @@ const AuthCallbackPage = () => {
     if (hasRunRef.current) return;
     hasRunRef.current = true;
 
+    async function getSessionWithRetry() {
+      for (let attempt = 0; attempt <= AUTH_MAX_RETRIES; attempt++) {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          if (error) return { session: null, error };
+          return { session, error: null };
+        } catch (err) {
+          // Lock timeout — retry after a short delay to let the lock release
+          if (attempt < AUTH_MAX_RETRIES) {
+            await new Promise((r) => setTimeout(r, AUTH_RETRY_DELAY_MS * (attempt + 1)));
+          } else {
+            Sentry.captureException(err);
+            return { session: null, error: err };
+          }
+        }
+      }
+      return { session: null, error: new Error("getSession retries exhausted") };
+    }
+
     async function handleCallback() {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const { session, error } = await getSessionWithRetry();
 
       if (error || !session?.user) {
         navigate("/login", { replace: true });

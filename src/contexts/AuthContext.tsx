@@ -24,14 +24,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      setLoading(false);
-    });
+    let initialSessionReceived = false;
 
+    // Use onAuthStateChange as the single source of truth for session state.
+    // It fires an INITIAL_SESSION event on setup, eliminating the need for a
+    // separate getSession() call that would race for the same Navigator Lock.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, s) => {
+        initialSessionReceived = true;
         setSession(s);
         setUser(s?.user ?? null);
         setLoading(false);
@@ -52,34 +52,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Safety timeout: if INITIAL_SESSION never fires (e.g. lock timeout),
+    // proceed as unauthenticated so the app doesn't hang on the loading screen.
+    const safetyTimeout = setTimeout(() => {
+      if (!initialSessionReceived) {
+        console.warn("Auth: INITIAL_SESSION not received within 5 s — proceeding as guest");
+        Sentry.captureMessage("Auth lock timeout: INITIAL_SESSION not received within 5s", "warning");
+        setLoading(false);
+      }
+    }, 5000);
+
+    return () => {
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) return { error: error.message };
-    return { error: null };
+    try {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) return { error: error.message };
+      return { error: null };
+    } catch (err) {
+      Sentry.captureException(err);
+      return { error: err instanceof Error ? err.message : "Sign-up failed" };
+    }
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
-    return { error: null };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { error: error.message };
+      return { error: null };
+    } catch (err) {
+      Sentry.captureException(err);
+      return { error: err instanceof Error ? err.message : "Sign-in failed" };
+    }
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    if (error) return { error: error.message };
-    return { error: null };
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) return { error: error.message };
+      return { error: null };
+    } catch (err) {
+      Sentry.captureException(err);
+      return { error: err instanceof Error ? err.message : "Google sign-in failed" };
+    }
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      Sentry.captureException(err);
+      // Clear local state even if signOut fails due to lock timeout,
+      // so the user isn't stuck in a broken authenticated state.
+      setSession(null);
+      setUser(null);
+    }
   }, []);
 
   return (
