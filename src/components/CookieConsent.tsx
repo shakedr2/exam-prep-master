@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Cookie, X, ChevronDown, ChevronUp, Shield } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import {
   hasConsented,
@@ -29,6 +30,7 @@ type View = "banner" | "customize";
  *  - A small floating cookie icon lets returning users re-open settings.
  */
 export function CookieConsent() {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [showIcon, setShowIcon] = useState(false);
   const [view, setView] = useState<View>("banner");
@@ -88,7 +90,7 @@ export function CookieConsent() {
       {showIcon && !visible && (
         <button
           onClick={openSettings}
-          aria-label="פתח הגדרות עוגיות"
+          aria-label={t("cookie.openSettings")}
           className={cn(
             "fixed bottom-20 left-4 z-50 md:bottom-6",
             "flex h-10 w-10 items-center justify-center rounded-full",
@@ -117,10 +119,9 @@ export function CookieConsent() {
       {/* ------------------------------------------------------------------ */}
       {visible && (
         <div
-          dir="rtl"
           role="dialog"
           aria-modal="true"
-          aria-label="הסכמה לעוגיות"
+          aria-label={t("cookie.consentLabel")}
           className={cn(
             "fixed z-50 bg-background border border-border shadow-xl",
             view === "banner"
@@ -133,13 +134,13 @@ export function CookieConsent() {
             <div className="flex items-center gap-2 text-primary">
               <Cookie className="h-5 w-5 shrink-0" />
               <h2 className="font-semibold text-base text-foreground">
-                {view === "banner" ? "אנחנו משתמשים בעוגיות" : "הגדרות עוגיות"}
+                {view === "banner" ? t("cookie.title") : t("cookie.settings")}
               </h2>
             </div>
             {view === "customize" && (
               <button
                 onClick={closeCustomize}
-                aria-label="סגור"
+                aria-label={t("common.close")}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="h-5 w-5" />
@@ -152,13 +153,12 @@ export function CookieConsent() {
             {view === "banner" ? (
               <>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  אנחנו משתמשים בעוגיות הכרחיות להפעלת האתר ובעוגיות אנליטיקה
-                  (PostHog) כדי לשפר את חוויית הלמידה. אנא בחר את העדפותיך.{" "}
+                  {t("cookie.description")}{" "}
                   <a
                     href="/privacy"
                     className="text-primary underline underline-offset-2 hover:no-underline"
                   >
-                    מדיניות פרטיות
+                    {t("cookie.privacyLink")}
                   </a>
                 </p>
 
@@ -173,21 +173,24 @@ export function CookieConsent() {
                   ) : (
                     <ChevronDown className="h-3.5 w-3.5" />
                   )}
-                  <span>פרטים על סוגי העוגיות</span>
+                  <span>{t("cookie.detailsToggle")}</span>
                 </button>
 
                 {detailsOpen && (
                   <div className="rounded-lg border border-border divide-y divide-border text-sm overflow-hidden">
                     <CookieCategory
-                      title="הכרחיות"
-                      description="אימות משתמש ושמירת ההגדרות שלך (Supabase). תמיד פעיל."
+                      title={t("cookie.essential.title")}
+                      description={t("cookie.essential.description")}
                       icon={<Shield className="h-4 w-4 text-primary" />}
+                      alwaysOnLabel={t("cookie.alwaysOn")}
                       alwaysOn
                     />
                     <CookieCategory
-                      title="אנליטיקה"
-                      description="PostHog — מדידת שימוש כדי לשפר את האפליקציה. דורש הסכמה."
+                      title={t("cookie.analytics.title")}
+                      description={t("cookie.analytics.description")}
                       icon={<Cookie className="h-4 w-4 text-orange-500" />}
+                      activeLabel={t("cookie.active")}
+                      inactiveLabel={t("cookie.inactive")}
                     />
                   </div>
                 )}
@@ -196,21 +199,24 @@ export function CookieConsent() {
               /* Customize view */
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  בחר אילו עוגיות לאשר. עוגיות הכרחיות תמיד פעילות.
+                  {t("cookie.selectPrompt")}
                 </p>
                 <div className="rounded-lg border border-border divide-y divide-border text-sm overflow-hidden">
                   <CookieCategory
-                    title="הכרחיות"
-                    description="אימות משתמש ושמירת ההגדרות שלך (Supabase). תמיד פעיל."
+                    title={t("cookie.essential.title")}
+                    description={t("cookie.essential.description")}
                     icon={<Shield className="h-4 w-4 text-primary" />}
+                    alwaysOnLabel={t("cookie.alwaysOn")}
                     alwaysOn
                   />
                   <CookieCategory
-                    title="אנליטיקה (PostHog)"
-                    description="מדידת שימוש אנונימית כדי להבין אילו נושאים הכי קשים ולשפר את האפליקציה."
+                    title={t("cookie.analytics.titleFull")}
+                    description={t("cookie.analytics.descriptionFull")}
                     icon={<Cookie className="h-4 w-4 text-orange-500" />}
                     checked={analyticsChecked}
                     onToggle={setAnalyticsChecked}
+                    activeLabel={t("cookie.active")}
+                    inactiveLabel={t("cookie.inactive")}
                   />
                 </div>
               </div>
@@ -229,19 +235,19 @@ export function CookieConsent() {
                     onClick={handleAcceptAll}
                     className="flex-1 rounded-lg bg-primary text-primary-foreground text-sm font-medium py-2.5 px-4 hover:bg-primary/90 transition-colors"
                   >
-                    אשר הכל
+                    {t("cookie.acceptAll")}
                   </button>
                   <button
                     onClick={handleRejectNonEssential}
                     className="flex-1 rounded-lg border border-border text-sm font-medium py-2.5 px-4 hover:bg-muted transition-colors"
                   >
-                    דחה שאינן הכרחיות
+                    {t("cookie.rejectNonEssential")}
                   </button>
                   <button
                     onClick={() => setView("customize")}
                     className="flex-1 rounded-lg border border-border text-sm font-medium py-2.5 px-4 hover:bg-muted transition-colors text-muted-foreground"
                   >
-                    התאמה אישית
+                    {t("cookie.customize")}
                   </button>
                 </>
               ) : (
@@ -250,13 +256,13 @@ export function CookieConsent() {
                     onClick={handleSaveCustom}
                     className="flex-1 rounded-lg bg-primary text-primary-foreground text-sm font-medium py-2.5 px-4 hover:bg-primary/90 transition-colors"
                   >
-                    שמור העדפות
+                    {t("cookie.savePreferences")}
                   </button>
                   <button
                     onClick={handleAcceptAll}
                     className="flex-1 rounded-lg border border-border text-sm font-medium py-2.5 px-4 hover:bg-muted transition-colors"
                   >
-                    אשר הכל
+                    {t("cookie.acceptAll")}
                   </button>
                 </>
               )}
@@ -277,6 +283,9 @@ interface CookieCategoryProps {
   description: string;
   icon: React.ReactNode;
   alwaysOn?: boolean;
+  alwaysOnLabel?: string;
+  activeLabel?: string;
+  inactiveLabel?: string;
   checked?: boolean;
   onToggle?: (val: boolean) => void;
 }
@@ -286,6 +295,9 @@ function CookieCategory({
   description,
   icon,
   alwaysOn,
+  alwaysOnLabel,
+  activeLabel,
+  inactiveLabel,
   checked,
   onToggle,
 }: CookieCategoryProps) {
@@ -300,7 +312,7 @@ function CookieCategory({
       </div>
       {alwaysOn ? (
         <span className="shrink-0 text-xs text-muted-foreground bg-muted rounded px-1.5 py-0.5 self-center">
-          תמיד פעיל
+          {alwaysOnLabel}
         </span>
       ) : (
         <button
@@ -318,7 +330,7 @@ function CookieCategory({
               checked ? "translate-x-6" : "translate-x-1"
             )}
           />
-          <span className="sr-only">{checked ? "פעיל" : "כבוי"}</span>
+          <span className="sr-only">{checked ? activeLabel : inactiveLabel}</span>
         </button>
       )}
     </div>

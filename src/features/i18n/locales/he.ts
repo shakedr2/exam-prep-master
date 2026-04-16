@@ -1,11 +1,8 @@
 /**
  * Hebrew (he) — default locale translations.
  *
- * Only add keys here for NEW features built after the i18n foundation.
- * Do NOT add keys for existing Hebrew-hardcoded components.
- *
  * Key convention: <feature>.<component>.<element>
- * Example: "common.loading", "auth.login.title", "practice.result.correct"
+ * Example: "common.loading", "nav.dashboard", "home.hero.title"
  */
 const he = {
   common: {
@@ -20,6 +17,105 @@ const he = {
     next: "הבא",
     finish: "סיום",
     save: "שמור",
+    comingSoon: "בקרוב",
+    progress: "התקדמות",
+    modules: "מודולים",
+    questions: "שאלות",
+    concepts: "מושגים",
+    solvedCorrectly: "נפתרו נכון",
+    termsOfService: "תנאי שירות",
+  },
+  nav: {
+    dashboard: "ראשי",
+    exam: "מבחן",
+    progress: "התקדמות",
+    signOut: "יציאה",
+    signIn: "התחברות",
+  },
+  home: {
+    greeting: "שלום, {{name}}",
+    welcome: "ברוכים הבאים",
+    heroEyebrow: "בית > מסלולי למידה",
+    heroPractice: "בואו נתרגל פייתון",
+    heroSubtitle: "בחר מסלול למידה כדי להתחיל. כל מסלול בנוי משלבים, מודולים ושאלות תרגול — הכל בעברית, עם משוב מיידי.",
+    questionsSolved: "שאלות נפתרו נכון",
+    outOf: "מתוך",
+    readyToStart: "מוכנים לצאת לדרך?",
+    learningPaths: "מסלולי למידה",
+    pythonName: "יסודות פייתון",
+    pythonDescription: "משתנים, תנאים, לולאות, מחרוזות, רשימות ופונקציות — הכנה מלאה למבחן האוניברסיטה הפתוחה.",
+    devopsName: "מהנדס DevOps",
+    devopsDescription: "Linux, Git, רשתות, Docker, CI/CD, ענן ו‑Infrastructure as Code. מסלול שלם מ‑0 למהנדס.",
+  },
+  dashboard: {
+    breadcrumbHome: "בית",
+    breadcrumbPython: "יסודות פייתון",
+    welcomeNew: "ברוכים הבאים, {{name}}!",
+    greeting: "שלום, {{name}}",
+    newUserSubtitle: "בואו נתחיל ללמוד Python 🐍",
+    returningSubtitle: "הנה סקירת הלימודים שלך.",
+    stats: {
+      correctQuestions: "שאלות נכונות",
+      totalSolved: "סה״כ נפתרו",
+      streakDays: "ימים רצופים",
+      activeToday: "היום",
+      activeYesterday: "אתמול",
+      activeOn: "פעיל {{date}}",
+      startPracticing: "התחל לתרגל!",
+    },
+    exam: {
+      title: "מבחן סימולציה",
+      subtitle: "6 שאלות, 3 שעות — כמו במבחן האמיתי",
+      start: "התחל",
+      lastScore: "אחרון: {{score}}%",
+    },
+    learningPath: "מסלול הלמידה",
+    other: "אחר",
+    tip: "טיפ: נסה להתחיל עם למידת המושגים לפני שתתרגל!",
+    newUser: {
+      whereToStart: "מאיפה מתחילים?",
+      firstTopic: "משתנים, טיפוסים וקלט/פלט",
+      firstTopicDesc: "הנושא הראשון בקורס — int, float, str, bool, input() ו-print()",
+      startLearning: "התחל ללמוד",
+    },
+    topic: {
+      locked: "נעול",
+      lockedTooltip: "יש לסיים את הנושא הקודם כדי לפתוח נושא זה",
+      mastered: "שולט בנושא! ✅",
+      completed: "הושלם",
+      lockedPrevious: "נעול — יש לסיים את הנושא הקודם",
+      continuePractice: "המשך לתרגל ({{done}}/{{total}})",
+      startPractice: "התחל לתרגל",
+      continueLearn: "המשך ללמוד ({{done}}/{{total}})",
+      startLearn: "התחל ללמוד",
+    },
+  },
+  cookie: {
+    title: "אנחנו משתמשים בעוגיות",
+    settings: "הגדרות עוגיות",
+    openSettings: "פתח הגדרות עוגיות",
+    consentLabel: "הסכמה לעוגיות",
+    description: "אנחנו משתמשים בעוגיות הכרחיות להפעלת האתר ובעוגיות אנליטיקה (PostHog) כדי לשפר את חוויית הלמידה. אנא בחר את העדפותיך.",
+    privacyLink: "מדיניות פרטיות",
+    detailsToggle: "פרטים על סוגי העוגיות",
+    acceptAll: "אשר הכל",
+    rejectNonEssential: "דחה שאינן הכרחיות",
+    customize: "התאמה אישית",
+    savePreferences: "שמור העדפות",
+    selectPrompt: "בחר אילו עוגיות לאשר. עוגיות הכרחיות תמיד פעילות.",
+    alwaysOn: "תמיד פעיל",
+    active: "פעיל",
+    inactive: "כבוי",
+    essential: {
+      title: "הכרחיות",
+      description: "אימות משתמש ושמירת ההגדרות שלך (Supabase). תמיד פעיל.",
+    },
+    analytics: {
+      title: "אנליטיקה",
+      titleFull: "אנליטיקה (PostHog)",
+      description: "PostHog — מדידת שימוש כדי לשפר את האפליקציה. דורש הסכמה.",
+      descriptionFull: "מדידת שימוש אנונימית כדי להבין אילו נושאים הכי קשים ולשפר את האפליקציה.",
+    },
   },
   ai: {
     error: {
@@ -34,6 +130,11 @@ const he = {
     pageTitle: "מדיניות פרטיות",
     lastUpdated: "עודכן לאחרונה",
     footerLink: "מדיניות פרטיות",
+  },
+  error: {
+    somethingWentWrong: "משהו השתבש",
+    unexpectedError: "אירעה שגיאה בלתי צפויה. נסה לרענן את הדף.",
+    refreshPage: "רענן דף",
   },
 } as const;
 

@@ -1,9 +1,7 @@
 /**
- * English (en) — translations for new features.
+ * English (en) — translations.
  *
  * Mirror every key that exists in `he.ts`.
- * Leave values empty ("") when translation is not yet available —
- * i18next will fall back to the Hebrew default automatically.
  */
 import type { Translations } from "./he";
 
@@ -20,6 +18,105 @@ const en: Translations = {
     next: "Next",
     finish: "Finish",
     save: "Save",
+    comingSoon: "Coming soon",
+    progress: "Progress",
+    modules: "modules",
+    questions: "questions",
+    concepts: "concepts",
+    solvedCorrectly: "solved correctly",
+    termsOfService: "Terms of Service",
+  },
+  nav: {
+    dashboard: "Dashboard",
+    exam: "Exam",
+    progress: "Progress",
+    signOut: "Sign out",
+    signIn: "Sign in",
+  },
+  home: {
+    greeting: "Hello, {{name}}",
+    welcome: "Welcome",
+    heroEyebrow: "Home > Learning Paths",
+    heroPractice: "Let's practice Python",
+    heroSubtitle: "Choose a learning path to get started. Each path is built from phases, modules, and practice questions — with instant feedback.",
+    questionsSolved: "questions solved correctly",
+    outOf: "out of",
+    readyToStart: "Ready to get started?",
+    learningPaths: "Learning Paths",
+    pythonName: "Python Fundamentals",
+    pythonDescription: "Variables, conditions, loops, strings, lists, and functions — full preparation for the Open University exam.",
+    devopsName: "DevOps Engineer",
+    devopsDescription: "Linux, Git, Networking, Docker, CI/CD, Cloud, and Infrastructure as Code. A complete path from zero to engineer.",
+  },
+  dashboard: {
+    breadcrumbHome: "Home",
+    breadcrumbPython: "Python Fundamentals",
+    welcomeNew: "Welcome, {{name}}!",
+    greeting: "Hello, {{name}}",
+    newUserSubtitle: "Let's start learning Python 🐍",
+    returningSubtitle: "Here's your learning overview.",
+    stats: {
+      correctQuestions: "Correct answers",
+      totalSolved: "Total solved",
+      streakDays: "Day streak",
+      activeToday: "Today",
+      activeYesterday: "Yesterday",
+      activeOn: "Active {{date}}",
+      startPracticing: "Start practicing!",
+    },
+    exam: {
+      title: "Simulation Exam",
+      subtitle: "6 questions, 3 hours — just like the real exam",
+      start: "Start",
+      lastScore: "Last: {{score}}%",
+    },
+    learningPath: "Learning Path",
+    other: "Other",
+    tip: "Tip: Try learning the concepts before practicing!",
+    newUser: {
+      whereToStart: "Where to start?",
+      firstTopic: "Variables, Types & I/O",
+      firstTopicDesc: "The first topic in the course — int, float, str, bool, input() and print()",
+      startLearning: "Start learning",
+    },
+    topic: {
+      locked: "Locked",
+      lockedTooltip: "Complete the previous topic to unlock this one",
+      mastered: "Mastered! ✅",
+      completed: "Completed",
+      lockedPrevious: "Locked — complete the previous topic",
+      continuePractice: "Continue practicing ({{done}}/{{total}})",
+      startPractice: "Start practicing",
+      continueLearn: "Continue learning ({{done}}/{{total}})",
+      startLearn: "Start learning",
+    },
+  },
+  cookie: {
+    title: "We use cookies",
+    settings: "Cookie settings",
+    openSettings: "Open cookie settings",
+    consentLabel: "Cookie consent",
+    description: "We use essential cookies to run the site and analytics cookies (PostHog) to improve the learning experience. Please choose your preferences.",
+    privacyLink: "Privacy Policy",
+    detailsToggle: "Details about cookie types",
+    acceptAll: "Accept all",
+    rejectNonEssential: "Reject non-essential",
+    customize: "Customize",
+    savePreferences: "Save preferences",
+    selectPrompt: "Choose which cookies to allow. Essential cookies are always active.",
+    alwaysOn: "Always on",
+    active: "Active",
+    inactive: "Inactive",
+    essential: {
+      title: "Essential",
+      description: "User authentication and saving your settings (Supabase). Always active.",
+    },
+    analytics: {
+      title: "Analytics",
+      titleFull: "Analytics (PostHog)",
+      description: "PostHog — usage measurement to improve the app. Requires consent.",
+      descriptionFull: "Anonymous usage measurement to understand which topics are hardest and improve the app.",
+    },
   },
   ai: {
     error: {
@@ -34,6 +131,11 @@ const en: Translations = {
     pageTitle: "Privacy Policy",
     lastUpdated: "Last updated",
     footerLink: "Privacy Policy",
+  },
+  error: {
+    somethingWentWrong: "Something went wrong",
+    unexpectedError: "An unexpected error occurred. Try refreshing the page.",
+    refreshPage: "Refresh page",
   },
 };
 

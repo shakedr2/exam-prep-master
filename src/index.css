@@ -11,7 +11,7 @@
   }
 
   html {
-    direction: rtl;
+    /* direction is set dynamically via document.documentElement.dir by i18n config */
     color-scheme: dark;
     /* Smooth anti-aliased text for premium feel */
     -webkit-font-smoothing: antialiased;
