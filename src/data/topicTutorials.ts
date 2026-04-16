@@ -1,3 +1,5 @@
+import { PYTHON_OOP_TOPIC_SLUG, PYTHON_OOP_TOPIC_UUID, pythonOopTopicTutorialForLearnPage } from "./topicTutorials/python-oop";
+
 export interface PrepQuestion {
   question: string;
   options: string[];
@@ -1119,6 +1121,8 @@ print(x ** 2 + y ** 2)`,
   },
 ];
 
+topicTutorials.push(pythonOopTopicTutorialForLearnPage);
+
 export function getTutorialByTopicId(topicId: string): TopicTutorial | undefined {
   return topicTutorials.find((t) => t.topicId === topicId);
 }
@@ -1142,6 +1146,7 @@ const SLUG_TO_UUID: Record<string, string> = {
   polymorphism: "11111111-000b-0000-0000-000000000000",
   files_exceptions: "11111111-000c-0000-0000-000000000000",
   decorators_special: "11111111-000d-0000-0000-000000000000",
+  [PYTHON_OOP_TOPIC_SLUG]: PYTHON_OOP_TOPIC_UUID,
 };
 
 const UUID_TO_SLUG: Record<string, string> = Object.fromEntries(
