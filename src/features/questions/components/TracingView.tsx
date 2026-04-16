@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
+import { QuestionText } from "@/components/QuestionText";
 import { TraceTable } from "@/components/TraceTable";
 import { CommonMistakeWarning } from "@/features/questions/components/CommonMistakeWarning";
 import { gradeTracingAnswer, type GradeResult } from "@/lib/grading";
@@ -61,7 +62,7 @@ export const TracingView = memo(function TracingView({ q, onAnswer }: { q: Traci
 
   return (
     <div className="space-y-4">
-      <p className="text-lg font-semibold text-card-foreground">{q.question}</p>
+      <QuestionText text={q.question} className="text-lg font-semibold text-card-foreground" />
       <PythonCodeBlock code={q.code} />
       <div className="space-y-2">
         <Input
@@ -116,7 +117,7 @@ export const TracingView = memo(function TracingView({ q, onAnswer }: { q: Traci
               </div>
             )}
             {grade.score === "incorrect" && <p className="text-sm font-mono mb-2">תשובה נכונה: {q.correctAnswer}</p>}
-            <p className="text-sm text-muted-foreground">{q.explanation}</p>
+            <QuestionText text={q.explanation} className="text-sm text-muted-foreground" />
             {q.traceTable && (
               <div className="mt-3">
                 <p className="text-xs font-semibold text-muted-foreground mb-2">📊 טבלת מעקב שלב-אחר-שלב:</p>
