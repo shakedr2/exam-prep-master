@@ -7,6 +7,7 @@ import {
   Target,
   Sparkles,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useProgress } from "@/hooks/useProgress";
 import { useAuth } from "@/contexts/AuthContext";
 import { MODULES } from "@/data/modules";
@@ -135,6 +136,7 @@ function TrackCard({
   comingSoon = false,
   onSelect,
 }: TrackCardProps) {
+  const { t } = useTranslation();
   const interactive = !comingSoon && !!onSelect;
 
   return (
@@ -184,7 +186,7 @@ function TrackCard({
           </div>
           {comingSoon && (
             <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 font-mono text-[11px] text-muted-foreground backdrop-blur-sm">
-              בקרוב
+              {t("common.comingSoon")}
             </span>
           )}
         </div>
@@ -208,7 +210,7 @@ function TrackCard({
         {!comingSoon && typeof progressPercent === "number" && (
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">התקדמות</span>
+              <span className="text-muted-foreground">{t("common.progress")}</span>
               <span className="font-mono font-semibold text-foreground">
                 {progressPercent}%
               </span>
@@ -224,7 +226,7 @@ function TrackCard({
         <div className="flex items-center justify-between pt-1">
           {typeof moduleCount === "number" && (
             <span className="font-mono text-xs text-muted-foreground">
-              {moduleCount} מודולים
+              {moduleCount} {t("common.modules")}
             </span>
           )}
           {!comingSoon && (
@@ -249,6 +251,7 @@ function TrackCard({
 /* ── HomePage ─────────────────────────────────────────── */
 
 const HomePage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { progress, totalCorrect, totalAnswered } = useProgress();
@@ -282,28 +285,27 @@ const HomePage = () => {
   };
 
   const greeting = progress.username
-    ? `שלום, ${progress.username}`
-    : "ברוכים הבאים";
+    ? t("home.greeting", { name: progress.username })
+    : t("home.welcome");
 
   return (
-    <div className="min-h-screen bg-background pb-24 pt-6" dir="rtl">
+    <div className="min-h-screen bg-background pb-24 pt-6">
       <div className="mx-auto max-w-5xl space-y-8 px-4 sm:space-y-10">
         {/* Hero */}
         <HeroFrame
           variant="python"
-          eyebrow="בית > מסלולי למידה"
+          eyebrow={t("home.heroEyebrow")}
           title={
             <>
               <span className="block">{greeting}</span>
               <span className="mt-1 block text-[0.85em] font-semibold text-white/80">
-                בואו נתרגל פייתון
+                {t("home.heroPractice")}
               </span>
             </>
           }
           subtitle={
             <span className="text-white/80">
-              בחר מסלול למידה כדי להתחיל. כל מסלול בנוי משלבים, מודולים ושאלות
-              תרגול — הכל בעברית, עם משוב מיידי.
+              {t("home.heroSubtitle")}
             </span>
           }
           actions={
@@ -315,13 +317,13 @@ const HomePage = () => {
                     <span className="font-mono font-semibold">
                       {totalCorrect}
                     </span>{" "}
-                    שאלות נפתרו נכון
+                    {t("home.questionsSolved")}
                   </span>
                 </div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs text-white/90 backdrop-blur-sm">
                   <BookOpen className="h-3.5 w-3.5" />
                   <span>
-                    מתוך{" "}
+                    {t("home.outOf")}{" "}
                     <span className="font-mono font-semibold">
                       {totalAnswered}
                     </span>
@@ -331,7 +333,7 @@ const HomePage = () => {
             ) : (
               <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs text-white/90 backdrop-blur-sm">
                 <Sparkles className="h-3.5 w-3.5" />
-                <span>מוכנים לצאת לדרך?</span>
+                <span>{t("home.readyToStart")}</span>
               </div>
             )
           }
@@ -343,7 +345,7 @@ const HomePage = () => {
             id="tracks-heading"
             className="text-lg font-bold text-foreground sm:text-xl"
           >
-            מסלולי למידה
+            {t("home.learningPaths")}
           </h2>
 
           <motion.div
@@ -366,9 +368,9 @@ const HomePage = () => {
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
               <TrackCard
-                nameHe="יסודות פייתון"
+                nameHe={t("home.pythonName")}
                 nameEn="Python Fundamentals"
-                description="משתנים, תנאים, לולאות, מחרוזות, רשימות ופונקציות — הכנה מלאה למבחן האוניברסיטה הפתוחה."
+                description={t("home.pythonDescription")}
                 logo={<PythonLogo />}
                 accentColor="#7c5cfc"
                 progressPercent={pythonPercent}
@@ -385,9 +387,9 @@ const HomePage = () => {
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
               <TrackCard
-                nameHe="מהנדס DevOps"
+                nameHe={t("home.devopsName")}
                 nameEn="DevOps Engineer"
-                description="Linux, Git, רשתות, Docker, CI/CD, ענן ו‑Infrastructure as Code. מסלול שלם מ‑0 למהנדס."
+                description={t("home.devopsDescription")}
                 logo={<DevOpsLogo />}
                 accentColor="#7c5cfc"
                 comingSoon
@@ -407,7 +409,7 @@ const HomePage = () => {
         {/* Footer */}
         <footer className="pt-4 pb-2 text-center text-xs text-muted-foreground/60 space-x-3 space-x-reverse">
           <Link to="/terms" className="hover:text-muted-foreground transition-colors">
-            תנאי שירות
+            {t("common.termsOfService")}
           </Link>
         </footer>
       </div>

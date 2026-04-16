@@ -1,18 +1,27 @@
 import { Trophy, GraduationCap, LayoutDashboard } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "ראשי" },
-  { to: "/exam", icon: GraduationCap, label: "מבחן" },
-  { to: "/progress", icon: Trophy, label: "התקדמות" },
+type NavItem = {
+  to: string;
+  icon: typeof LayoutDashboard;
+  labelKey: string;
+};
+
+const navItems: NavItem[] = [
+  { to: "/dashboard", icon: LayoutDashboard, labelKey: "nav.dashboard" },
+  { to: "/exam", icon: GraduationCap, labelKey: "nav.exam" },
+  { to: "/progress", icon: Trophy, labelKey: "nav.progress" },
 ];
 
 export function BottomNav() {
+  const { t } = useTranslation();
+
   return (
     <nav className="md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-[var(--border-color)] bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/65 pb-safe">
       <div className="mx-auto flex max-w-lg items-center justify-around px-2 py-1">
-        {navItems.map(({ to, icon: Icon, label }) => (
+        {navItems.map(({ to, icon: Icon, labelKey }) => (
           <NavLink
             key={to}
             to={to}
@@ -45,7 +54,7 @@ export function BottomNav() {
                     isActive && "stroke-[2.5] scale-110"
                   )}
                 />
-                <span className="relative z-10">{label}</span>
+                <span className="relative z-10">{t(labelKey)}</span>
               </>
             )}
           </NavLink>

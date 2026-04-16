@@ -10,6 +10,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/shared/components/AuthGuard";
@@ -47,24 +48,30 @@ const CICDPage = lazy(retryLazy(() => import("./pages/topics/CICDPage")));
 const CloudPage = lazy(retryLazy(() => import("./pages/topics/CloudPage")));
 const IaCPage = lazy(retryLazy(() => import("./pages/topics/IaCPage")));
 
-const LazyFallback = () => (
-  <div className="flex items-center justify-center min-h-[50vh]">
-    <div className="text-muted-foreground">טוען...</div>
-  </div>
-);
+const LazyFallback = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="text-muted-foreground">{t("common.loading")}</div>
+    </div>
+  );
+};
 
-const SentryErrorFallback = () => (
-  <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center" dir="rtl">
-    <h1 className="text-2xl font-bold mb-2">משהו השתבש</h1>
-    <p className="text-muted-foreground mb-4">אירעה שגיאה בלתי צפויה. נסה לרענן את הדף.</p>
-    <button
-      onClick={() => window.location.reload()}
-      className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
-    >
-      רענן דף
-    </button>
-  </div>
-);
+const SentryErrorFallback = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+      <h1 className="text-2xl font-bold mb-2">{t("error.somethingWentWrong")}</h1>
+      <p className="text-muted-foreground mb-4">{t("error.unexpectedError")}</p>
+      <button
+        onClick={() => window.location.reload()}
+        className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+      >
+        {t("error.refreshPage")}
+      </button>
+    </div>
+  );
+};
 
 /**
  * SPA pageview tracker.

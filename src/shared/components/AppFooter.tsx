@@ -7,7 +7,7 @@ export function AppFooter() {
   return (
     <footer
       className="border-t border-border bg-background/80 py-3 text-center text-xs text-muted-foreground"
-      dir="rtl"
+      /* dir inherited from <html> — set dynamically by i18n config */
     >
       <Link
         to="/privacy"

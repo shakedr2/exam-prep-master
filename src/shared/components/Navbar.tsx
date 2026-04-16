@@ -1,7 +1,9 @@
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { GraduationCap, LogIn, LogOut, LayoutDashboard, Trophy, Terminal } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useProgress } from "@/hooks/useProgress";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -17,6 +19,7 @@ function useActiveTrack(): "python" | "devops" | null {
 }
 
 export function Navbar() {
+  const { t } = useTranslation();
   const { progress } = useProgress();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -77,7 +80,7 @@ export function Navbar() {
               {({ isActive }) => (
                 <>
                   <LayoutDashboard className="h-4 w-4" />
-                  ראשי
+                  {t("nav.dashboard")}
                   {isActive && (
                     <span
                       className="absolute inset-x-3 -bottom-[9px] h-[2px] rounded-full bg-gradient-to-r from-primary to-accent"
@@ -91,7 +94,7 @@ export function Navbar() {
               {({ isActive }) => (
                 <>
                   <GraduationCap className="h-4 w-4" />
-                  מבחן
+                  {t("nav.exam")}
                   {isActive && (
                     <span
                       className="absolute inset-x-3 -bottom-[9px] h-[2px] rounded-full bg-gradient-to-r from-primary to-accent"
@@ -105,7 +108,7 @@ export function Navbar() {
               {({ isActive }) => (
                 <>
                   <Trophy className="h-4 w-4" />
-                  התקדמות
+                  {t("nav.progress")}
                   {isActive && (
                     <span
                       className="absolute inset-x-3 -bottom-[9px] h-[2px] rounded-full bg-gradient-to-r from-primary to-accent"
@@ -118,6 +121,7 @@ export function Navbar() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <LanguageSwitcher />
           <ThemeToggle />
           {user ? (
             <>
@@ -143,7 +147,7 @@ export function Navbar() {
                 className="text-xs gap-1 h-8 px-2"
               >
                 <LogOut className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">יציאה</span>
+                <span className="hidden sm:inline">{t("nav.signOut")}</span>
               </Button>
             </>
           ) : (
@@ -154,7 +158,7 @@ export function Navbar() {
               className="text-xs gap-1 h-8 px-2"
             >
               <LogIn className="h-3.5 w-3.5" />
-              <span>התחברות</span>
+              <span>{t("nav.signIn")}</span>
             </Button>
           )}
           {username && !user && (
