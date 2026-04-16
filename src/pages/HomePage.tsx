@@ -2,69 +2,137 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Code2,
-  Server,
   ArrowLeft,
-  Lock,
-  Sparkles,
   BookOpen,
   Target,
+  Sparkles,
 } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
 import { useAuth } from "@/contexts/AuthContext";
 import { MODULES } from "@/data/modules";
 import { questions as staticQuestions } from "@/data/questions";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { HeroFrame } from "@/shared/components/HeroFrame";
 import { cn } from "@/lib/utils";
 
-/**
- * HomePage — Phase 10.2
- *
- * Top-level landing for the app. Surfaces the available learning Tracks
- * and lets the learner drill into one. Currently exposes two tracks:
- *
- *   1. Python Fundamentals  → links to the existing Dashboard
- *   2. DevOps Engineer      → "Coming Soon" placeholder
- *
- * Design intent (Phase 10.2, Issue #117):
- *   • Hebrew-first RTL layout, unique visual identity (not SoloLearn).
- *   • Cards use the design-token gradient utilities
- *     (`gradient-primary`, `gradient-accent`) and `shadow-glow-*`
- *     on hover — no hardcoded colors.
- *   • Responsive: 1 column on mobile, 2 columns on tablet/desktop.
- *   • Code-inspired accents (mono English labels, `//` comment marks)
- *     to reinforce the programming-education identity.
- */
+/* ── 3D SVG Logos ────────────────────────────────────── */
+
+function PythonLogo({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn("drop-shadow-[0_4px_12px_rgba(124,92,252,0.4)]", className)}
+      style={{
+        perspective: "600px",
+      }}
+    >
+      <svg
+        viewBox="0 0 110 110"
+        className="h-full w-full"
+        style={{
+          transform: "rotateY(-12deg) rotateX(5deg)",
+          transformStyle: "preserve-3d",
+        }}
+      >
+        <defs>
+          <linearGradient id="py-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#4B8BBE" />
+            <stop offset="100%" stopColor="#306998" />
+          </linearGradient>
+          <linearGradient id="py-yellow" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFD43B" />
+            <stop offset="100%" stopColor="#FFE873" />
+          </linearGradient>
+        </defs>
+        {/* Blue snake (top-left) */}
+        <path
+          d="M54.9 3.3C28.5 3.3 30.6 14.9 30.6 14.9l.03 12h24.8v3.6H18.8S3 28 3 54.7c0 26.7 13.8 25.8 13.8 25.8h8.2V67.8s-.4-13.8 13.6-13.8h23.4s13.2.2 13.2-12.8V18.4S77.7 3.3 54.9 3.3zm-13 8.7c2.4 0 4.3 1.9 4.3 4.3 0 2.4-1.9 4.3-4.3 4.3-2.4 0-4.3-1.9-4.3-4.3 0-2.4 1.9-4.3 4.3-4.3z"
+          fill="url(#py-blue)"
+        />
+        {/* Yellow snake (bottom-right) */}
+        <path
+          d="M55.1 106.7c26.4 0 24.3-11.6 24.3-11.6l-.03-12H54.6v-3.6h36.6S107 82 107 55.3c0-26.7-13.8-25.8-13.8-25.8h-8.2v12.7s.4 13.8-13.6 13.8H48s-13.2-.2-13.2 12.8v22.8s-2.4 15.1 20.3 15.1zm13-8.7c-2.4 0-4.3-1.9-4.3-4.3 0-2.4 1.9-4.3 4.3-4.3 2.4 0 4.3 1.9 4.3 4.3 0 2.4-1.9 4.3-4.3 4.3z"
+          fill="url(#py-yellow)"
+        />
+      </svg>
+    </div>
+  );
+}
+
+function DevOpsLogo({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn("drop-shadow-[0_4px_12px_rgba(124,92,252,0.3)]", className)}
+      style={{
+        perspective: "600px",
+      }}
+    >
+      <svg
+        viewBox="0 0 120 60"
+        className="h-full w-full"
+        style={{
+          transform: "rotateY(12deg) rotateX(5deg)",
+          transformStyle: "preserve-3d",
+        }}
+      >
+        <defs>
+          <linearGradient id="devops-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#7c5cfc" />
+            <stop offset="50%" stopColor="#9b7fff" />
+            <stop offset="100%" stopColor="#7c5cfc" />
+          </linearGradient>
+        </defs>
+        {/* Infinity loop */}
+        <path
+          d="M30 30c0-11 8.9-20 20-20s20 9 20 20-8.9 20-20 20"
+          fill="none"
+          stroke="url(#devops-grad)"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M90 30c0 11-8.9 20-20 20s-20-9-20-20 8.9-20 20-20"
+          fill="none"
+          stroke="url(#devops-grad)"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
+        {/* Arrow on the loop */}
+        <polygon
+          points="82,18 90,14 86,22"
+          fill="#9b7fff"
+        />
+        <polygon
+          points="38,42 30,46 34,38"
+          fill="#9b7fff"
+        />
+      </svg>
+    </div>
+  );
+}
+
+/* ── TrackCard (glass-morphism) ───────────────────────── */
 
 type TrackCardProps = {
-  name: string;
-  slug: string;
-  tagline: string;
+  nameHe: string;
+  nameEn: string;
   description: string;
-  icon: React.ReactNode;
-  gradientClass: string;
-  glowClass: string;
-  stats?: { label: string; value: string }[];
+  logo: React.ReactNode;
+  accentColor: string; // for glow border on hover
+  moduleCount?: number;
   progressPercent?: number;
   comingSoon?: boolean;
-  comingSoonLabel?: string;
   onSelect?: () => void;
 };
 
 function TrackCard({
-  name,
-  slug,
-  tagline,
+  nameHe,
+  nameEn,
   description,
-  icon,
-  gradientClass,
-  glowClass,
-  stats,
+  logo,
+  accentColor,
+  moduleCount,
   progressPercent,
   comingSoon = false,
-  comingSoonLabel,
   onSelect,
 }: TrackCardProps) {
   const interactive = !comingSoon && !!onSelect;
@@ -74,142 +142,102 @@ function TrackCard({
       type="button"
       onClick={interactive ? onSelect : undefined}
       disabled={!interactive}
-      aria-label={name}
+      aria-label={nameHe}
       whileHover={interactive ? { y: -4 } : undefined}
       whileTap={interactive ? { scale: 0.98 } : undefined}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
       className={cn(
-        "group relative w-full overflow-hidden rounded-2xl border border-foreground/10 text-right",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        "transition-shadow duration-300",
+        "group relative w-full overflow-hidden rounded-2xl text-right",
+        "border border-white/[0.08] bg-white/[0.03]",
+        "backdrop-blur-xl",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "transition-all duration-300",
         interactive
-          ? cn("cursor-pointer hover:border-foreground/20", glowClass)
-          : "cursor-not-allowed",
+          ? "cursor-pointer hover:border-white/[0.15] hover:bg-white/[0.05]"
+          : "cursor-not-allowed opacity-60",
       )}
+      style={
+        interactive
+          ? ({
+              "--glow-color": accentColor,
+            } as React.CSSProperties)
+          : undefined
+      }
     >
-      {/* Gradient background layer */}
-      <div
-        className={cn(
-          "absolute inset-0",
-          gradientClass,
-          comingSoon && "opacity-40",
-        )}
-        aria-hidden="true"
-      />
+      {/* Hover glow effect (CSS-driven for performance) */}
+      {interactive && (
+        <div
+          className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          aria-hidden="true"
+          style={{
+            boxShadow: `inset 0 0 0 1px ${accentColor}33, 0 0 20px ${accentColor}1a`,
+          }}
+        />
+      )}
 
-      {/* Decorative dot pattern — reinforces unique identity, no hardcoded colors */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-20 mix-blend-overlay"
-        aria-hidden="true"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
-          backgroundSize: "16px 16px",
-          color: "hsl(0 0% 100%)",
-        }}
-      />
-
-      {/* Content layer */}
-      <div className="relative z-10 flex flex-col gap-5 p-6 text-primary-foreground sm:p-7">
-        {/* Header row: icon + status badge */}
-        <div className="flex items-start justify-between gap-3">
-          <div
-            className={cn(
-              "flex h-14 w-14 items-center justify-center rounded-xl",
-              "bg-white/15 backdrop-blur-sm ring-1 ring-white/25",
-              "transition-transform duration-300",
-              interactive && "group-hover:scale-110 group-hover:rotate-[-3deg]",
-            )}
-          >
-            {icon}
+      {/* Content */}
+      <div className="relative z-10 flex flex-col gap-4 p-5 sm:p-6">
+        {/* Top row: logo + coming soon badge */}
+        <div className="flex items-start justify-between">
+          <div className="h-12 w-12 sm:h-14 sm:w-14 transition-transform duration-300 group-hover:scale-105">
+            {logo}
           </div>
-          {comingSoon ? (
-            <Badge
-              variant="secondary"
-              className="gap-1 border-0 bg-white/20 text-primary-foreground backdrop-blur-sm"
-            >
-              <Lock className="h-3 w-3" />
-              {comingSoonLabel ?? "בקרוב"}
-            </Badge>
-          ) : (
-            <Badge
-              variant="secondary"
-              className="gap-1 border-0 bg-white/20 text-primary-foreground backdrop-blur-sm"
-            >
-              <Sparkles className="h-3 w-3" />
-              זמין
-            </Badge>
+          {comingSoon && (
+            <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 font-mono text-[11px] text-muted-foreground backdrop-blur-sm">
+              בקרוב
+            </span>
           )}
         </div>
 
-        {/* Title + code-comment tagline */}
-        <div className="space-y-1.5">
-          <p
-            className="font-mono text-xs tracking-wide text-primary-foreground/70"
-            dir="ltr"
-          >
-            // {tagline}
-          </p>
-          <h3 className="text-2xl font-bold leading-tight sm:text-3xl">
-            {name}
+        {/* Title block */}
+        <div className="space-y-0.5">
+          <h3 className="text-xl font-bold text-foreground sm:text-2xl">
+            {nameHe}
           </h3>
-          <p className="font-mono text-[11px] text-primary-foreground/60" dir="ltr">
-            track.{slug}
+          <p className="font-mono text-xs text-muted-foreground" dir="ltr">
+            {nameEn}
           </p>
         </div>
 
         {/* Description */}
-        <p className="text-sm leading-relaxed text-primary-foreground/90 sm:text-base">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           {description}
         </p>
 
-        {/* Progress — only for active tracks with a meaningful number */}
+        {/* Progress bar */}
         {!comingSoon && typeof progressPercent === "number" && (
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-primary-foreground/80">התקדמות</span>
-              <span className="font-mono font-semibold">{progressPercent}%</span>
+              <span className="text-muted-foreground">התקדמות</span>
+              <span className="font-mono font-semibold text-foreground">
+                {progressPercent}%
+              </span>
             </div>
             <Progress
               value={progressPercent}
-              className="h-1.5 bg-white/20 [&>div]:bg-white"
+              className="h-1.5 bg-white/[0.08] [&>div]:bg-primary"
             />
           </div>
         )}
 
-        {/* Stats row */}
-        {stats && stats.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 pt-1">
-            {stats.map((s) => (
-              <div
-                key={s.label}
-                className="rounded-lg bg-white/10 px-3 py-2 backdrop-blur-sm"
-              >
-                <p className="font-mono text-lg font-bold leading-none">
-                  {s.value}
-                </p>
-                <p className="mt-1 text-[11px] text-primary-foreground/75">
-                  {s.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Footer action */}
+        {/* Footer: module count + arrow */}
         <div className="flex items-center justify-between pt-1">
-          <span className="text-sm font-semibold">
-            {comingSoon ? "בקרוב נוסיף את המסלול" : "התחל מסלול"}
-          </span>
+          {typeof moduleCount === "number" && (
+            <span className="font-mono text-xs text-muted-foreground">
+              {moduleCount} מודולים
+            </span>
+          )}
           {!comingSoon && (
             <span
               className={cn(
-                "flex h-9 w-9 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm",
-                "transition-transform duration-300 group-hover:-translate-x-1",
+                "mr-auto flex h-8 w-8 items-center justify-center rounded-full",
+                "border border-white/[0.08] bg-white/[0.04]",
+                "transition-all duration-300",
+                "group-hover:border-white/[0.15] group-hover:bg-white/[0.08] group-hover:-translate-x-1",
               )}
               aria-hidden="true"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors duration-300" />
             </span>
           )}
         </div>
@@ -218,15 +246,13 @@ function TrackCard({
   );
 }
 
+/* ── HomePage ─────────────────────────────────────────── */
+
 const HomePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { progress, totalCorrect, totalAnswered } = useProgress();
 
-  // Python track progress: share of static Python-topic questions that the
-  // learner has answered correctly. Using staticQuestions as the denominator
-  // matches the approach in DashboardPage and gives a stable, meaningful
-  // percentage without needing an extra Supabase query on the landing page.
   const pythonPercent = useMemo(() => {
     const pythonTopicIds = new Set(
       MODULES.filter((m) => !m.comingSoon).flatMap((m) => m.topicIds),
@@ -245,6 +271,8 @@ const HomePage = () => {
     return Math.round((answeredCorrect / pythonQuestionIds.size) * 100);
   }, [progress.answeredQuestions]);
 
+  const pythonModuleCount = MODULES.filter((m) => !m.comingSoon).length;
+
   const handlePythonTrack = () => {
     if (!user && !progress.username) {
       navigate("/onboarding");
@@ -253,19 +281,21 @@ const HomePage = () => {
     navigate("/dashboard");
   };
 
-  const greeting = progress.username ? `שלום, ${progress.username}` : "ברוכים הבאים";
+  const greeting = progress.username
+    ? `שלום, ${progress.username}`
+    : "ברוכים הבאים";
 
   return (
     <div className="min-h-screen bg-background pb-24 pt-6" dir="rtl">
-      <div className="mx-auto max-w-5xl px-4 space-y-8 sm:space-y-10">
-        {/* Premium hero frame */}
+      <div className="mx-auto max-w-5xl space-y-8 px-4 sm:space-y-10">
+        {/* Hero */}
         <HeroFrame
           variant="python"
           eyebrow="// exam-prep-master / home"
           title={
             <>
               <span className="block">{greeting}</span>
-              <span className="block text-white/80 text-[0.85em] font-semibold mt-1">
+              <span className="mt-1 block text-[0.85em] font-semibold text-white/80">
                 בואו נתרגל פייתון
               </span>
             </>
@@ -279,7 +309,7 @@ const HomePage = () => {
           actions={
             totalAnswered > 0 ? (
               <>
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 text-xs text-white/90">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs text-white/90 backdrop-blur-sm">
                   <Target className="h-3.5 w-3.5" />
                   <span>
                     <span className="font-mono font-semibold">
@@ -288,7 +318,7 @@ const HomePage = () => {
                     שאלות נפתרו נכון
                   </span>
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 text-xs text-white/90">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs text-white/90 backdrop-blur-sm">
                   <BookOpen className="h-3.5 w-3.5" />
                   <span>
                     מתוך{" "}
@@ -299,7 +329,7 @@ const HomePage = () => {
                 </div>
               </>
             ) : (
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm px-3.5 py-1.5 text-xs text-white/90">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs text-white/90 backdrop-blur-sm">
                 <Sparkles className="h-3.5 w-3.5" />
                 <span>מוכנים לצאת לדרך?</span>
               </div>
@@ -307,7 +337,7 @@ const HomePage = () => {
           }
         />
 
-        {/* Tracks section */}
+        {/* Track cards */}
         <section aria-labelledby="tracks-heading" className="space-y-5">
           <h2
             id="tracks-heading"
@@ -336,18 +366,13 @@ const HomePage = () => {
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
               <TrackCard
-                name="יסודות פייתון"
-                slug="python-fundamentals"
-                tagline="Python Fundamentals"
+                nameHe="יסודות פייתון"
+                nameEn="Python Fundamentals"
                 description="משתנים, תנאים, לולאות, מחרוזות, רשימות ופונקציות — הכנה מלאה למבחן האוניברסיטה הפתוחה."
-                icon={<Code2 className="h-7 w-7" />}
-                gradientClass="gradient-primary"
-                glowClass="hover:shadow-glow-primary"
+                logo={<PythonLogo />}
+                accentColor="#7c5cfc"
                 progressPercent={pythonPercent}
-                stats={[
-                  { label: "שאלות נכונות", value: String(totalCorrect) },
-                  { label: "סה״כ תרגולים", value: String(totalAnswered) },
-                ]}
+                moduleCount={pythonModuleCount}
                 onSelect={handlePythonTrack}
               />
             </motion.div>
@@ -360,19 +385,17 @@ const HomePage = () => {
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
               <TrackCard
-                name="מהנדס DevOps"
-                slug="devops-engineer"
-                tagline="DevOps Engineer"
+                nameHe="מהנדס DevOps"
+                nameEn="DevOps Engineer"
                 description="Linux, Git, רשתות, Docker, CI/CD, ענן ו‑Infrastructure as Code. מסלול שלם מ‑0 למהנדס."
-                icon={<Server className="h-7 w-7" />}
-                gradientClass="gradient-accent"
-                glowClass="hover:shadow-glow-accent"
+                logo={<DevOpsLogo />}
+                accentColor="#7c5cfc"
+                comingSoon
                 onSelect={() => navigate("/tracks/devops")}
               />
             </motion.div>
           </motion.div>
 
-          {/* Subtle footer note */}
           <p
             className="pt-4 text-center font-mono text-[11px] text-muted-foreground"
             dir="ltr"
