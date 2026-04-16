@@ -101,7 +101,7 @@ const PracticePage = () => {
   const topicId = resolved?.uuid ?? rawTopicId;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { answerQuestion, getWeakTopics, progress, updateLastPosition, totalCorrect } = useProgress();
+  const { answerQuestion, getWeakTopics, progress, updateLastPosition, totalCorrect, isLoading: progressLoading } = useProgress();
   const { awardXp, claimMilestone } = useGamification();
   const { saveAnswer } = useSaveAnswer();
   const { markTopicComplete, isTopicComplete } = useTopicCompletion();
@@ -242,6 +242,7 @@ const PracticePage = () => {
     allQuestions.length > 0 &&
     !reviewMistakesMode &&
     !difficultyFilter &&
+    !progressLoading &&
     seededKeyRef.current !== `${topicId}:${allQuestions.length}`
   ) {
     seededKeyRef.current = `${topicId}:${allQuestions.length}`;
@@ -447,7 +448,10 @@ const PracticePage = () => {
   }
 
   const current = activeQuestions[currentIndex];
-  const answeredCount = Object.keys(answers).length;
+  // Count how many topic questions have been answered across ALL sessions.
+  // remoteAnswered is keyed by questionId for this topic from Supabase.
+  const topicAnsweredCount = Object.keys(remoteAnswered).length;
+  const answeredCount = Math.max(Object.keys(answers).length, topicAnsweredCount);
   // In adaptive mode, the queue grows as the learner advances; use the
   // total number of questions in the topic as the stable denominator so
   // the counter doesn't jump (1/1 → 2/2 → …). In filter / mistakes mode
@@ -457,7 +461,7 @@ const PracticePage = () => {
       ? activeQuestions.length
       : allQuestions.length;
   const progressPct = totalTarget > 0
-    ? Math.round((answeredCount / totalTarget) * 100)
+    ? Math.round((topicAnsweredCount / totalTarget) * 100)
     : 0;
 
   const handleAnswer = (questionId: string, answer: string, correct: boolean) => {

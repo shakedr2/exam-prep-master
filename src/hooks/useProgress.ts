@@ -107,5 +107,6 @@ export function useProgress() {
     getTopicPosition: active.getTopicPosition,
     totalCorrect: isAuthenticated ? remote.totalCorrect : local.totalCorrect,
     totalAnswered: isAuthenticated ? remote.totalAnswered : local.totalAnswered,
+    isLoading: isAuthenticated ? remote.isLoading : false,
   };
 }
