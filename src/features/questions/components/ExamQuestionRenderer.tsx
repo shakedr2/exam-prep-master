@@ -103,10 +103,14 @@ export const ExamQuestionRenderer = memo(function ExamQuestionRenderer({ questio
   }, [isAnswered, onAnswer]);
 
   // Derive explanation text for the micro-explanation block
-  const explanation =
-    question.type === "quiz" ? (question as QuizQuestion).explanation :
-    question.type === "tracing" ? (question as TracingQuestion).explanation :
-    null;
+  function getExplanation(): string | null {
+    switch (question.type) {
+      case "quiz": return (question as QuizQuestion).explanation;
+      case "tracing": return (question as TracingQuestion).explanation;
+      default: return null;
+    }
+  }
+  const explanation = getExplanation();
 
   return (
     <div>
@@ -125,7 +129,7 @@ export const ExamQuestionRenderer = memo(function ExamQuestionRenderer({ questio
             {currentAnswer.correct ? "✅ ענית נכון" : "❌ ענית לא נכון"}
           </p>
           {explanation && (
-            <p className="text-xs text-muted-foreground leading-relaxed text-right">
+            <p className="text-xs text-foreground/80 leading-relaxed text-right">
               {explanation}
             </p>
           )}
