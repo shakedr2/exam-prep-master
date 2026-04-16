@@ -8,7 +8,7 @@ import { FillBlankView } from "@/components/FillBlankView";
 import { PythonCodeBlock } from "@/components/PythonCodeBlock";
 import { Textarea } from "@/components/ui/textarea";
 import { CommonMistakeWarning } from "@/features/questions/components/CommonMistakeWarning";
-import type { Question, CodingQuestion } from "@/data/questions";
+import type { Question, CodingQuestion, QuizQuestion, TracingQuestion } from "@/data/questions";
 
 interface Props {
   question: Question;
@@ -26,7 +26,7 @@ const ExamCodingView = memo(function ExamCodingView({ q, currentAnswer, onAnswer
       <h3 className="text-lg font-semibold text-card-foreground">{q.title}</h3>
       <p className="text-sm text-muted-foreground whitespace-pre-wrap">{q.description}</p>
       {q.sampleInput && (
-        <div className="rounded-xl bg-secondary p-3 text-sm border border-border text-foreground">
+        <div className="rounded-xl bg-white dark:bg-secondary p-3 text-sm border border-border text-foreground">
           <span className="font-semibold">דוגמה: </span>
           <code dir="ltr" className="font-mono text-accent">{q.sampleInput}</code>
           <span> → </span>
@@ -102,15 +102,34 @@ export const ExamQuestionRenderer = memo(function ExamQuestionRenderer({ questio
     onAnswer(answerText, correct);
   }, [isAnswered, onAnswer]);
 
+  // Derive explanation text for the micro-explanation block
+  const explanation =
+    question.type === "quiz" ? (question as QuizQuestion).explanation :
+    question.type === "tracing" ? (question as TracingQuestion).explanation :
+    null;
+
   return (
     <div>
-      {/* Already answered indicator */}
+      {/* Already answered indicator with micro-explanation */}
       {isAnswered && (
-        <div className={`mb-3 rounded-lg p-2 text-center text-xs font-semibold ${
-          currentAnswer.correct ? "bg-success/10 text-success border border-success/30" : "bg-destructive/10 text-destructive border border-destructive/30"
-        }`}>
-          {currentAnswer.correct ? "✅ ענית נכון" : "❌ ענית לא נכון"}
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`mb-3 rounded-lg border p-3 space-y-2 ${
+            currentAnswer.correct
+              ? "bg-success/10 text-success border-success/30"
+              : "bg-destructive/10 text-destructive border-destructive/30"
+          }`}
+        >
+          <p className="text-xs font-semibold text-center">
+            {currentAnswer.correct ? "✅ ענית נכון" : "❌ ענית לא נכון"}
+          </p>
+          {explanation && (
+            <p className="text-xs text-muted-foreground leading-relaxed text-right">
+              {explanation}
+            </p>
+          )}
+        </motion.div>
       )}
 
       <div className="flex items-center gap-2 mb-4 flex-wrap">

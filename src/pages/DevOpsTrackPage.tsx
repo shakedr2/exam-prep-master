@@ -38,6 +38,7 @@ interface DevOpsModule {
   lessonCount: number;
   status: "available" | "coming_soon" | "locked";
   route?: string;
+  unlockCriteria?: string;
 }
 
 interface DevOpsPhase {
@@ -161,6 +162,7 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
         icon: <Network className="h-5 w-5" />,
         lessonCount: 8,
         status: "locked",
+        unlockCriteria: "סיים את שלב Git ובקרת גרסאות",
       },
       {
         id: "http",
@@ -169,6 +171,7 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
         icon: <Network className="h-5 w-5" />,
         lessonCount: 8,
         status: "locked",
+        unlockCriteria: "סיים את שלב Git ובקרת גרסאות",
       },
     ],
   },
@@ -185,6 +188,7 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
         icon: <Container className="h-5 w-5" />,
         lessonCount: 10,
         status: "locked",
+        unlockCriteria: "סיים את שלב רשתות בסיסיות",
       },
       {
         id: "docker-compose",
@@ -193,6 +197,7 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
         icon: <Container className="h-5 w-5" />,
         lessonCount: 8,
         status: "locked",
+        unlockCriteria: "סיים את שלב רשתות בסיסיות",
       },
     ],
   },
@@ -209,6 +214,7 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
         icon: <GitMerge className="h-5 w-5" />,
         lessonCount: 10,
         status: "locked",
+        unlockCriteria: "סיים את שלב Docker ומיכלים",
       },
       {
         id: "jenkins",
@@ -217,6 +223,7 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
         icon: <GitMerge className="h-5 w-5" />,
         lessonCount: 8,
         status: "locked",
+        unlockCriteria: "סיים את שלב Docker ומיכלים",
       },
     ],
   },
@@ -233,6 +240,7 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
         icon: <Cloud className="h-5 w-5" />,
         lessonCount: 12,
         status: "locked",
+        unlockCriteria: "סיים את שלב CI/CD",
       },
       {
         id: "gcp-basics",
@@ -241,6 +249,7 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
         icon: <Cloud className="h-5 w-5" />,
         lessonCount: 10,
         status: "locked",
+        unlockCriteria: "סיים את שלב CI/CD",
       },
     ],
   },
@@ -257,6 +266,7 @@ const DEVOPS_PHASES: DevOpsPhase[] = [
         icon: <FileCode2 className="h-5 w-5" />,
         lessonCount: 12,
         status: "locked",
+        unlockCriteria: "סיים את שלב ענן (AWS/GCP)",
       },
     ],
   },
@@ -357,6 +367,11 @@ function ModuleRow({
         <p className="truncate text-xs text-muted-foreground">
           {module.description}
         </p>
+        {isLocked && module.unlockCriteria && (
+          <p className="mt-0.5 text-[11px] text-muted-foreground/70 flex items-center gap-1">
+            🔓 {module.unlockCriteria}
+          </p>
+        )}
       </div>
 
       {/* Lesson count / status */}
