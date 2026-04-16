@@ -11,8 +11,13 @@ import { XpBadge } from "@/components/XpBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { StreakBadge } from "@/features/gamification/components/StreakBadge";
+import { DashboardStatsSkeleton } from "@/features/gamification/components/DashboardStatsSkeleton";
+import { useGamification } from "@/features/gamification/hooks/useGamification";
+import { useOnboarding } from "@/features/onboarding/hooks/useOnboarding";
+import { useDailyLogin } from "@/features/gamification/hooks/useDailyLogin";
+import { OnboardingWizard } from "@/features/onboarding/components/OnboardingWizard";
 import {
   Accordion,
   AccordionItem,
@@ -220,9 +225,21 @@ const DashboardPage = () => {
   const { topics, loading } = useSupabaseTopics();
   const { learnMap, questionCounts } = useDashboardData();
   const { isTopicUnlocked, isTopicComplete } = useTopicCompletion();
+  const gamification = useGamification();
+  const { state: onboardingState, loading: onboardingLoading } = useOnboarding();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  useDailyLogin();
   const [tipDismissed, setTipDismissed] = useState(
     () => localStorage.getItem(PRACTICE_TIP_DISMISSED_KEY) === "true"
   );
+
+  // Show the onboarding wizard the first time an authenticated user lands
+  // on the dashboard without a completed onboarding record.
+  useEffect(() => {
+    if (!onboardingLoading && !onboardingState.completed) {
+      setShowOnboarding(true);
+    }
+  }, [onboardingLoading, onboardingState.completed]);
 
   // Fire dashboard_viewed exactly once per mount. Using a ref guards against
   // StrictMode double-invocation in dev and any unrelated re-renders.
@@ -295,10 +312,8 @@ const DashboardPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen pb-24 pt-4">
-        <div className="mx-auto max-w-2xl px-4 space-y-4">
-          <Skeleton className="h-10 w-48" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-48 w-full" />
+        <div className="mx-auto max-w-2xl px-4">
+          <DashboardStatsSkeleton />
         </div>
       </div>
     );
@@ -324,15 +339,29 @@ const DashboardPage = () => {
         {/* Python Hero Section */}
         <PythonHero />
 
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground font-mono truncate">
               שלום, {progress.username}
             </h1>
             <p className="text-muted-foreground mt-1">הנה סקירת הלימודים שלך.</p>
           </div>
-          <XpBadge xp={progress.xp} level={progress.level} />
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <XpBadge
+              xp={gamification.xp || progress.xp}
+              level={gamification.level || progress.level}
+            />
+            <StreakBadge
+              currentStreak={gamification.currentStreak || progress.streak}
+              longestStreak={gamification.longestStreak}
+            />
+          </div>
         </div>
+
+        <OnboardingWizard
+          open={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+        />
 
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <Card className="bg-card border border-foreground/10">

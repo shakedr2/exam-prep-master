@@ -5,11 +5,17 @@ import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp
 import { FloatingAIButton } from "@/components/FloatingAIButton";
 import { TopicTutorial } from "@/components/TopicTutorial";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { QuestionListSkeleton } from "@/features/gamification/components/QuestionListSkeleton";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useProgress } from "@/hooks/useProgress";
+import { useGamification } from "@/features/gamification/hooks/useGamification";
+import {
+  celebrateLevelUp,
+  celebrateMilestone,
+} from "@/features/gamification/components/Celebration";
+import { XP_PER_CORRECT_ANSWER } from "@/features/gamification/lib/constants";
 import { ExamQuestionRenderer } from "@/components/exam/ExamQuestionRenderer";
 import { useSupabaseQuestionsByTopic, useSupabaseQuestionCount } from "@/hooks/useSupabaseQuestions";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
@@ -95,7 +101,8 @@ const PracticePage = () => {
   const topicId = resolved?.uuid ?? rawTopicId;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { answerQuestion, getWeakTopics, progress, updateLastPosition } = useProgress();
+  const { answerQuestion, getWeakTopics, progress, updateLastPosition, totalCorrect } = useProgress();
+  const { awardXp, claimMilestone } = useGamification();
   const { saveAnswer } = useSaveAnswer();
   const { markTopicComplete, isTopicComplete } = useTopicCompletion();
   const { showWall, increment: incrementGuestCount, dismiss: dismissWall } = useGuestThreshold();
@@ -391,11 +398,9 @@ const PracticePage = () => {
 
   if (questionsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="space-y-4 w-full max-w-2xl px-4">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-64 w-full" />
+      <div className="min-h-screen bg-background pt-6">
+        <div className="w-full max-w-2xl px-4 mx-auto">
+          <QuestionListSkeleton />
         </div>
       </div>
     );
@@ -460,6 +465,7 @@ const PracticePage = () => {
 
     incrementGuestCount();
     if (topicId) {
+      const alreadyCorrect = progress.answeredQuestions[questionId]?.correct;
       answerQuestion(questionId, topicId, correct);
       const q = allQuestions.find((q) => q.id === questionId);
       saveAnswer(questionId, topicId, correct, q?.patternFamily, q?.commonMistake);
@@ -471,6 +477,36 @@ const PracticePage = () => {
         correct,
         source: reviewMistakesMode ? "review_mistakes" : "practice",
       });
+
+      // Issue #148: award XP only on the *first* correct answer for a
+      // question (matching the existing useLocalProgress rule) and fire
+      // milestone celebrations for the 10th correct answer.
+      if (correct && !alreadyCorrect) {
+        (async () => {
+          const result = await awardXp(XP_PER_CORRECT_ANSWER, "correct_answer", {
+            question_id: questionId,
+            topic_id: topicId,
+          });
+          if (result?.leveledUp) {
+            celebrateLevelUp(result.level);
+          }
+          if (totalCorrect + 1 === 10) {
+            const firstTime = await claimMilestone("ten_correct");
+            if (firstTime) {
+              celebrateMilestone(
+                "10 תשובות נכונות! 🎯",
+                "צעד חשוב בדרך למבחן — ממשיכים!"
+              );
+            }
+          }
+          if (result && result.level === 5) {
+            const firstTime = await claimMilestone("level_5");
+            if (firstTime) {
+              celebrateMilestone("רמה 5! 🌟", "הגעת לרמה 5 — כל הכבוד");
+            }
+          }
+        })();
+      }
     }
     // Track the answer in session memory so the next adaptive pick sees
     // the updated state immediately (no waiting for a Supabase round-trip).
