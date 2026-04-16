@@ -371,6 +371,39 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_stats: {
+        Row: {
+          user_id: string
+          total_questions_answered: number
+          correct_answers: number
+          total_practice_time_seconds: number
+          current_streak: number
+          longest_streak: number
+          last_activity_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          total_questions_answered?: number
+          correct_answers?: number
+          total_practice_time_seconds?: number
+          current_streak?: number
+          longest_streak?: number
+          last_activity_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          total_questions_answered?: number
+          correct_answers?: number
+          total_practice_time_seconds?: number
+          current_streak?: number
+          longest_streak?: number
+          last_activity_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -411,6 +444,14 @@ export type Database = {
       claim_milestone: {
         Args: { p_milestone: string }
         Returns: boolean
+      }
+      get_dashboard_stats: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
+      backfill_dashboard_stats: {
+        Args: Record<string, never>
+        Returns: undefined
       }
     }
     Enums: {

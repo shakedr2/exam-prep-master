@@ -14,6 +14,7 @@ import { DashboardStatsSkeleton } from "@/features/gamification/components/Dashb
 import { useGamification } from "@/features/gamification/hooks/useGamification";
 import { useOnboarding } from "@/features/onboarding/hooks/useOnboarding";
 import { useDailyLogin } from "@/features/gamification/hooks/useDailyLogin";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { OnboardingWizard } from "@/features/onboarding/components/OnboardingWizard";
 import { Flame, CheckCircle2, GraduationCap, X, ChevronLeft, Home, Rocket } from "lucide-react";
 import { PythonHero } from "@/components/PythonHero";
@@ -28,9 +29,16 @@ const DashboardPage = () => {
   const { learnMap, questionCounts } = useDashboardData();
   const { isTopicUnlocked, isTopicComplete } = useTopicCompletion();
   const gamification = useGamification();
+  const { stats: precomputedStats } = useDashboardStats();
   const { state: onboardingState, loading: onboardingLoading } = useOnboarding();
   const [showOnboarding, setShowOnboarding] = useState(false);
   useDailyLogin();
+
+  // Prefer precomputed stats from dashboard_stats table (issue #161).
+  // Falls back to on-the-fly values from useProgress for guests.
+  const effectiveTotalCorrect = precomputedStats?.correctAnswers ?? totalCorrect;
+  const effectiveTotalAnswered = precomputedStats?.totalQuestionsAnswered ?? totalAnswered;
+
   const [tipDismissed, setTipDismissed] = useState(
     () => localStorage.getItem(PRACTICE_TIP_DISMISSED_KEY) === "true"
   );
@@ -46,12 +54,12 @@ const DashboardPage = () => {
     if (dashboardViewedRef.current) return;
     dashboardViewedRef.current = true;
     trackDashboardViewed({
-      total_answered: totalAnswered,
-      total_correct: totalCorrect,
+      total_answered: effectiveTotalAnswered,
+      total_correct: effectiveTotalCorrect,
     });
-  }, [totalAnswered, totalCorrect]);
+  }, [effectiveTotalAnswered, effectiveTotalCorrect]);
 
-  const hasPracticed = totalAnswered > 0;
+  const hasPracticed = effectiveTotalAnswered > 0;
   const hasLearnedAny = Object.values(learnMap).some((arr) => arr.length > 0);
   const showPracticeTip = hasPracticed && !hasLearnedAny && !tipDismissed;
   const isNewUser = !hasPracticed && !hasLearnedAny;
@@ -172,13 +180,13 @@ const DashboardPage = () => {
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <Card className="bg-card border border-foreground/10">
               <CardContent className="p-2 sm:p-3 text-center">
-                <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{totalCorrect}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{effectiveTotalCorrect}</p>
                 <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">שאלות נכונות</p>
               </CardContent>
             </Card>
             <Card className="bg-card border border-foreground/10">
               <CardContent className="p-2 sm:p-3 text-center">
-                <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{totalAnswered}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{effectiveTotalAnswered}</p>
                 <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">סה״כ נפתרו</p>
               </CardContent>
             </Card>
