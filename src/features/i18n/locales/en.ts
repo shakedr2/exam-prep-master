@@ -30,6 +30,11 @@ const en: Translations = {
       generic: "AI service error. Please try again.",
     },
   },
+  privacy: {
+    pageTitle: "Privacy Policy",
+    lastUpdated: "Last updated",
+    footerLink: "Privacy Policy",
+  },
 };
 
 export default en;

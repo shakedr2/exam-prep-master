@@ -30,6 +30,11 @@ const he = {
       generic: "שגיאה בשירות AI. אנא נסה שוב.",
     },
   },
+  privacy: {
+    pageTitle: "מדיניות פרטיות",
+    lastUpdated: "עודכן לאחרונה",
+    footerLink: "מדיניות פרטיות",
+  },
 } as const;
 
 export default he;
