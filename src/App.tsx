@@ -16,6 +16,7 @@ import { AuthGuard } from "@/shared/components/AuthGuard";
 import { Navbar } from "@/shared/components/Navbar";
 import { BottomNav } from "@/shared/components/BottomNav";
 import { PageTransition } from "@/shared/components/PageTransition";
+import { CookieConsent } from "@/components/CookieConsent";
 import HomePage from "./pages/HomePage";
 import OnboardingPage from "./pages/OnboardingPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -146,6 +147,7 @@ const AppContent = () => {
         <Navbar />
         <AnimatedRoutes />
         <BottomNav />
+        <CookieConsent />
       </BrowserRouter>
     </div>
   );
