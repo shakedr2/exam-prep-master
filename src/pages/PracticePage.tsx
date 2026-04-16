@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef, Fragment } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp, ArrowLeft, HelpCircle, ClipboardCheck, BookOpen } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, X as XIcon, Lightbulb, TrendingUp, ArrowLeft, ClipboardCheck, BookOpen } from "lucide-react";
 import { FloatingAIButton } from "@/components/FloatingAIButton";
 import { TopicTutorial } from "@/components/TopicTutorial";
 import { Button } from "@/components/ui/button";
@@ -1130,56 +1130,22 @@ const PracticePage = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Hint button */}
-        {/* In guided_practice mode hints are available after wrong answers too (proactive scaffolding). */}
-        {hint && (
+        {/* Auto-hint: displayed in guided_practice mode after a wrong answer (triggered by a 10-second timer, no button needed). */}
+        {hint && showHint && (
           practicePhase === "guided_practice"
             ? !answers[current.id]?.correct
             : !answers[current.id]
         ) && (
-          <div className="space-y-2">
-            {!showHint ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2 text-xs border-yellow-300/50 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-950/20"
-                onClick={() => setShowHint(true)}
-              >
-                <Lightbulb className="h-3.5 w-3.5" />
-                רמז
-              </Button>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="rounded-lg border border-yellow-300/50 bg-yellow-50 dark:bg-yellow-950/20 p-3"
-              >
-                <div className="flex items-start gap-2">
-                  <Lightbulb className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" />
-                  <p className="text-sm text-yellow-900 dark:text-yellow-200">{hint}</p>
-                </div>
-              </motion.div>
-            )}
-          </div>
-        )}
-
-        {/* "I don't understand" button */}
-        {!answers[current.id] && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2 text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => {
-              setCurrentStreak(0);
-              setEasyPinRemaining(3);
-              setShowEncouragement(true);
-              setTimeout(() => setShowEncouragement(false), 4000);
-              posthog.capture("dont_understand_clicked", { topic_id: topicId, question_id: current.id });
-            }}
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="rounded-lg border border-yellow-300/50 bg-yellow-50 dark:bg-yellow-950/20 p-3"
           >
-            <HelpCircle className="h-3.5 w-3.5" />
-            לא הבנתי — תסביר אחרת
-          </Button>
+            <div className="flex items-start gap-2">
+              <Lightbulb className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" />
+              <p className="text-sm text-yellow-900 dark:text-yellow-200">{hint}</p>
+            </div>
+          </motion.div>
         )}
       </div>
 
@@ -1216,6 +1182,7 @@ const PracticePage = () => {
       <FloatingAIButton
         question={current}
         userAnswer={answers[current.id]?.answer}
+        topicId={rawTopicId}
       />
     </div>
     </Fragment>
