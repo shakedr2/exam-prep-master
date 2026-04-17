@@ -16,6 +16,18 @@ import { CheckCircle2, BookOpen, Brain, Lock } from "lucide-react";
 import { questions as staticQuestions } from "@/data/questions";
 import { resolveTopicId } from "@/data/topicTutorials";
 
+// Pre-aggregate static question counts by topic slug. `src/data/questions.ts`
+// is the product's single source of truth per CLAUDE.md, so topic cards must
+// reflect these counts even when the Supabase aggregate (`get_dashboard_data`)
+// hasn't been seeded yet (e.g. new OOP and DevOps questions).
+const STATIC_QUESTION_COUNTS: Record<string, number> = staticQuestions.reduce(
+  (acc, q) => {
+    acc[q.topic] = (acc[q.topic] ?? 0) + 1;
+    return acc;
+  },
+  {} as Record<string, number>,
+);
+
 export const TopicCard = memo(function TopicCard({
   topic,
   questionCount,
@@ -189,21 +201,36 @@ export const ModuleSection = memo(function ModuleSection({
   // Downstream consumers (localStorage, static question filter, sequential
   // unlock order) are slug-based, so normalize the returned topic's `id` to
   // the module's slug.
+  //
+  // If the DB row is missing but the slug has static questions or a module
+  // definition, synthesise a topic from the module metadata so new content
+  // (e.g. DevOps networking) still renders on the track page.
   const moduleTopics = module.topicIds
     .map((slug) => {
       const uuid = resolveTopicId(slug)?.uuid;
       const dbTopic = topics.find((t) => t.id === uuid || t.id === slug);
-      if (!dbTopic) return null;
-      return { ...dbTopic, id: slug };
+      if (dbTopic) return { ...dbTopic, id: slug };
+      const hasStaticQuestions = (STATIC_QUESTION_COUNTS[slug] ?? 0) > 0;
+      if (!hasStaticQuestions) return null;
+      return {
+        id: slug,
+        name: module.title,
+        icon: module.icon,
+        description: module.description,
+      };
     })
     .filter(Boolean) as typeof topics;
 
-  // questionCounts is produced by the `get_dashboard_data` RPC which keys the
-  // aggregate by UUID. Look up by UUID first, then fall back to the slug for
-  // topics that are slug-keyed (e.g. legacy local-only rows).
+  // Question counts come from two sources:
+  //   • Supabase `get_dashboard_data` RPC — aggregated by topic UUID
+  //   • Static `src/data/questions.ts` — aggregated by topic slug
+  // Use the larger of the two so topics are never underreported when static
+  // content exists but hasn't been seeded to Supabase yet.
   const getQuestionCount = (slug: string): number => {
     const uuid = resolveTopicId(slug)?.uuid;
-    return (uuid && questionCounts[uuid]) ?? questionCounts[slug] ?? 0;
+    const remote = (uuid && questionCounts[uuid]) ?? questionCounts[slug] ?? 0;
+    const staticCount = STATIC_QUESTION_COUNTS[slug] ?? 0;
+    return Math.max(remote, staticCount);
   };
 
   const moduleCompletion = moduleTopics.length > 0

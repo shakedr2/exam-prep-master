@@ -58,7 +58,7 @@ describe("modules.ts data integrity", () => {
 
     expect(pythonBasics.length).toBe(6);
     expect(oop.length).toBe(4);
-    expect(devops.length).toBe(3);
+    expect(devops.length).toBe(4);
 
     for (const trackModules of [pythonBasics, oop, devops]) {
       for (let i = 1; i < trackModules.length; i += 1) {
