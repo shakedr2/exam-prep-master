@@ -2,7 +2,7 @@ import { pythonOopQuestionSeeds } from "./topicTutorials/python-oop";
 
 export type QuestionType = "quiz" | "tracing" | "coding" | "fill-blank";
 // The 8 official syllabus topics. "tracing" and "math" are legacy aliases kept until PR 1B remaps all questions.
-export type TopicId = "variables_io" | "arithmetic" | "conditions" | "loops" | "functions" | "strings" | "lists" | "tuples_sets_dicts" | "tracing" | "math" | "classes_objects" | "inheritance" | "polymorphism" | "files_exceptions" | "decorators_special" | "python_oop" | "linux_basics" | "file_permissions" | "bash_scripting";
+export type TopicId = "variables_io" | "arithmetic" | "conditions" | "loops" | "functions" | "strings" | "lists" | "tuples_sets_dicts" | "tracing" | "math" | "classes_objects" | "inheritance" | "polymorphism" | "files_exceptions" | "decorators_special" | "python_oop" | "linux_basics" | "file_permissions" | "bash_scripting" | "networking_fundamentals";
 export type Difficulty = "easy" | "medium" | "hard";
 
 export interface WarmupQuestion {
@@ -3928,6 +3928,93 @@ print(mystery(4321).strip())`,
     explanation: "האופרטור ** מחשב חזקה. לדוגמה: 2 ** 3 מחזיר 8, כי 2 בחזקת 3 = 8.",
   },
   ...pythonOopQuestionSeeds,
+
+  // ── DevOps: Networking Fundamentals ──────────────────
+  {
+    id: "networking_fundamentals_1",
+    type: "quiz",
+    topic: "networking_fundamentals",
+    difficulty: "easy",
+    question: "מהו תפקידו של DNS ברשת האינטרנט?",
+    options: [
+      "להצפין את התעבורה בין שרתים",
+      "לתרגם שמות דומיין (למשל example.com) לכתובות IP",
+      "לנהל חיבורי TCP בין לקוח לשרת",
+      "לחסום גישה לאתרים לפי כתובת IP",
+    ],
+    correctIndex: 1,
+    explanation: "DNS (Domain Name System) הוא 'ספר הטלפונים' של האינטרנט — הוא מתרגם שם דומיין קריא לבני אדם (example.com) לכתובת IP שהמחשב מבין (93.184.216.34). ללא DNS היה צורך לזכור את כתובות ה-IP של כל שרת.",
+    patternFamily: "networking_dns",
+    commonMistake: "לבלבל בין DNS ל-DHCP. DHCP מחלק כתובות IP למכשירים ברשת פנימית, בעוד DNS ממיר שמות לכתובות IP באופן כללי.",
+  },
+  {
+    id: "networking_fundamentals_2",
+    type: "quiz",
+    topic: "networking_fundamentals",
+    difficulty: "easy",
+    question: "איזה פורט (port) משמש כברירת מחדל לתעבורת HTTPS?",
+    options: [
+      "21",
+      "22",
+      "80",
+      "443",
+    ],
+    correctIndex: 3,
+    explanation: "פורט 443 הוא פורט ברירת המחדל של HTTPS (HTTP מוצפן דרך TLS). פורט 80 הוא של HTTP רגיל (לא מוצפן), פורט 22 הוא של SSH, ופורט 21 הוא של FTP.",
+    patternFamily: "networking_ports",
+    commonMistake: "לחשוב ש-HTTP ו-HTTPS חולקים את אותו פורט. הם נפרדים כדי שהדפדפן ידע אם להתחיל handshake של TLS.",
+  },
+  {
+    id: "networking_fundamentals_3",
+    type: "quiz",
+    topic: "networking_fundamentals",
+    difficulty: "medium",
+    question: "מה ההבדל העיקרי בין TCP ל-UDP?",
+    options: [
+      "TCP מאובטח יותר מ-UDP",
+      "TCP מבטיח הגעת חבילות ושומר על סדר, UDP מהיר יותר אך לא מבטיח משלוח",
+      "UDP משמש רק בתוך רשתות פנימיות ו-TCP באינטרנט",
+      "אין הבדל מעשי, שניהם זהים",
+    ],
+    correctIndex: 1,
+    explanation: "TCP (Transmission Control Protocol) הוא פרוטוקול מבוסס חיבור (connection-oriented) שמבצע handshake, מבטיח הגעת כל החבילות ושומר על הסדר — מתאים ל-HTTP, SSH, מיילים. UDP (User Datagram Protocol) שולח חבילות בלי לוודא הגעה או סדר — מהיר יותר, מתאים ל-DNS, וידאו חי, משחקים מקוונים.",
+    patternFamily: "networking_protocols",
+    commonMistake: 'לחשוב ש-UDP "פחות טוב" מ-TCP. בכל פרוטוקול יש טריידאוף בין אמינות למהירות.',
+  },
+  {
+    id: "networking_fundamentals_4",
+    type: "quiz",
+    topic: "networking_fundamentals",
+    difficulty: "medium",
+    question: "מה תפקידה של כתובת IP במודל TCP/IP?",
+    options: [
+      "לזהות באופן ייחודי מכשיר או ממשק רשת ולאפשר ניתוב חבילות ביניהם",
+      "להצפין את תוכן התקשורת בין שני מחשבים",
+      "למנוע התקפות DDoS ברמת הרשת",
+      "לשמור את היסטוריית הגלישה של המשתמש",
+    ],
+    correctIndex: 0,
+    explanation: "כתובת IP (Internet Protocol address) מזהה באופן ייחודי מכשיר או ממשק רשת. הנתבים (routers) משתמשים בכתובות ה-IP כדי לנתב חבילות ממקור ליעד. IPv4 הוא 32 ביט (למשל 192.168.1.10), ו-IPv6 הוא 128 ביט.",
+    patternFamily: "networking_ip",
+    commonMistake: "לבלבל בין כתובת IP פרטית (192.168.x.x, 10.x.x.x) לכתובת ציבורית. פרטית תקפה רק ברשת מקומית.",
+  },
+  {
+    id: "networking_fundamentals_5",
+    type: "quiz",
+    topic: "networking_fundamentals",
+    difficulty: "hard",
+    question: "לקוח שולח בקשת HTTP GET ל-https://example.com. איזה רצף שלבים תיאורי ביותר?",
+    options: [
+      "השרת מחזיר מיד HTML, ללא שלבים נוספים",
+      "DNS lookup → TCP handshake → TLS handshake → בקשת HTTP → תגובת HTTP",
+      "TLS handshake → DNS lookup → TCP handshake → בקשת HTTP → תגובה",
+      "הדפדפן שולח את הבקשה ישירות לנתב הביתי שמחזיר תשובה",
+    ],
+    correctIndex: 1,
+    explanation: "השלבים הם: (1) DNS lookup — המרת example.com לכתובת IP. (2) TCP handshake (SYN / SYN-ACK / ACK) — יצירת חיבור מוכוון עם השרת. (3) TLS handshake — החלפת מפתחות הצפנה לערוץ מאובטח (רק ב-HTTPS). (4) שליחת בקשת HTTP GET. (5) השרת מחזיר תגובת HTTP עם גוף התוכן.",
+    patternFamily: "networking_http_flow",
+    commonMistake: "לדלג על TLS handshake או להניח שהוא קורה לפני TCP — TLS רץ על גבי חיבור TCP קיים.",
+  },
 ];
 
 export function getQuestionsByTopic(topicId: TopicId): Question[] {
