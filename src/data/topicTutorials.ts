@@ -1146,6 +1146,11 @@ const SLUG_TO_UUID: Record<string, string> = {
   polymorphism: "11111111-000b-0000-0000-000000000000",
   files_exceptions: "11111111-000c-0000-0000-000000000000",
   decorators_special: "11111111-000d-0000-0000-000000000000",
+  // DevOps track (Phase 2 — Linux & Bash). UUIDs come from
+  // 20260416000001_seed_curriculum_linux_bash_phase2.sql.
+  linux_basics: "22222222-0001-0000-0000-000000000000",
+  bash_scripting: "22222222-0002-0000-0000-000000000000",
+  file_permissions: "22222222-0003-0000-0000-000000000000",
   [PYTHON_OOP_TOPIC_SLUG]: PYTHON_OOP_TOPIC_UUID,
 };
 

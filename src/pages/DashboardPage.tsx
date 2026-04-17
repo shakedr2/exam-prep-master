@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { useProgress } from "@/hooks/useProgress";
 import { trackDashboardViewed } from "@/lib/analytics";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
@@ -16,7 +17,7 @@ import { useOnboarding } from "@/features/onboarding/hooks/useOnboarding";
 import { useDailyLogin } from "@/features/gamification/hooks/useDailyLogin";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { OnboardingWizard } from "@/features/onboarding/components/OnboardingWizard";
-import { Flame, CheckCircle2, GraduationCap, X, ChevronLeft, Home, Rocket } from "lucide-react";
+import { Flame, CheckCircle2, GraduationCap, X, ChevronLeft, Home, Rocket, LogIn } from "lucide-react";
 import { PythonHero } from "@/components/PythonHero";
 import { TrackModuleList } from "@/components/TrackModuleList";
 
@@ -24,7 +25,8 @@ const PRACTICE_TIP_DISMISSED_KEY = "practice_tip_dismissed";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
-  const { progress, getTopicCompletion, totalCorrect, totalAnswered } = useProgress();
+  const { user } = useAuth();
+  const { progress, getTopicCompletion } = useProgress();
   const { topics, loading } = useSupabaseTopics();
   const { learnMap, questionCounts } = useDashboardData();
   const { isTopicUnlocked, isTopicComplete } = useTopicCompletion();
@@ -34,10 +36,30 @@ const DashboardPage = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   useDailyLogin();
 
-  // Prefer precomputed stats from dashboard_stats table (issue #161).
-  // Falls back to on-the-fly values from useProgress for guests.
-  const effectiveTotalCorrect = precomputedStats?.correctAnswers ?? totalCorrect;
-  const effectiveTotalAnswered = precomputedStats?.totalQuestionsAnswered ?? totalAnswered;
+  // Stats must reflect real authenticated-user data from Supabase.
+  // `progress.streak` / `progress.xp` / `totalAnswered` from useProgress are
+  // derived partly from localStorage (see useProgress facade) and carry stale
+  // guest-session values across logins — don't source dashboard stats from it.
+  const isAuthenticated = !!user;
+  const stats = isAuthenticated
+    ? {
+        xp: gamification.xp,
+        level: gamification.level,
+        currentStreak: precomputedStats?.currentStreak ?? gamification.currentStreak ?? 0,
+        longestStreak: precomputedStats?.longestStreak ?? gamification.longestStreak ?? 0,
+        totalCorrect: precomputedStats?.correctAnswers ?? 0,
+        totalAnswered: precomputedStats?.totalQuestionsAnswered ?? 0,
+        lastActivityAt: precomputedStats?.lastActivityAt ?? null,
+      }
+    : {
+        xp: 0,
+        level: 1,
+        currentStreak: 0,
+        longestStreak: 0,
+        totalCorrect: 0,
+        totalAnswered: 0,
+        lastActivityAt: null as string | null,
+      };
 
   const [tipDismissed, setTipDismissed] = useState(
     () => localStorage.getItem(PRACTICE_TIP_DISMISSED_KEY) === "true"
@@ -54,12 +76,12 @@ const DashboardPage = () => {
     if (dashboardViewedRef.current) return;
     dashboardViewedRef.current = true;
     trackDashboardViewed({
-      total_answered: effectiveTotalAnswered,
-      total_correct: effectiveTotalCorrect,
+      total_answered: stats.totalAnswered,
+      total_correct: stats.totalCorrect,
     });
-  }, [effectiveTotalAnswered, effectiveTotalCorrect]);
+  }, [stats.totalAnswered, stats.totalCorrect]);
 
-  const hasPracticed = effectiveTotalAnswered > 0;
+  const hasPracticed = stats.totalAnswered > 0;
   const hasLearnedAny = Object.values(learnMap).some((arr) => arr.length > 0);
   const showPracticeTip = hasPracticed && !hasLearnedAny && !tipDismissed;
   const isNewUser = !hasPracticed && !hasLearnedAny;
@@ -74,14 +96,15 @@ const DashboardPage = () => {
   );
 
   const lastActiveLabel = useMemo(() => {
-    if (!progress.lastActiveDate) return null;
+    if (!stats.lastActivityAt) return null;
+    const activityDate = new Date(stats.lastActivityAt).toDateString();
     const today = new Date().toDateString();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    if (progress.lastActiveDate === today) return "היום";
-    if (progress.lastActiveDate === yesterday.toDateString()) return "אתמול";
-    return new Date(progress.lastActiveDate).toLocaleDateString("he-IL");
-  }, [progress.lastActiveDate]);
+    if (activityDate === today) return "היום";
+    if (activityDate === yesterday.toDateString()) return "אתמול";
+    return new Date(stats.lastActivityAt).toLocaleDateString("he-IL");
+  }, [stats.lastActivityAt]);
 
   const handleLearn = useCallback(
     (topicId: string) => navigate(`/learn/${topicId}`),
@@ -133,13 +156,10 @@ const DashboardPage = () => {
             </p>
           </div>
           <div className="flex flex-col items-end gap-2 shrink-0">
-            <XpBadge
-              xp={gamification.xp || progress.xp}
-              level={gamification.level || progress.level}
-            />
+            <XpBadge xp={stats.xp} level={stats.level} />
             <StreakBadge
-              currentStreak={gamification.currentStreak || progress.streak}
-              longestStreak={gamification.longestStreak}
+              currentStreak={stats.currentStreak}
+              longestStreak={stats.longestStreak}
             />
           </div>
         </div>
@@ -180,23 +200,23 @@ const DashboardPage = () => {
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <Card className="bg-card border border-foreground/10">
               <CardContent className="p-2 sm:p-3 text-center">
-                <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{effectiveTotalCorrect}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{stats.totalCorrect}</p>
                 <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">שאלות נכונות</p>
               </CardContent>
             </Card>
             <Card className="bg-card border border-foreground/10">
               <CardContent className="p-2 sm:p-3 text-center">
-                <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{effectiveTotalAnswered}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{stats.totalAnswered}</p>
                 <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">סה״כ נפתרו</p>
               </CardContent>
             </Card>
             <Card className="bg-card border border-foreground/10">
               <CardContent className="p-2 sm:p-3 text-center flex flex-col items-center">
-                {progress.streak > 0 ? (
+                {stats.currentStreak > 0 ? (
                   <>
                     <div className="flex items-center gap-1">
                       <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
-                      <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{progress.streak}</p>
+                      <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">{stats.currentStreak}</p>
                     </div>
                     <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">ימים רצופים</p>
                   </>
@@ -211,6 +231,25 @@ const DashboardPage = () => {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {!isAuthenticated && (
+          <Card className="bg-muted/30 border border-dashed border-foreground/20">
+            <CardContent className="p-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <LogIn className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">התחבר כדי לשמור את ההתקדמות</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    ההתקדמות שלך תישמר בענן ותהיה זמינה מכל מכשיר.
+                  </p>
+                </div>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => navigate("/login")} className="shrink-0 text-xs h-8">
+                התחבר
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         {/* Quick exam CTA */}
