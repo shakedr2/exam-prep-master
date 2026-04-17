@@ -30,15 +30,16 @@ export function useProgress() {
 
   // Compose the visible `progress` object. For authenticated users we
   // start from the remote shape and merge in the few fields that are
-  // still local-only (examHistory, streak, badges, lastActiveDate).
-  // This keeps the dashboard's stats / exam history widgets working
-  // until follow-up issues add server-side storage for them.
+  // still local-only (examHistory, badges). Streak and lastActiveDate
+  // are deliberately sourced from Supabase (useDashboardStats /
+  // useGamification) for authed users — merging local values here leaks
+  // stale guest-session state across logins.
   const progress: UserProgress = useMemo(() => {
     if (isAuthenticated) {
       return {
         ...remote.progress,
-        streak: local.progress.streak,
-        lastActiveDate: local.progress.lastActiveDate,
+        streak: 0,
+        lastActiveDate: null,
         examHistory: local.progress.examHistory,
         badges: local.progress.badges,
       };
