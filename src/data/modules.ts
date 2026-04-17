@@ -136,6 +136,15 @@ export const MODULES: Module[] = [
     icon: "💻",
     track: "devops",
   },
+  {
+    id: "networking_fundamentals",
+    title: "יסודות רשת",
+    description: "TCP/IP, DNS, פורטים ו-HTTP",
+    topicIds: ["networking_fundamentals"],
+    order: 14,
+    icon: "🌐",
+    track: "devops",
+  },
 ];
 
 export function getModuleForTopic(topicId: string): Module | undefined {
