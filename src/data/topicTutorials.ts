@@ -1151,6 +1151,9 @@ const SLUG_TO_UUID: Record<string, string> = {
   linux_basics: "22222222-0001-0000-0000-000000000000",
   bash_scripting: "22222222-0002-0000-0000-000000000000",
   file_permissions: "22222222-0003-0000-0000-000000000000",
+  // Networking Fundamentals (DevOps, Phase 2). Seeded via
+  // 20260417000001_seed_networking_fundamentals.sql.
+  networking_fundamentals: "22222222-0004-0000-0000-000000000000",
   [PYTHON_OOP_TOPIC_SLUG]: PYTHON_OOP_TOPIC_UUID,
 };
 

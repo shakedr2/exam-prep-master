@@ -127,6 +127,7 @@ describe("track routing", () => {
       "linux_basics",
       "file_permissions",
       "bash_scripting",
+      "networking_fundamentals",
     ]);
     expect(firstCall.questionCounts.bash_scripting).toBe(9);
   });
