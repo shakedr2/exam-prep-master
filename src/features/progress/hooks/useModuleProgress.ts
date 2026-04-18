@@ -1,14 +1,9 @@
 import { useMemo } from "react";
 import { MODULES } from "@/data/modules";
-import { questions } from "@/data/questions";
-import { resolveTopicId } from "@/data/topicTutorials";
 import { useProgress } from "@/hooks/useProgress";
 import { useDashboardData } from "@/hooks/useDashboardData";
-import {
-  calcTopicProgress,
-  calcModuleProgress,
-  type AnsweredMap,
-} from "../lib/progressSelectors";
+import { calcModuleProgress } from "../lib/progressSelectors";
+import { computeTopicProgress } from "./useTopicProgress";
 import type { ModuleProgress } from "../lib/progressTypes";
 
 /**
@@ -40,32 +35,11 @@ export function useModuleProgress(moduleId: string): ModuleProgress {
     const module = MODULES.find((m) => m.id === moduleId);
     if (!module) return calcModuleProgress(moduleId, []);
 
-    const topicProgresses = module.topicIds.map((topicId) => {
-      const tid = topicId as string;
-
-      const qIds = new Set(
-        questions.filter((q) => (q.topic as string) === tid).map((q) => q.id)
-      );
-      let correct = 0;
-      let attempted = 0;
-      for (const [qId, ans] of Object.entries(answeredQuestions)) {
-        if (qIds.has(qId)) {
-          attempted++;
-          if (ans.correct) correct++;
-        }
-      }
-      const answeredMap: AnsweredMap = { [tid]: { correct, attempted } };
-
-      const resolved = resolveTopicId(tid);
-      const remoteCount = resolved ? (questionCounts[resolved.uuid] ?? 0) : 0;
-      const staticCount = questions.filter(
-        (q) => (q.topic as string) === tid
-      ).length;
-
-      return calcTopicProgress(tid, answeredMap, remoteCount, staticCount);
-    });
+    const topicProgresses = module.topicIds.map((topicId) =>
+      computeTopicProgress(topicId as string, answeredQuestions, questionCounts)
+    );
 
     return calcModuleProgress(moduleId, topicProgresses);
-    // `MODULES` and `questions` are static module-level constants; omitted from deps.
+    // `MODULES` is a static module-level constant; omitted from deps.
   }, [moduleId, answeredQuestions, questionCounts]);
 }

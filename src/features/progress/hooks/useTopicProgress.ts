@@ -10,6 +10,43 @@ import {
 import type { TopicProgress } from "../lib/progressTypes";
 
 /**
+ * Pure helper (not a hook) that computes a {@link TopicProgress} for one topic
+ * given the current answered-questions map and remote question counts.
+ *
+ * Extracted here so that {@link useModuleProgress} and {@link useTrackProgress}
+ * can reuse the computation without calling a hook inside a loop.
+ *
+ * @internal
+ */
+export function computeTopicProgress(
+  topicId: string,
+  answeredQuestions: Record<string, { correct: boolean; attempts: number }>,
+  questionCounts: Record<string, number>
+): TopicProgress {
+  // Filter once and reuse for both the answered-map and staticCount.
+  const topicQuestions = questions.filter(
+    (q) => (q.topic as string) === topicId
+  );
+  const qIds = new Set(topicQuestions.map((q) => q.id));
+
+  let correct = 0;
+  let attempted = 0;
+  for (const [qId, ans] of Object.entries(answeredQuestions)) {
+    if (qIds.has(qId)) {
+      attempted++;
+      if (ans.correct) correct++;
+    }
+  }
+
+  const answeredMap: AnsweredMap = { [topicId]: { correct, attempted } };
+  const resolved = resolveTopicId(topicId);
+  const remoteCount = resolved ? (questionCounts[resolved.uuid] ?? 0) : 0;
+  const staticCount = topicQuestions.length;
+
+  return calcTopicProgress(topicId, answeredMap, remoteCount, staticCount);
+}
+
+/**
  * React wrapper around {@link calcTopicProgress}.
  *
  * Resolves the remote question count (UUID-keyed in `useDashboardData`) and
@@ -30,37 +67,8 @@ export function useTopicProgress(topicId: string): TopicProgress {
   const { questionCounts } = useDashboardData();
   const { answeredQuestions } = progress;
 
-  const answeredMap = useMemo((): AnsweredMap => {
-    // Build a set of question IDs that belong to this topic so we only scan
-    // answeredQuestions once regardless of the total catalog size.
-    const qIds = new Set(
-      questions.filter((q) => (q.topic as string) === topicId).map((q) => q.id)
-    );
-    let correct = 0;
-    let attempted = 0;
-    for (const [qId, ans] of Object.entries(answeredQuestions)) {
-      if (qIds.has(qId)) {
-        attempted++;
-        if (ans.correct) correct++;
-      }
-    }
-    return { [topicId]: { correct, attempted } };
-    // `questions` is a static module-level constant; not included in deps.
-  }, [topicId, answeredQuestions]);
-
-  const remoteCount = useMemo(() => {
-    const resolved = resolveTopicId(topicId);
-    return resolved ? (questionCounts[resolved.uuid] ?? 0) : 0;
-  }, [topicId, questionCounts]);
-
-  const staticCount = useMemo(
-    () => questions.filter((q) => (q.topic as string) === topicId).length,
-    // `questions` is static; only re-run when the topic changes.
-    [topicId]
-  );
-
   return useMemo(
-    () => calcTopicProgress(topicId, answeredMap, remoteCount, staticCount),
-    [topicId, answeredMap, remoteCount, staticCount]
+    () => computeTopicProgress(topicId, answeredQuestions, questionCounts),
+    [topicId, answeredQuestions, questionCounts]
   );
 }

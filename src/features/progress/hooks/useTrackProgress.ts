@@ -1,21 +1,18 @@
 import { useMemo } from "react";
 import { getModulesByTrack, type TrackId as ModuleTrackId } from "@/data/modules";
-import { questions } from "@/data/questions";
-import { resolveTopicId } from "@/data/topicTutorials";
 import { useProgress } from "@/hooks/useProgress";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import {
-  calcTopicProgress,
   calcModuleProgress,
   calcTrackProgress,
   calcResumeTarget,
-  type AnsweredMap,
 } from "../lib/progressSelectors";
 import type {
   TrackProgress,
   ResumeTarget,
   TrackId as ProgressTrackId,
 } from "../lib/progressTypes";
+import { computeTopicProgress } from "./useTopicProgress";
 
 // ── TrackId bridge ────────────────────────────────────────────────────────
 // `src/data/modules.ts` uses the full display-form track IDs
@@ -53,39 +50,19 @@ export function useTrackProgress(trackId: ModuleTrackId): TrackProgress {
     const modules = getModulesByTrack(trackId);
 
     const moduleProgresses = modules.map((module) => {
-      const topicProgresses = module.topicIds.map((topicId) => {
-        const tid = topicId as string;
-
-        const qIds = new Set(
-          questions.filter((q) => (q.topic as string) === tid).map((q) => q.id)
-        );
-        let correct = 0;
-        let attempted = 0;
-        for (const [qId, ans] of Object.entries(answeredQuestions)) {
-          if (qIds.has(qId)) {
-            attempted++;
-            if (ans.correct) correct++;
-          }
-        }
-        const answeredMap: AnsweredMap = { [tid]: { correct, attempted } };
-
-        const resolved = resolveTopicId(tid);
-        const remoteCount = resolved
-          ? (questionCounts[resolved.uuid] ?? 0)
-          : 0;
-        const staticCount = questions.filter(
-          (q) => (q.topic as string) === tid
-        ).length;
-
-        return calcTopicProgress(tid, answeredMap, remoteCount, staticCount);
-      });
-
+      const topicProgresses = module.topicIds.map((topicId) =>
+        computeTopicProgress(
+          topicId as string,
+          answeredQuestions,
+          questionCounts
+        )
+      );
       return calcModuleProgress(module.id, topicProgresses);
     });
 
     const progressTrackId = MODULE_TO_PROGRESS_TRACK_ID[trackId];
     return calcTrackProgress(progressTrackId, moduleProgresses);
-    // `getModulesByTrack` and `questions` are stable; omitted from deps.
+    // `getModulesByTrack` is stable; omitted from deps.
   }, [trackId, answeredQuestions, questionCounts]);
 }
 
