@@ -35,9 +35,9 @@ const OnboardingPage = () => {
           <BookOpen className="h-10 w-10" />
         </div>
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground font-mono">ExamPrep</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground font-mono">Logic Flow</h1>
           <p className="mt-3 text-muted-foreground leading-relaxed">
-            תרגול שאלות לפי נושא, מעקב התקדמות והסברי AI.
+            מסלולי למידה מובנים, בקצב שלך — תרגול לפי נושא ומעקב התקדמות שקט וברור.
           </p>
         </div>
         <div className="space-y-3">

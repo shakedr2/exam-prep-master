@@ -89,7 +89,7 @@ export function OnboardingWizard({ open, onClose }: OnboardingWizardProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            ברוכים הבאים ל-ExamPrep
+            ברוכים הבאים ל-Logic Flow
           </DialogTitle>
           <DialogDescription>
             שלב {step + 1} מתוך {totalSteps}

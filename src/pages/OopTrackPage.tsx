@@ -120,9 +120,6 @@ const OopTrackPage = () => {
           />
         </div>
 
-        <p className="pt-2 text-center font-mono text-[11px] text-muted-foreground">
-          // עוד תרגול ושאלות לכל מודול בקרוב
-        </p>
       </div>
     </div>
   );
