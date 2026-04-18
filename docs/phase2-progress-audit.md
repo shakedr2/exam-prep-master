@@ -353,8 +353,182 @@ Notable flow observations (neutral, no judgment):
 
 ## 3. Inconsistencies Found
 
-TBD — concrete cases where home, track page, module view, and progress page
-can show different numbers for the same underlying data.
+Each item lists: (a) surfaces involved, (b) symptom, (c) root cause hypothesis,
+(d) severity.
+
+### 3.1 Track percent: coverage formula vs. per-topic average
+- (a) Home Python/OOP cards (`HomePage.tsx`) vs. OOP / DevOps track pages
+  (`OopTrackPage.tsx`, `DevOpsTrackPage.tsx`).
+- (b) For the same user, the home card % and the track-page "Overall
+  completion" % can disagree (sometimes by several points, especially when
+  topics have very different question counts).
+- (c) Home computes `correctAnswers / totalQuestionsAcrossTrack` (a
+  question-weighted coverage). Track pages compute the unweighted AVERAGE of
+  per-topic completion. Small topics dominate the average on track pages.
+- (d) High — this is the "home count != track page count" symptom the
+  phase is explicitly targeting.
+
+### 3.2 Module accordion percent vs. track-page percent
+- (a) Track page hero bar vs. `ModuleSection` accordion header
+  (`TrackModuleList.tsx`).
+- (b) Average of module % rows does not equal the hero "Overall completion"
+  in most cases.
+- (c) Module % is an average over topics in one module; hero % is an average
+  over all topics in the track. Averaging twice at different granularities
+  does not commute.
+- (d) Medium.
+
+### 3.3 Topic card: `completion` bar vs. `{answeredCorrect} נפתרו נכון` label
+- (a) `TopicCard` in `TrackModuleList.tsx`.
+- (b) The percent and the raw count can visually contradict when Supabase
+  has answered rows for a topic but those rows' `question_id` values aren't
+  in the static `questions.ts` catalog (or vice versa).
+- (c) `completion` goes through `useProgress().getTopicCompletion`, which
+  for authed users reads Supabase `user_progress` rows by `topic_id` UUID;
+  `answeredCorrect` is re-derived locally from `progress.answeredQuestions`
+  filtered by static `question.id`. The two sets are keyed and filtered
+  differently.
+- (d) High — two numbers, same card, can disagree.
+
+### 3.4 Topic card question count: `max(remote, static)` vs. denominator used for %
+- (a) `TopicCard` / `ModuleSection` in `TrackModuleList.tsx`.
+- (b) Displayed "`N שאלות`" can exceed the denominator used to compute the
+  progress bar, producing odd ratios like "5 נפתרו נכון / 80%" with
+  "20 שאלות".
+- (c) Question count label uses `max(remote_count, static_count)`.
+  `getTopicCompletion(topicId, totalQuestions)` is called with the same
+  value, so the denominator is consistent on paper — BUT for authed users
+  the numerator (`user_progress` rows with `is_correct`) is filtered by
+  topic UUID while `STATIC_QUESTION_COUNTS` keys by slug. If Supabase has
+  fewer static-equivalent rows than the slug filter expects, the two
+  diverge.
+- (d) Medium.
+
+### 3.5 Progress page totals vs. Dashboard totals
+- (a) Dashboard 3-stat grid vs. Progress page 3-stat grid.
+- (b) Usually agree, but can drift immediately after a practice answer.
+- (c) Both ultimately read `useDashboardStats` (precomputed
+  `dashboard_stats` table), but `useSupabaseProgress` also fires its own
+  read of `user_progress` with different invalidation semantics (it only
+  `refetch`es on its own hook call; `dashboard_stats` is trigger-populated
+  and separately cached in React Query). After a write, the two sources
+  can be out of sync for one or two renders.
+- (d) Medium.
+
+### 3.6 Progress page "coverage %" vs. track page "Overall completion"
+- (a) Progress page overall bar vs. OOP/DevOps track page hero bar.
+- (b) Same user, different numbers.
+- (c) Progress page coverage = `displayTotalCorrect / Σ topicStats.totalQuestions`
+  across ALL Supabase topics (all tracks combined). Track page overall =
+  average of per-topic completion for one track only. Different scopes AND
+  different formulas.
+- (d) High (user-visible cross-screen mismatch).
+
+### 3.7 XP / level surfaces disagree
+- (a) `XpBadge` in DashboardPage (`useGamification`) vs. `progress.xp` /
+  `progress.level` from the `useProgress` facade (used in `ProgressPage`
+  indirectly, and returned from `useLocalProgress` / `useRemoteProgress`).
+- (b) Guest XP bumps locally via `useGamification` but `useLocalProgress`
+  derives XP from `answeredQuestions` count; after answers both update, but
+  XP awarded for non-question reasons (daily login, milestones) is only
+  counted in `useGamification`. Authed `useRemoteProgress.xp` is
+  `totalCorrect * XP_PER_CORRECT` and ignores `user_xp.xp` completely.
+- (c) Two independent XP ledgers: Supabase `user_xp` (authoritative per
+  `award_xp` RPC) and a derived `totalCorrect * 10` value in the progress
+  facade.
+- (d) Medium — not directly surfaced in the current UI, but will surface
+  once any screen uses `progress.xp` alongside the `XpBadge`.
+
+### 3.8 Streak surfaces disagree
+- (a) `StreakBadge` (DashboardPage) vs. `progress.streak` (facade) vs.
+  `dashboard_stats.current_streak`.
+- (b) For authed users the facade already returns `streak: 0` by design
+  (comment in `useProgress.ts`), while `StreakBadge` uses
+  `useDashboardStats` / `useGamification`. Anywhere that still reads
+  `progress.streak` (none in current tree, but the field is in the public
+  type) would show 0 for authed users even when they have a real streak.
+- (c) The facade was deliberately defanged to avoid leaking stale guest
+  streak state across logins; but that leaves the public `UserProgress`
+  type misleading.
+- (d) Low (no consumer today), but a trap for the next caller.
+
+### 3.9 Exam history is local-only
+- (a) DashboardPage exam CTA "אחרון: X%"; ProgressPage exam history list.
+- (b) On a second device / after browser storage clear, the user's exam
+  history vanishes even if they're authenticated; the dashboard reverts to
+  "no last exam", the progress page shows no history.
+- (c) `useProgress().addExamResult` writes only to `examprep_progress` in
+  localStorage. `useRemoteProgress.addExamResult` is a documented no-op
+  (no `exam_results` table yet). The facade always exposes
+  `local.progress.examHistory`.
+- (d) Medium (trust: "I took an exam but the app forgot it").
+
+### 3.10 Two "last position" representations
+- (a) PracticePage resume behavior vs. any future "resume where I left off"
+  affordance on home / track cards.
+- (b) Supabase remembers only ONE last position per user
+  (`user_profiles.last_topic_id` + `last_question_index`). localStorage
+  remembers a per-topic map. After an authed user practices topic A then
+  topic B, the remote profile forgets A's position; on another device the
+  `lastPosition[A]` value is gone.
+- (c) Schema shape mismatch — the server table is single-slot, the client
+  shape is a map. The facade always returns an object keyed by topic, but
+  only the most-recent topic's index is ever populated for authed users.
+- (d) High for Phase 2 resume work — any "Continue learning X" UI that
+  isn't the most-recent topic will silently default to question 0.
+
+### 3.11 No "last-in-progress module" stored anywhere
+- (a) Home track cards, track pages.
+- (b) Clicking a track card goes to the track's landing page (/dashboard,
+  /tracks/python-oop, /tracks/devops) which shows the first-expanded
+  module by default — not the user's last active module.
+- (c) The data model has `last_topic_id` but no `last_module_id` / `last_track_id`.
+  No server-side or client-side computation of "which module is the user
+  currently in the middle of?".
+- (d) High — blocks reliable "Resume where I left off" per Phase 2 goal.
+
+### 3.12 Guest progress visible vs. authed progress visible
+- (a) All progress surfaces before and after sign-in.
+- (b) A guest practices → numbers go up on home / progress. They sign in
+  for the first time → some numbers drop briefly, then `mergeGuestProgress`
+  uploads rows and numbers recover; some numbers (exam history, local
+  `badges`) remain local-only; streak/XP come from the empty
+  `dashboard_stats` row until the first authed action re-triggers the
+  trigger.
+- (c) Multiple independent write stores (local XP counter, local badges,
+  local exam history, local `lastPosition`) aren't part of
+  `mergeGuestProgress`, which only copies `user_progress` rows.
+- (d) Medium — transient but visibly breaks trust on the critical
+  "first sign-in" moment.
+
+### 3.13 Static vs. Supabase question catalog divergence
+- (a) TopicCard question-count label, track hero bar, progress-page
+  per-topic counts.
+- (b) The app can simultaneously assert "`20 שאלות`" on a topic card (from
+  static `questions.ts`) while ProgressPage shows `totalQuestions: 12`
+  (from the Supabase `questions` table) for the same topic.
+- (c) `TrackModuleList.getQuestionCount` takes `max(remote, static)`;
+  `useSupabaseProgress.topicStats` uses the Supabase count only. The two
+  hooks hit different tables by design.
+- (d) Medium for Phase 2 (user-visible mismatch), BUT the underlying
+  accuracy question for DevOps topics is explicitly deferred to Phase 3
+  (see §4).
+
+### 3.14 Anon vs. authed dashboard totals
+- (a) Home stats chip, Progress page stats grid.
+- (b) Guests see totals computed from localStorage (`useLocalProgress`);
+  authed users see totals from `dashboard_stats`. A guest who has answered
+  N questions and then signs in can see totals bounce 0 → N over a few
+  seconds as React Query hydrates.
+- (c) Different hooks on different caches; no loading guard unifies them.
+- (d) Low-to-medium (first-session UX only).
+
+### 3.15 `useProgress.addExamResult` ignored on authed backend
+- (a) ExamMode finish flow.
+- (b) Works for guests, silently no-ops persistence for authed users
+  (still writes to local, but not to Supabase).
+- (c) Documented out of scope for the original Issue #95 migration.
+- (d) Low today; upstream of §3.9.
 
 ## 4. DevOps Practice Question Count Issue
 
