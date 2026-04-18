@@ -8,6 +8,7 @@ import { getModulesByTrack } from "@/data/modules";
 import { Progress } from "@/components/ui/progress";
 import { TrackModuleList } from "@/components/TrackModuleList";
 import { Home, ChevronLeft } from "lucide-react";
+import { useTrackProgress } from "@/features/progress/hooks/useTrackProgress";
 
 const OopTrackPage = () => {
   const navigate = useNavigate();
@@ -17,16 +18,7 @@ const OopTrackPage = () => {
   const { isTopicUnlocked, isTopicComplete } = useTopicCompletion();
 
   const oopModules = useMemo(() => getModulesByTrack("python-oop"), []);
-
-  const overallCompletion = useMemo(() => {
-    const allTopicIds = oopModules.flatMap((m) => m.topicIds);
-    if (allTopicIds.length === 0) return 0;
-    const total = allTopicIds.reduce(
-      (sum, tid) => sum + getTopicCompletion(tid, questionCounts[tid] ?? 0),
-      0
-    );
-    return Math.round(total / allTopicIds.length);
-  }, [oopModules, questionCounts, getTopicCompletion]);
+  const oopTrackProgress = useTrackProgress("python-oop");
 
   const handleLearn = useCallback(
     (topicId: string) => navigate(`/learn/${topicId}`),
@@ -91,14 +83,14 @@ const OopTrackPage = () => {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">התקדמות כוללת</span>
-              <span className="font-mono font-semibold text-fuchsia-400">{overallCompletion}%</span>
+              <span className="font-mono font-semibold text-fuchsia-400">{oopTrackProgress.completionPct}%</span>
             </div>
             <Progress
-              value={overallCompletion}
+              value={oopTrackProgress.completionPct}
               className="h-1.5 bg-white/[0.06] [&>div]:bg-fuchsia-500"
             />
             <p className="text-[11px] text-muted-foreground">
-              {oopModules.length} מודולים
+              {oopTrackProgress.modules.length} מודולים
             </p>
           </div>
         </header>

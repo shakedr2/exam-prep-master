@@ -15,6 +15,8 @@ import {
 import { CheckCircle2, BookOpen, Brain, Lock } from "lucide-react";
 import { questions as staticQuestions } from "@/data/questions";
 import { resolveTopicId } from "@/data/topicTutorials";
+import { useModuleProgress } from "@/features/progress/hooks/useModuleProgress";
+import { useTopicProgress } from "@/features/progress/hooks/useTopicProgress";
 
 // Pre-aggregate static question counts by topic slug. `src/data/questions.ts`
 // is the product's single source of truth per CLAUDE.md, so topic cards must
@@ -49,16 +51,11 @@ export const TopicCard = memo(function TopicCard({
   onLearn: (topicId: string) => void;
   onPractice: (topicId: string) => void;
 }) {
-  const completion = getTopicCompletion(topic.id, questionCount);
+  const topicProgress = useTopicProgress(topic.id);
+  const completion = topicProgress.completionPct;
+  const answeredCorrect = topicProgress.correct;
   const unlocked = isTopicUnlocked(topic.id);
   const completed = isTopicComplete(topic.id);
-
-  const topicQuestionIds = new Set(
-    staticQuestions.filter((q) => q.topic === topic.id).map((q) => q.id)
-  );
-  const answeredCorrect = Object.entries(progress.answeredQuestions)
-    .filter(([id, v]) => topicQuestionIds.has(id) && v.correct)
-    .length;
 
   const conceptsLearned = learnMap[topic.id]?.length ?? 0;
   const totalConcepts = getTutorialByTopicId(topic.id)?.concepts.length ?? 0;
@@ -233,14 +230,8 @@ export const ModuleSection = memo(function ModuleSection({
     return Math.max(remote, staticCount);
   };
 
-  const moduleCompletion = moduleTopics.length > 0
-    ? Math.min(100, Math.round(
-        moduleTopics.reduce(
-          (sum, t) => sum + getTopicCompletion(t.id, getQuestionCount(t.id)),
-          0
-        ) / moduleTopics.length
-      ))
-    : 0;
+  const moduleProgress = useModuleProgress(module.id);
+  const moduleCompletion = moduleProgress.completionPct;
 
   if (moduleTopics.length === 0) return null;
 
