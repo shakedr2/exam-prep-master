@@ -221,14 +221,12 @@ describe("DashboardPage", () => {
     expect(props.learnMap).toBeDefined();
   });
 
-  /* ── Topic-level progress via TrackModuleList props ─────────────────── */
+  /* ── Topic-level progress is delegated to TrackModuleList hooks ─────── */
 
-  it("passes getTopicCompletion from useProgress to TrackModuleList", () => {
+  it("does not pass legacy getTopicCompletion prop to TrackModuleList", () => {
     renderDashboard();
-    const props = trackModuleListSpy.mock.calls[0]?.[0] as {
-      getTopicCompletion: (...args: unknown[]) => number;
-    };
-    expect(typeof props.getTopicCompletion).toBe("function");
+    const props = trackModuleListSpy.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(props.getTopicCompletion).toBeUndefined();
   });
 
   it("passes python-fundamentals modules to TrackModuleList", () => {
