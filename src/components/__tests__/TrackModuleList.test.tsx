@@ -20,13 +20,6 @@ vi.mock("@/features/progress/hooks/useTopicProgress", () => ({
   useTopicProgress: (...args: unknown[]) => useTopicProgressMock(...args),
 }));
 
-vi.mock("@/hooks/useProgress", () => ({
-  useProgress: () => ({
-    progress: { answeredQuestions: {}, username: "tester", examHistory: [] },
-    getTopicCompletion: () => 0,
-  }),
-}));
-
 vi.mock("@/hooks/useSupabaseTopics", () => ({
   useSupabaseTopics: () => ({
     loading: false,
@@ -56,8 +49,6 @@ const commonProps = {
   topics: stubTopics,
   questionCounts: { variables_io: 15, arithmetic: 15 },
   learnMap: {},
-  progress: { answeredQuestions: {}, username: "t", examHistory: [] } as never,
-  getTopicCompletion: () => 0,
   isTopicUnlocked: () => true,
   isTopicComplete: () => false,
   onLearn: vi.fn(),
@@ -127,8 +118,6 @@ describe("TopicCard — reads completionPct and correct from useTopicProgress", 
           topic={stubTopic}
           questionCount={15}
           learnMap={{}}
-          progress={{ answeredQuestions: {}, username: "t", examHistory: [] } as never}
-          getTopicCompletion={() => 0}
           isTopicUnlocked={() => true}
           isTopicComplete={() => false}
           onLearn={vi.fn()}
@@ -147,8 +136,6 @@ describe("TopicCard — reads completionPct and correct from useTopicProgress", 
           topic={stubTopic}
           questionCount={15}
           learnMap={{}}
-          progress={{ answeredQuestions: {}, username: "t", examHistory: [] } as never}
-          getTopicCompletion={() => 0}
           isTopicUnlocked={() => true}
           isTopicComplete={() => false}
           onLearn={vi.fn()}
@@ -167,8 +154,6 @@ describe("TopicCard — reads completionPct and correct from useTopicProgress", 
           topic={stubTopic}
           questionCount={15}
           learnMap={{}}
-          progress={{ answeredQuestions: {}, username: "t", examHistory: [] } as never}
-          getTopicCompletion={() => 0}
           isTopicUnlocked={() => true}
           isTopicComplete={() => false}
           onLearn={vi.fn()}
@@ -178,5 +163,26 @@ describe("TopicCard — reads completionPct and correct from useTopicProgress", 
     );
 
     expect(useTopicProgressMock).toHaveBeenCalledWith("loops");
+  });
+
+  it("does not derive % from questionCount or local answered data", () => {
+    useTopicProgressMock.mockReturnValue({ completionPct: 23, correct: 1, totalQuestions: 500 });
+
+    render(
+      <MemoryRouter>
+        <TopicCard
+          topic={stubTopic}
+          questionCount={999}
+          learnMap={{}}
+          isTopicUnlocked={() => true}
+          isTopicComplete={() => false}
+          onLearn={vi.fn()}
+          onPractice={vi.fn()}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("23%")).toBeInTheDocument();
+    expect(screen.queryByText("100%")).not.toBeInTheDocument();
   });
 });

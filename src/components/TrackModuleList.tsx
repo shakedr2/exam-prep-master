@@ -1,5 +1,4 @@
 import { memo } from "react";
-import { useProgress } from "@/hooks/useProgress";
 import { type Module } from "@/data/modules";
 import { getTutorialByTopicId } from "@/data/topicTutorials";
 import { Button } from "@/components/ui/button";
@@ -34,8 +33,6 @@ export const TopicCard = memo(function TopicCard({
   topic,
   questionCount,
   learnMap,
-  progress,
-  getTopicCompletion,
   isTopicUnlocked,
   isTopicComplete,
   onLearn,
@@ -44,8 +41,6 @@ export const TopicCard = memo(function TopicCard({
   topic: { id: string; name: string; icon: string | null; description: string | null };
   questionCount: number;
   learnMap: Record<string, number[]>;
-  progress: ReturnType<typeof useProgress>["progress"];
-  getTopicCompletion: ReturnType<typeof useProgress>["getTopicCompletion"];
   isTopicUnlocked: (topicId: string) => boolean;
   isTopicComplete: (topicId: string) => boolean;
   onLearn: (topicId: string) => void;
@@ -173,8 +168,6 @@ export const ModuleSection = memo(function ModuleSection({
   topics,
   questionCounts,
   learnMap,
-  progress,
-  getTopicCompletion,
   isTopicUnlocked,
   isTopicComplete,
   onLearn,
@@ -184,8 +177,6 @@ export const ModuleSection = memo(function ModuleSection({
   topics: { id: string; name: string; icon: string | null; description: string | null }[];
   questionCounts: Record<string, number>;
   learnMap: Record<string, number[]>;
-  progress: ReturnType<typeof useProgress>["progress"];
-  getTopicCompletion: ReturnType<typeof useProgress>["getTopicCompletion"];
   isTopicUnlocked: (topicId: string) => boolean;
   isTopicComplete: (topicId: string) => boolean;
   onLearn: (topicId: string) => void;
@@ -258,8 +249,6 @@ export const ModuleSection = memo(function ModuleSection({
               topic={topic}
               questionCount={getQuestionCount(topic.id)}
               learnMap={learnMap}
-              progress={progress}
-              getTopicCompletion={getTopicCompletion}
               isTopicUnlocked={isTopicUnlocked}
               isTopicComplete={isTopicComplete}
               onLearn={onLearn}
@@ -281,8 +270,6 @@ export function TrackModuleList({
   topics,
   questionCounts,
   learnMap,
-  progress,
-  getTopicCompletion,
   isTopicUnlocked,
   isTopicComplete,
   onLearn,
@@ -292,8 +279,6 @@ export function TrackModuleList({
   topics: { id: string; name: string; icon: string | null; description: string | null }[];
   questionCounts: Record<string, number>;
   learnMap: Record<string, number[]>;
-  progress: ReturnType<typeof useProgress>["progress"];
-  getTopicCompletion: ReturnType<typeof useProgress>["getTopicCompletion"];
   isTopicUnlocked: (topicId: string) => boolean;
   isTopicComplete: (topicId: string) => boolean;
   onLearn: (topicId: string) => void;
@@ -313,8 +298,6 @@ export function TrackModuleList({
             topics={topics}
             questionCounts={questionCounts}
             learnMap={learnMap}
-            progress={progress}
-            getTopicCompletion={getTopicCompletion}
             isTopicUnlocked={isTopicUnlocked}
             isTopicComplete={isTopicComplete}
             onLearn={onLearn}

@@ -28,7 +28,7 @@ const PRACTICE_TIP_DISMISSED_KEY = "practice_tip_dismissed";
 const DashboardPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { progress, getTopicCompletion } = useProgress();
+  const { progress } = useProgress();
   const { topics, loading } = useSupabaseTopics();
   const { learnMap, questionCounts } = useDashboardData();
   const { isTopicUnlocked, isTopicComplete } = useTopicCompletion();
@@ -321,8 +321,6 @@ const DashboardPage = () => {
             topics={topics}
             questionCounts={questionCounts}
             learnMap={learnMap}
-            progress={progress}
-            getTopicCompletion={getTopicCompletion}
             isTopicUnlocked={isTopicUnlocked}
             isTopicComplete={isTopicComplete}
             onLearn={handleLearn}

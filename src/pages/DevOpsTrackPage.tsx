@@ -1,6 +1,5 @@
 import { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProgress } from "@/hooks/useProgress";
 import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useTopicCompletion } from "@/hooks/useTopicCompletion";
@@ -12,7 +11,6 @@ import { useTrackProgress } from "@/features/progress/hooks/useTrackProgress";
 
 const DevOpsTrackPage = () => {
   const navigate = useNavigate();
-  const { progress, getTopicCompletion } = useProgress();
   const { topics, loading } = useSupabaseTopics();
   const { learnMap, questionCounts } = useDashboardData();
   const { isTopicUnlocked, isTopicComplete } = useTopicCompletion();
@@ -103,8 +101,6 @@ const DevOpsTrackPage = () => {
             topics={topics}
             questionCounts={questionCounts}
             learnMap={learnMap}
-            progress={progress}
-            getTopicCompletion={getTopicCompletion}
             isTopicUnlocked={isTopicUnlocked}
             isTopicComplete={isTopicComplete}
             onLearn={handleLearn}
