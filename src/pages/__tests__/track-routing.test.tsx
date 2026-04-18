@@ -11,7 +11,6 @@ const trackModuleListSpy = vi.fn();
 vi.mock("@/hooks/useProgress", () => ({
   useProgress: () => ({
     progress: { answeredQuestions: {}, username: "tester", examHistory: [] },
-    getTopicCompletion: () => 0,
   }),
 }));
 

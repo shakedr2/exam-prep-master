@@ -22,7 +22,6 @@ vi.mock("@/hooks/useProgress", () => ({
       answeredQuestions: {},
       examHistory: [],
     },
-    getTopicCompletion: () => 0,
   }),
 }));
 

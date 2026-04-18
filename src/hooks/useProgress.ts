@@ -100,7 +100,6 @@ export function useProgress() {
     addExamResult,
     updateLastPosition,
     saveTopicPosition,
-    getTopicCompletion: active.getTopicCompletion,
     getIncorrectQuestions: active.getIncorrectQuestions,
     getIncorrectByTopic: active.getIncorrectByTopic,
     getWeakTopics: active.getWeakTopics,

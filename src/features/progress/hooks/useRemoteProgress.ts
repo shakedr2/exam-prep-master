@@ -322,14 +322,6 @@ export function useRemoteProgress() {
     // working. This is a no-op stub kept here only for shape parity.
   }, []);
 
-  const getTopicCompletion = useCallback(
-    (topicId: string, totalQuestions: number) => {
-      const correct = rows.filter((r) => r.topic_id === topicId && r.is_correct).length;
-      return Math.min(100, Math.round((correct / Math.max(totalQuestions, 1)) * 100));
-    },
-    [rows]
-  );
-
   const getIncorrectQuestions = useCallback(() => {
     const incorrectIds = new Set(
       rows.filter((r) => !r.is_correct).map((r) => r.question_id)
@@ -380,7 +372,6 @@ export function useRemoteProgress() {
     syncAnswer,
     updateLastPosition,
     addExamResult,
-    getTopicCompletion,
     getIncorrectQuestions,
     getIncorrectByTopic,
     getWeakTopics,

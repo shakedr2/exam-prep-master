@@ -124,16 +124,6 @@ export function useLocalProgress() {
     });
   }, []);
 
-  const getTopicCompletion = useCallback((topicId: string, totalQuestions: number) => {
-    const topicQuestionIds = new Set(
-      questions.filter(q => q.topic === topicId).map(q => q.id)
-    );
-    const answered = Object.entries(progress.answeredQuestions)
-      .filter(([id]) => topicQuestionIds.has(id))
-      .filter(([, v]) => v.correct).length;
-    return Math.min(100, Math.round((answered / Math.max(totalQuestions, 1)) * 100));
-  }, [progress.answeredQuestions]);
-
   const getIncorrectQuestions = useCallback(() => {
     const incorrectIds = Object.entries(progress.answeredQuestions)
       .filter(([, v]) => !v.correct)
@@ -177,7 +167,6 @@ export function useLocalProgress() {
     setUsername,
     answerQuestion,
     addExamResult,
-    getTopicCompletion,
     getIncorrectQuestions,
     getIncorrectByTopic,
     getWeakTopics,
