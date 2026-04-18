@@ -680,9 +680,235 @@ if that percent is imperfect" — not "the percent becomes correct".
 
 ## 5. Proposed Single Source of Truth
 
-TBD — which hook/service should become canonical and why, plus a short API
-sketch (no implementation) for `useTrackProgress` / `useModuleProgress` /
-`useTopicProgress` / resume helpers.
+### 5.1 Where the SoT lives
+
+Phase 2 introduces a CLIENT-SIDE canonical source. No new DB table, no new
+RPC, no changes to migrations — this keeps the change reversible and avoids
+trespassing into the Phase 3 question-catalog work.
+
+- New pure module: `src/features/progress/lib/progressSelectors.ts`
+  - Pure, synchronous functions. No hooks, no network, no React.
+  - Single place that resolves slug↔UUID (via `resolveTopicId` from
+    `src/data/topicTutorials.ts`), applies the `max(remote, static)`
+    question-count policy uniformly, and computes all percentages with
+    ONE shared formula.
+- New hook layer: `src/features/progress/hooks/`
+  - `useTopicProgress(topicIdOrSlug)` → `TopicProgress`.
+  - `useModuleProgress(moduleId)` → `ModuleProgress`.
+  - `useTrackProgress(trackId)` → `TrackProgress`.
+  - `useResumeTarget(trackId?)` → `ResumeTarget | null`.
+  - All four hooks compose the same set of raw queries (see §5.4) and
+    run the selectors in §5.1. UI surfaces call ONLY these hooks for
+    progress / resume data — they stop calling `useProgress`,
+    `useRemoteProgress`, `useSupabaseProgress`, `useDashboardData`
+    directly for display-layer numbers.
+- Existing hooks stay as the data access layer:
+  - `useProgress` remains the write API (`answerQuestion`,
+    `addExamResult`, `updateLastPosition`, `setUsername`) and the source
+    of the raw `answeredQuestions` map. The selectors read from it.
+  - `useDashboardStats` remains the authoritative source for precomputed
+    global totals (answered / correct / streak / last-activity) on the
+    dashboard stat cards only. Percent/coverage math for tracks,
+    modules, and topics is moved out of it.
+  - `useSupabaseProgress` is narrowed to the Progress page only; its
+    `topicStats` will be rebuilt on top of the selectors so progress
+    numbers align across screens.
+  - `useLearningProgress` / `useAllLearningProgress` /
+    `useTopicCompletion` continue to own learning + mastery gating; the
+    selectors read from them.
+
+### 5.2 Exact shape returned by the SoT
+
+Stable TypeScript types, single definition in
+`src/features/progress/lib/progressTypes.ts`:
+
+```ts
+type TrackId = "python-fundamentals" | "python-oop" | "devops";
+
+type MasteryState =
+  | "locked"        // predecessor topic not yet completed
+  | "unstarted"     // unlocked, zero attempts
+  | "in_progress"   // some attempts, below mastery threshold
+  | "mastered";     // completion >= mastery threshold (80%)
+
+interface TopicProgress {
+  slug: string;                 // canonical key in the app
+  uuid: string | null;          // null for topics not in SLUG_TO_UUID
+  trackId: TrackId;
+  moduleId: string;
+
+  totalQuestions: number;       // max(remoteCount, staticCount)
+  attempted: number;            // distinct questions answered (any result)
+  correct: number;              // distinct questions answered correctly
+  completionPct: number;        // round(correct / totalQuestions * 100), 0..100
+  accuracyPct: number;          // round(correct / attempted * 100), 0..100
+
+  conceptsTotal: number;        // tutorial concepts, 0 if no tutorial
+  conceptsDone: number;
+  learnPct: number;             // round(conceptsDone / conceptsTotal * 100)
+
+  masteryState: MasteryState;
+  unlocked: boolean;            // derived from useTopicCompletion gating
+}
+
+interface ModuleProgress {
+  moduleId: string;
+  trackId: TrackId;
+  title: string;
+  icon: string;
+  order: number;
+  comingSoon: boolean;
+
+  topics: TopicProgress[];
+
+  totalQuestions: number;       // Σ topics[i].totalQuestions
+  correct: number;              // Σ topics[i].correct
+  completionPct: number;        // round(correct / totalQuestions * 100)
+
+  // First topic in this module that is unlocked and not mastered.
+  // null if all topics are mastered or the module is comingSoon.
+  nextTopicSlug: string | null;
+}
+
+interface TrackProgress {
+  trackId: TrackId;
+  modules: ModuleProgress[];    // excludes comingSoon by default
+
+  moduleCount: number;          // active modules only
+  totalQuestions: number;       // Σ modules[i].totalQuestions
+  correct: number;              // Σ modules[i].correct
+  completionPct: number;        // SINGLE formula: question-weighted coverage
+
+  // Denormalised resume pointer (see §5.5). Points to the last module the
+  // user touched; if none, the first unlocked module.
+  resumeModuleId: string | null;
+  resumeTopicSlug: string | null;
+  resumeQuestionIndex: number | null;
+}
+
+interface ResumeTarget {
+  trackId: TrackId;
+  moduleId: string;
+  topicSlug: string;
+  questionIndex: number;        // 0 if no saved index
+  reason: "last_position" | "first_unlocked" | "first_module";
+}
+```
+
+Invariants the selectors MUST preserve:
+- `TrackProgress.completionPct === round(Σ correct / Σ totalQuestions * 100)`
+  — never the average of module/topic percents. This locks down §3.1/§3.6.
+- `ModuleProgress.completionPct` uses the same question-weighted formula.
+- `TopicProgress.totalQuestions === max(remoteCount, staticCount)` —
+  matching the current TopicCard label policy so the label and the
+  denominator never drift apart (§3.4).
+- Numerator is always computed from the SAME `answeredQuestions` map
+  regardless of slug/UUID keying (selectors pre-resolve both keys once and
+  use the slug internally). Closes §3.3, §3.13 for display purposes.
+- All percents clamp to `[0, 100]` and round consistently via a single
+  helper `pct(num, den)`.
+
+### 5.3 Consumers — who calls what
+
+- `HomePage` track cards → `useTrackProgress("python-fundamentals")`,
+  `useTrackProgress("python-oop")` (re-instating the card the data path
+  already computes), `useTrackProgress("devops")`.
+  Reads `completionPct`, `moduleCount`, optionally `resumeTopicSlug`.
+- `DashboardPage` (Python track page) →
+  - `useDashboardStats` for the 3-stat grid (unchanged).
+  - `useTrackProgress("python-fundamentals")` for the hero bar and the
+    module list.
+  - `useTopicCompletion` for gating (unchanged).
+- `OopTrackPage` / `DevOpsTrackPage` → `useTrackProgress(trackId)` for the
+  hero + module list. `overallCompletion` stops being computed in-page.
+- `TrackModuleList` → receives a `TrackProgress` prop (or reads via
+  `useTrackProgress(trackId)` itself). `ModuleSection` renders from
+  `ModuleProgress`; `TopicCard` renders from `TopicProgress`. No more
+  ad-hoc `getQuestionCount` / `getTopicCompletion` calls inside this file.
+- `ProgressPage` →
+  - Global totals keep coming from `useDashboardStats`.
+  - Per-topic cards and "overall coverage" come from the same selectors:
+    Σ over `useTrackProgress` for each active track, NOT from a separate
+    `useSupabaseProgress` math path. `useSupabaseProgress` stays as a
+    data access helper but its `topicStats` are recomputed by the
+    selectors.
+- `PracticePage` → `useResumeTarget(trackId)` for the entry index; it
+  keeps its own session state but stops reading `progress.lastPosition`
+  directly.
+- `Navbar`, `LearnPage`, `ReviewMistakes`, `ExamMode`, `OnboardingPage`
+  — unchanged. These surfaces don't display cross-track progress numbers
+  and can keep their current narrow hook usage.
+
+### 5.4 Cache / invalidation
+
+The selectors are pure; caching happens in the underlying React Query keys.
+
+- Base queries (unchanged, already defined):
+  - `["user_progress", userId]` — full answer rows (from
+    `useRemoteProgress` for authed, from `useLocalProgress` snapshot for
+    guests; the selector accepts either shape).
+  - `["user_profile", userId]` — includes `last_topic_id` /
+    `last_question_index`.
+  - `["dashboard_stats", userId]` — precomputed totals.
+  - `["learning_progress", userId]` — flat list of
+    `(topic_id, concept_index)` rows used to build `learnMap`.
+  - `["topic_completions", userId]` — `user_topic_completions` rows.
+- Selector-level composition (no new query keys needed for Phase 2):
+  - `useTopicProgress(slug)` subscribes to the four queries above +
+    static catalog. Memoised by `(slug, userId)`.
+  - `useModuleProgress(moduleId)` derives from
+    `getModulesByTrack(...)` + `useTopicProgress` per topic.
+  - `useTrackProgress(trackId)` derives from module list + topic
+    selectors.
+- Invalidation rules (single write path):
+  - On `answerQuestion` mutation (authed): the existing
+    `onSettled: invalidateQueries(["user_progress", userId])` in
+    `useRemoteProgress` already covers it. We ALSO invalidate
+    `["dashboard_stats", userId]` so the 3-stat grid refreshes
+    simultaneously with the track %.
+  - On `updateLastPosition`: invalidate `["user_profile", userId]`
+    (already done).
+  - On guest → authed merge (`mergeGuestProgress`): invalidate all five
+    keys once after the merge.
+- `staleTime`: `dashboard_stats` keeps its 30s stale time; the other
+  queries stay at React Query defaults. No prefetching added in Phase 2.
+
+### 5.5 Auth vs anon behavior
+
+Intentionally identical from the selectors' point of view.
+
+- Authed users — selectors read from Supabase-backed queries (as today).
+- Guests with an anonymous UUID — writes have been reaching Supabase
+  already (see §2.1); the selectors read from the same queries. No
+  special-case code is added for guests in the selectors themselves.
+- Guests with no Supabase connectivity / empty remote state — the
+  `useProgress` facade's local branch feeds `answeredQuestions` into the
+  selectors; the shape is identical. The selectors never branch on
+  `isAuthenticated`.
+- Username / `examHistory` / `badges` — still merged by the existing
+  `useProgress` facade; the new selectors do not touch those fields.
+- `resumeModuleId` / `resumeTopicSlug`:
+  - Authed: prefer `user_profiles.last_topic_id`, fall back to the local
+    `lastPosition` map if the profile row is empty.
+  - Guest: read from the local `lastPosition` map.
+  - If neither is set, `useResumeTarget` returns the first module whose
+    `nextTopicSlug` is non-null with `reason: "first_unlocked"`, or the
+    first module in `MODULES` order with `reason: "first_module"` if the
+    whole track is still locked.
+  - Per-track resume state is derived client-side by joining
+    `last_topic_id` / `lastPosition` keys to `getModuleForTopic(slug)`
+    and its `track`. The single-slot server schema is kept untouched;
+    per-track memory is a client-side enrichment. (Noted as a Phase 3
+    candidate to also persist per-track last positions server-side.)
+
+### 5.6 What this intentionally does NOT do in Phase 2
+
+- Does not change the Supabase schema.
+- Does not add a new RPC or DB view.
+- Does not change how questions are sourced (static vs. Supabase).
+- Does not change the mastery threshold, XP formula, or streak logic.
+- Does not touch the visual design of the Progress page.
+- Does not fix DevOps question-count accuracy (Phase 3, see §4).
 
 ## 6. Migration Plan (Phase 2 steps)
 
