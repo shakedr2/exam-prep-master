@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -10,11 +9,15 @@ import {
 import { useTranslation } from "react-i18next";
 import { useProgress } from "@/hooks/useProgress";
 import { useAuth } from "@/contexts/AuthContext";
-import { MODULES } from "@/data/modules";
-import { questions as staticQuestions } from "@/data/questions";
+import { getModulesByTrack } from "@/data/modules";
 import { Progress } from "@/components/ui/progress";
 import { HeroFrame } from "@/shared/components/HeroFrame";
 import { cn } from "@/lib/utils";
+import { useModuleProgress } from "@/features/progress/hooks/useModuleProgress";
+import {
+  useTrackProgress,
+  useResumeTarget,
+} from "@/features/progress/hooks/useTrackProgress";
 
 /* ── 3D SVG Logos ────────────────────────────────────── */
 
@@ -302,73 +305,32 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { progress, totalCorrect, totalAnswered } = useProgress();
+  const pythonTrackProgress = useTrackProgress("python-fundamentals");
+  const oopTrackProgress = useTrackProgress("python-oop");
+  const devopsTrackProgress = useTrackProgress("devops");
+  const pythonResumeTarget = useResumeTarget("python-fundamentals");
+  const oopResumeTarget = useResumeTarget("python-oop");
+  const devopsResumeTarget = useResumeTarget("devops");
+  const firstOopModule = getModulesByTrack("python-oop")[0];
+  const oopModuleProgress = useModuleProgress(firstOopModule?.id ?? "");
 
-  const pythonPercent = useMemo(() => {
-    const pythonTopicIds = new Set(
-      MODULES.filter((m) => !m.comingSoon && m.track === "python-fundamentals").flatMap((m) => m.topicIds),
-    );
-    const pythonQuestionIds = new Set(
-      staticQuestions
-        .filter((q) => pythonTopicIds.has(q.topic))
-        .map((q) => q.id),
-    );
-    if (pythonQuestionIds.size === 0) return 0;
-
-    const answeredCorrect = Object.entries(progress.answeredQuestions).filter(
-      ([id, v]) => pythonQuestionIds.has(id) && v.correct,
-    ).length;
-
-    return Math.round((answeredCorrect / pythonQuestionIds.size) * 100);
-  }, [progress.answeredQuestions]);
-
-  const pythonModuleCount = MODULES.filter((m) => !m.comingSoon && m.track === "python-fundamentals").length;
-
-  const oopPercent = useMemo(() => {
-    const oopTopicIds = new Set(
-      MODULES.filter((m) => !m.comingSoon && m.track === "python-oop").flatMap((m) => m.topicIds),
-    );
-    const oopQuestionIds = new Set(
-      staticQuestions
-        .filter((q) => oopTopicIds.has(q.topic))
-        .map((q) => q.id),
-    );
-    if (oopQuestionIds.size === 0) return 0;
-
-    const answeredCorrect = Object.entries(progress.answeredQuestions).filter(
-      ([id, v]) => oopQuestionIds.has(id) && v.correct,
-    ).length;
-
-    return Math.round((answeredCorrect / oopQuestionIds.size) * 100);
-  }, [progress.answeredQuestions]);
-
-  const oopModuleCount = MODULES.filter((m) => !m.comingSoon && m.track === "python-oop").length;
-
-  const devopsPercent = useMemo(() => {
-    const devopsTopicIds = new Set(
-      MODULES.filter((m) => !m.comingSoon && m.track === "devops").flatMap((m) => m.topicIds),
-    );
-    const devopsQuestionIds = new Set(
-      staticQuestions
-        .filter((q) => devopsTopicIds.has(q.topic))
-        .map((q) => q.id),
-    );
-    if (devopsQuestionIds.size === 0) return 0;
-
-    const answeredCorrect = Object.entries(progress.answeredQuestions).filter(
-      ([id, v]) => devopsQuestionIds.has(id) && v.correct,
-    ).length;
-
-    return Math.round((answeredCorrect / devopsQuestionIds.size) * 100);
-  }, [progress.answeredQuestions]);
-
-  const devopsModuleCount = MODULES.filter((m) => !m.comingSoon && m.track === "devops").length;
+  const handleTrackNavigation = (
+    fallbackPath: string,
+    resumeTopicId: string | null,
+  ) => {
+    if (resumeTopicId) {
+      navigate(`/practice/${resumeTopicId}`);
+      return;
+    }
+    navigate(fallbackPath);
+  };
 
   const handlePythonTrack = () => {
     if (!user && !progress.username) {
       navigate("/onboarding");
       return;
     }
-    navigate("/dashboard");
+    handleTrackNavigation("/dashboard", pythonResumeTarget?.topicId ?? null);
   };
 
   const handleOopTrack = () => {
@@ -376,7 +338,7 @@ const HomePage = () => {
       navigate("/onboarding");
       return;
     }
-    navigate("/tracks/python-oop");
+    handleTrackNavigation("/tracks/python-oop", oopResumeTarget?.topicId ?? null);
   };
 
   const greeting = progress.username
@@ -468,8 +430,8 @@ const HomePage = () => {
                 description={t("home.pythonDescription")}
                 logo={<PythonLogo />}
                 accentColor="#7c5cfc"
-                progressPercent={pythonPercent}
-                moduleCount={pythonModuleCount}
+                progressPercent={pythonTrackProgress.completionPct}
+                moduleCount={pythonTrackProgress.modules.length}
                 onSelect={handlePythonTrack}
               />
             </motion.div>
@@ -487,8 +449,8 @@ const HomePage = () => {
                 description={t("home.oopDescription")}
                 logo={<OopLogo />}
                 accentColor="#d946ef"
-                progressPercent={oopPercent}
-                moduleCount={oopModuleCount}
+                progressPercent={oopModuleProgress.completionPct}
+                moduleCount={oopTrackProgress.modules.length}
                 onSelect={handleOopTrack}
               />
             </motion.div>
@@ -506,9 +468,14 @@ const HomePage = () => {
                 description={t("home.devopsDescription")}
                 logo={<DevOpsLogo />}
                 accentColor="#7c5cfc"
-                progressPercent={devopsPercent}
-                moduleCount={devopsModuleCount}
-                onSelect={() => navigate("/tracks/devops")}
+                progressPercent={devopsTrackProgress.completionPct}
+                moduleCount={devopsTrackProgress.modules.length}
+                onSelect={() =>
+                  handleTrackNavigation(
+                    "/tracks/devops",
+                    devopsResumeTarget?.topicId ?? null,
+                  )
+                }
               />
             </motion.div>
           </motion.div>
