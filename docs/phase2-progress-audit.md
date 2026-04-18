@@ -532,8 +532,151 @@ Each item lists: (a) surfaces involved, (b) symptom, (c) root cause hypothesis,
 
 ## 4. DevOps Practice Question Count Issue
 
-TBD — deferred to Phase 3. Document the symptom and why it is out of scope
-for this phase so we don't accidentally fix it here.
+This is the canonical example where the same "how many questions does this
+topic have?" question returns different answers on different screens. It is
+DEFERRED to Phase 3 — Phase 2 only documents it and refuses to fix it.
+
+### 4.1 What the user sees per surface
+
+- Home Python track card (`HomePage.tsx`, lines 306–322) — does not show a
+  DevOps question count at all, only a module count (`devopsModuleCount`,
+  line 346). So there is no Home inconsistency to report for DevOps, only
+  for Python and (dead-path) OOP.
+- DevOps track page hero (`DevOpsTrackPage.tsx`, lines 21–29, 94–101) —
+  shows "התקדמות כוללת X%" and `{devopsModules.length} מודולים`. It
+  renders NO total question count, but the % it shows is sensitive to the
+  denominator (see below).
+- DevOps track module accordion (`TrackModuleList.tsx` → `ModuleSection`,
+  lines 236–242, 268) — each accordion header shows `{moduleCompletion}%`;
+  each expanded card shows `{questionCount} שאלות` via `getQuestionCount`
+  (lines 229–234).
+- DevOps topic card (`TopicCard` inside `TrackModuleList.tsx`, lines 130–157)
+  — "`{questionCount} שאלות`" + progress bar + "`{answeredCorrect}
+  נפתרו נכון`" + "`{completion}%`".
+- Progress page (`ProgressPage.tsx`, lines 102–178) — global totals + per-
+  topic cards. DevOps topics appear here only if they exist in Supabase
+  `topics` (§4.2) and show `{stat.answered}/{stat.totalQuestions}` per topic.
+
+### 4.2 What the DB contains
+
+- Static catalog `src/data/questions.ts` (source of truth per `CLAUDE.md`)
+  currently has 5 questions for each of the four DevOps topics:
+  - `linux_basics`: 5
+  - `file_permissions`: 5
+  - `bash_scripting`: 5
+  - `networking_fundamentals`: 5
+  (Verified via `grep -c 'topic: "<slug>"'` against `questions.ts`.)
+- Supabase `public.questions` table — question rows are seeded via the
+  migrations under `supabase/migrations/` (notably
+  `20260416000001_seed_curriculum_linux_bash_phase2.sql` and
+  `20260417000001_seed_networking_fundamentals.sql`). The per-topic count
+  returned by `get_dashboard_data` reflects rows physically present in
+  the DB, which is NOT guaranteed to equal the static catalog count:
+  historical PRs #285 and #286 exist precisely because at least three
+  DevOps topics previously had static questions but zero seeded rows in
+  Supabase.
+- Topic UUIDs for DevOps slugs live in
+  `src/data/topicTutorials.ts` (lines ~1149–1156):
+  - `linux_basics` → `22222222-0001-0000-0000-000000000000`
+  - `bash_scripting` → `22222222-0002-0000-0000-000000000000`
+  - `file_permissions` → `22222222-0003-0000-0000-000000000000`
+  - `networking_fundamentals` → `22222222-0004-0000-0000-000000000000`
+
+### 4.3 Which hook produces which number
+
+- Denominator-for-count-label on TopicCard:
+  - `TrackModuleList.getQuestionCount(slug)` (lines 229–234) returns
+    `max(remote, static)` where remote is `questionCounts[uuid]` (Supabase
+    `get_dashboard_data`) and static is `STATIC_QUESTION_COUNTS[slug]`.
+  - Effect: label always shows at least the static count even when
+    Supabase is under-seeded.
+- Denominator-for-percent on the track hero bar:
+  - `DevOpsTrackPage.overallCompletion` (lines 21–29) calls
+    `getTopicCompletion(tid, questionCounts[tid] ?? 0)` — using ONLY the
+    remote count, not `max(remote, static)`. `tid` here is the slug
+    (from `module.topicIds`), and `questionCounts` is keyed by UUID in
+    the RPC payload (see `get_dashboard_data` in
+    `supabase/migrations/20260415000001_db_indexes_rls_rpc.sql`, lines
+    74–113). Result: for slug-keyed lookups on a UUID-keyed object, the
+    lookup usually returns `undefined`, so the denominator collapses to
+    `0`, `getTopicCompletion` clamps to `0`, and the hero bar stays at 0%.
+- Numerator-for-percent on the track hero bar (authed):
+  - `useRemoteProgress.getTopicCompletion` filters `user_progress` rows
+    where `topic_id === topicId`. In the authed path `topicId` is the
+    slug passed from `DevOpsTrackPage` BUT `user_progress.topic_id` is a
+    UUID — so the filter misses every row and the numerator is `0`.
+- Per-module accordion percent (`ModuleSection.moduleCompletion`, lines
+  236–242) — calls `getTopicCompletion(t.id, getQuestionCount(t.id))`
+  where `t.id` has already been normalised back to the slug in
+  `moduleTopics`. Uses `max(remote, static)` as denominator, so per-
+  module percent can be non-zero while the hero percent is zero on the
+  same page.
+- Progress page per-topic counts:
+  - `useSupabaseProgress.topicStats` (lines 34–93) reads
+    `topics` + `questions` directly and groups `questions` by `topic_id`
+    (UUID). `totalQuestions` per topic therefore equals the Supabase-
+    seeded count only — NOT `max(remote, static)`. If Supabase has fewer
+    seeded DevOps questions than the static file, ProgressPage will show
+    a smaller denominator than TrackModuleList for the same topic.
+- Totals on the Progress page overall bar:
+  - `totalQuestions = Σ topicStats.totalQuestions`
+    (`ProgressPage.tsx`, lines 102–105). Inherits the
+    under-reporting above for any topic where `max(remote, static) > remote`.
+
+### 4.4 Exact files and line references
+
+- `src/pages/DevOpsTrackPage.tsx:19-29, 94-101` — hero % + module count.
+- `src/pages/OopTrackPage.tsx:19-29, 94-101` — identical formula (same
+  bug shape in the OOP track, not DevOps-specific).
+- `src/components/TrackModuleList.tsx:23-29` — `STATIC_QUESTION_COUNTS`.
+- `src/components/TrackModuleList.tsx:208-234` — slug↔UUID resolution
+  inside `moduleTopics` and `getQuestionCount`.
+- `src/components/TrackModuleList.tsx:236-242` — module % formula.
+- `src/components/TrackModuleList.tsx:129-157` — topic-card label + bar
+  + `נפתרו נכון` count.
+- `src/features/progress/hooks/useRemoteProgress.ts:325-331` — authed
+  `getTopicCompletion` filter by `topic_id`.
+- `src/features/progress/hooks/useLocalProgress.ts:127-135` — guest
+  `getTopicCompletion` uses static slug filter (so guests see
+  non-zero % on DevOps topics while authed users see 0% on the hero).
+- `src/hooks/useSupabaseProgress.ts:34-93` — ProgressPage per-topic
+  count (`totalQuestions` = Supabase-only).
+- `src/hooks/useDashboardData.ts:51-113` — `questionCounts` payload
+  keyed by `topic_id` from the RPC.
+- `src/data/topicTutorials.ts:1149-1156` — DevOps slug↔UUID map.
+- `supabase/migrations/20260415000001_db_indexes_rls_rpc.sql:74-113` —
+  `get_dashboard_data` RPC definition.
+- `supabase/migrations/20260416000001_seed_curriculum_linux_bash_phase2.sql`,
+  `supabase/migrations/20260417000001_seed_networking_fundamentals.sql` —
+  DevOps question seeds (authoritative for the Supabase `questions` count).
+
+### 4.5 Why the numbers diverge
+
+Four compounding root causes, any one of which is enough to produce a
+mismatch:
+- Slug vs. UUID keying. `questionCounts` from the RPC is UUID-keyed;
+  DevOps track page passes slug IDs straight through without resolving
+  them. Lookups miss → 0 denominator on the hero bar.
+- Authed vs. guest numerator keying. Guests filter `answeredQuestions`
+  by static `question.topic` (slug); authed users filter Supabase rows
+  by `topic_id` (UUID). Same user could see different percents in an
+  incognito vs. signed-in tab.
+- Two question-count sources never reconciled. `TrackModuleList` takes
+  `max(remote, static)`; `ProgressPage` uses remote only. Anywhere one
+  of these paths uses a denominator the other doesn't know about, the
+  percent moves.
+- Formula mismatch (coverage vs. average) already called out in §3.1
+  still applies to DevOps — even if the per-topic numbers were perfect,
+  hero % and module % would still not average out.
+
+### 4.6 Phase 2 stance
+
+DO NOT fix the DevOps count accuracy in Phase 2. Phase 2 centralizes the
+PROGRESS reads so that every DevOps surface agrees on whatever number the
+canonical source produces; reconciling the underlying question catalog
+(static vs. Supabase seeding) is a Phase 3 task. The acceptable outcome for
+Phase 2 is "home / track / module all show the same DevOps percent, even
+if that percent is imperfect" — not "the percent becomes correct".
 
 ## 5. Proposed Single Source of Truth
 
