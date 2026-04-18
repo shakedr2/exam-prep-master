@@ -144,7 +144,10 @@ describe("DashboardPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Default: python-fundamentals track at 55 %, 6 modules
+    // Default: python-fundamentals track at 55 %, 6 modules.
+    // modules array contains module-count stubs used only for .length;
+    // the actual Module objects passed to TrackModuleList come from
+    // getModulesByTrack("python-fundamentals") inside DashboardPage.
     useTrackProgressMock.mockImplementation((trackId: string) => {
       if (trackId === "python-fundamentals") {
         return {
@@ -152,10 +155,11 @@ describe("DashboardPage", () => {
           modules: [{}, {}, {}, {}, {}, {}],
           totalQuestions: 90,
           correct: 49,
-          trackId: "python",
+          // "python" is the internal TrackId used by progressTypes.ts
+          trackId: "python" as const,
         };
       }
-      return { completionPct: 0, modules: [], totalQuestions: 0, correct: 0, trackId: "python" };
+      return { completionPct: 0, modules: [], totalQuestions: 0, correct: 0, trackId: "python" as const };
     });
   });
 
@@ -181,10 +185,11 @@ describe("DashboardPage", () => {
   it("updates displayed % when useTrackProgress returns a different value", () => {
     useTrackProgressMock.mockImplementation(() => ({
       completionPct: 80,
+      // Stubs used only to derive modules.length (3) in the section header
       modules: [{}, {}, {}],
       totalQuestions: 45,
       correct: 36,
-      trackId: "python",
+      trackId: "python" as const,
     }));
     renderDashboard();
     expect(screen.getByText(/80%/)).toBeInTheDocument();
@@ -231,7 +236,8 @@ describe("DashboardPage", () => {
     const props = trackModuleListSpy.mock.calls[0]?.[0] as {
       modules: Array<{ id: string; track?: string }>;
     };
-    // All modules passed must be from the python-fundamentals track
+    // `modules` prop comes from getModulesByTrack("python-fundamentals") inside
+    // DashboardPage — real Module objects, not the hook's progress stubs.
     expect(props.modules.length).toBeGreaterThan(0);
     for (const mod of props.modules) {
       expect(mod.track).toBe("python-fundamentals");
