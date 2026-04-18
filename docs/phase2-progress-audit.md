@@ -1080,4 +1080,156 @@ numbers) — no step leaves the tree visually broken.
 
 ## 7. Risks & Rollback
 
-TBD — what could regress, how we detect it, and how we roll back per step.
+### 7.1 Top migration risks
+
+#### R1 — Progress numbers shift at merge time
+- Likelihood: High.
+- Impact: Medium — user trust is already fragile; seeing any home/track
+  percent jump during a session reads as "the app is broken".
+- Mitigation: Step 1/2 ship the selectors behind unit tests that replay
+  the CURRENT math on seeded fixtures, so we know each step either keeps
+  the number identical or strictly improves consistency (home == track).
+  Ship in small PRs so any jump is traceable to one step. Document
+  expected numeric deltas per step in each PR description.
+
+#### R2 — Slug↔UUID resolution bug leaves a topic counted as zero
+- Likelihood: Medium.
+- Impact: High — a zeroed denominator collapses a whole track bar to 0%
+  (the exact DevOps symptom from §4).
+- Mitigation: selector returns `null` for unknown `uuid` and logs a
+  one-shot `console.warn` in dev; the denominator falls back to the
+  static count (never `0` when the static catalog has rows). Unit test
+  covers every current slug in `SLUG_TO_UUID` + every slug that appears
+  in `MODULES.topicIds` so CI fails if a new topic is added without a
+  UUID entry.
+
+#### R3 — Cache staleness after a practice answer
+- Likelihood: Medium.
+- Impact: Medium — user answers correctly but the track card doesn't
+  tick up for several seconds.
+- Mitigation: co-invalidate `["user_progress"]` AND
+  `["dashboard_stats"]` on answer mutations (already planned in §5.4).
+  Manual QA must verify the home card updates on return navigation, not
+  just on hard reload.
+
+#### R4 — React Query key explosion / perf regression
+- Likelihood: Low.
+- Impact: Low — the selectors are pure and memoised; they do not open
+  new network calls, only reuse the four base queries.
+- Mitigation: no new query keys in Phase 2. Track bundle size delta per
+  PR (< +5KB gzipped total, enforced in Step 8 acceptance criteria).
+
+#### R5 — Auth edge cases (guest → authed transition)
+- Likelihood: Medium.
+- Impact: High — first sign-in is the user's first trust moment.
+- Mitigation: the selectors never branch on `isAuthenticated`; they read
+  whatever shape the facade returns. The one-shot `mergeGuestProgress`
+  path stays untouched. Add a test that simulates guest answers → sign
+  in → selectors return the merged totals after one invalidation pass.
+
+#### R6 — Breaking users mid-session
+- Likelihood: Low (client-only change, no schema migration).
+- Impact: Medium — an old tab with a stale bundle could start reading a
+  new shape if we shipped a Supabase-side change (we are not).
+- Mitigation: client-only refactor. Old tabs continue to run their old
+  code path unchanged. No new DB columns, no renamed columns. Rolling
+  back any step is a `git revert` of one commit.
+
+#### R7 — Resume behavior lands on a locked / removed topic
+- Likelihood: Low.
+- Impact: Medium — clicking "Python" could drop the user on a topic
+  that's now gated by `useTopicCompletion`.
+- Mitigation: `useResumeTarget` cross-checks `resumeTopicSlug` against
+  `isTopicUnlocked`; if the saved topic is now locked it downgrades to
+  `reason: "first_unlocked"`. Removal of a topic slug from `MODULES`
+  also falls back to `first_unlocked`. The `RESUME_ENABLED` toggle
+  introduced in Step 6 lets us flip the feature off without reverting.
+
+#### R8 — Tests that assert old math start failing
+- Likelihood: Medium.
+- Impact: Low (caught in CI, not in production).
+- Mitigation: update tests in the same PR that changes the source
+  numbers. No green-by-hand skips; if a test changes, its new assertion
+  ties to one of the §5.2 invariants.
+
+#### R9 — Accidental scope creep into Phase 3
+- Likelihood: Medium (the DevOps count accuracy is tempting to "just
+  fix").
+- Impact: Medium — violates the hard constraint in the task description.
+- Mitigation: §4.6 stance is repeated in every PR description. Reviewer
+  checklist includes "does this PR change the question catalog
+  (static or Supabase)?" — if yes, block.
+
+#### R10 — Progress page visual drift
+- Likelihood: Low.
+- Impact: Low.
+- Mitigation: Step 7 is explicitly a NUMBER swap, not a layout swap.
+  Snapshot tests on ProgressPage components guard the rendered tree.
+
+### 7.2 Rollback plan per migration step
+
+All steps are client-only, so each is a single `git revert <sha>`.
+
+- Step 1 (pure selectors + tests): `git revert`. No user-visible effect
+  either way.
+- Step 2 (hooks added, unused): `git revert`. No consumers yet, safe.
+- Step 3 (HomePage consumes `useTrackProgress`): `git revert` restores
+  the inline memos. No persisted state touched.
+- Step 4 (track pages): `git revert` restores inline `overallCompletion`
+  per page. No writes issued.
+- Step 5 (TrackModuleList): `git revert` restores the local
+  `STATIC_QUESTION_COUNTS` / `getQuestionCount` path. No user data
+  changed.
+- Step 6 (resume wiring): first line of defense is the `RESUME_ENABLED`
+  constant (flip to `false` and redeploy — no revert needed). If the
+  behavior itself must go, `git revert` the commit; `user_profiles.last_topic_id`
+  and localStorage `lastPosition` remain untouched and the next visit
+  behaves as pre-step.
+- Step 7 (ProgressPage number swap): `git revert` restores
+  `useSupabaseProgress.topicStats` as the display source. No data loss.
+- Step 8 (cleanup): `git revert` restores the redundant computations.
+  Harmless but noisy diff; merge a fresh cleanup PR later if the first
+  one was reverted.
+
+No step deletes Supabase rows, alters migrations, or rewrites
+localStorage. There is no state-loss scenario in this phase.
+
+### 7.3 Pre-merge validation checklist (applies to each step)
+
+Run before opening each PR. Mark each item in the PR description.
+
+- [ ] `npm run typecheck` passes.
+- [ ] `npm run test` passes (including new tests added in this step).
+- [ ] `npm run lint` passes.
+- [ ] `npm run build` passes and bundle size delta reported.
+- [ ] Manual QA — Hebrew RTL layout unchanged on every touched screen.
+- [ ] Manual QA — home track percent == dashboard hero percent (after
+      Steps 3–4).
+- [ ] Manual QA — module accordion % is internally consistent with the
+      hero % (after Step 5).
+- [ ] Manual QA — resume: practice topic A → return home → click track
+      card → land on topic A's PracticePage at the saved index (after
+      Step 6).
+- [ ] Manual QA — progress page overall bar matches the sum of home
+      track cards (after Step 7).
+- [ ] Manual QA — guest flow: answer questions as guest, sign in, both
+      Supabase and display layers converge within one render cycle.
+- [ ] DevOps question-count accuracy: CONFIRM the PR does NOT modify the
+      static catalog (`src/data/questions.ts`) or any
+      `supabase/migrations/*_seed_*.sql` file. (Phase 3 guardrail.)
+- [ ] PR description lists the numeric deltas observed in manual QA
+      (home %, hero %, module %, topic % for at least one user with
+      existing progress).
+- [ ] `CLAUDE.md` "No-Break Rules" explicitly re-read before merge —
+      no rule violated.
+
+### 7.4 Post-merge monitoring (Phase 2 whole)
+
+- Sentry: watch for new errors originating in
+  `src/features/progress/**` for 48h after each merge.
+- PostHog: compare the distribution of `dashboard_viewed.total_correct`
+  values pre- and post-merge; a visible cliff indicates a regression in
+  the totals source.
+- Manual spot check: pick five authed users with non-trivial progress
+  and confirm the numbers on home, track, module and progress page all
+  agree in a 30-second walkthrough.
