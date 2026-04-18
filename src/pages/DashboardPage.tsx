@@ -10,6 +10,7 @@ import { getModulesByTrack } from "@/data/modules";
 import { XpBadge } from "@/components/XpBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { StreakBadge } from "@/features/gamification/components/StreakBadge";
 import { DashboardStatsSkeleton } from "@/features/gamification/components/DashboardStatsSkeleton";
 import { useGamification } from "@/features/gamification/hooks/useGamification";
@@ -20,6 +21,7 @@ import { OnboardingWizard } from "@/features/onboarding/components/OnboardingWiz
 import { Flame, CheckCircle2, GraduationCap, X, ChevronLeft, Home, Rocket, LogIn } from "lucide-react";
 import { PythonHero } from "@/components/PythonHero";
 import { TrackModuleList } from "@/components/TrackModuleList";
+import { useTrackProgress } from "@/features/progress/hooks/useTrackProgress";
 
 const PRACTICE_TIP_DISMISSED_KEY = "practice_tip_dismissed";
 
@@ -87,6 +89,7 @@ const DashboardPage = () => {
   const isNewUser = !hasPracticed && !hasLearnedAny;
 
   const pythonModules = useMemo(() => getModulesByTrack("python-fundamentals"), []);
+  const pythonTrackProgress = useTrackProgress("python-fundamentals");
 
   const lastExam = useMemo(
     () => progress.examHistory.length > 0
@@ -302,7 +305,17 @@ const DashboardPage = () => {
 
         {/* Module sections — Python Fundamentals only */}
         <div>
-          <h2 className="text-lg font-bold text-foreground mb-3">מסלול הלמידה</h2>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-lg font-bold text-foreground">מסלול הלמידה</h2>
+            <span className="text-xs text-muted-foreground font-mono">
+              {pythonTrackProgress.modules.length} מודולים · {pythonTrackProgress.completionPct}%
+            </span>
+          </div>
+          <Progress
+            value={pythonTrackProgress.completionPct}
+            aria-label="התקדמות כוללת יסודות פייתון"
+            className="h-1 mb-3"
+          />
           <TrackModuleList
             modules={pythonModules}
             topics={topics}
