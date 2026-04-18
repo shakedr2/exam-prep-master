@@ -8,6 +8,7 @@ import { getModulesByTrack } from "@/data/modules";
 import { Progress } from "@/components/ui/progress";
 import { TrackModuleList } from "@/components/TrackModuleList";
 import { Home, ChevronLeft } from "lucide-react";
+import { useTrackProgress } from "@/features/progress/hooks/useTrackProgress";
 
 const DevOpsTrackPage = () => {
   const navigate = useNavigate();
@@ -17,16 +18,7 @@ const DevOpsTrackPage = () => {
   const { isTopicUnlocked, isTopicComplete } = useTopicCompletion();
 
   const devopsModules = useMemo(() => getModulesByTrack("devops"), []);
-
-  const overallCompletion = useMemo(() => {
-    const allTopicIds = devopsModules.flatMap((m) => m.topicIds);
-    if (allTopicIds.length === 0) return 0;
-    const total = allTopicIds.reduce(
-      (sum, tid) => sum + getTopicCompletion(tid, questionCounts[tid] ?? 0),
-      0
-    );
-    return Math.round(total / allTopicIds.length);
-  }, [devopsModules, questionCounts, getTopicCompletion]);
+  const devopsTrackProgress = useTrackProgress("devops");
 
   const handleLearn = useCallback(
     (topicId: string) => navigate(`/learn/${topicId}`),
@@ -91,14 +83,14 @@ const DevOpsTrackPage = () => {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">התקדמות כוללת</span>
-              <span className="font-mono font-semibold text-accent">{overallCompletion}%</span>
+              <span className="font-mono font-semibold text-accent">{devopsTrackProgress.completionPct}%</span>
             </div>
             <Progress
-              value={overallCompletion}
+              value={devopsTrackProgress.completionPct}
               className="h-1.5 bg-white/[0.06] [&>div]:bg-accent"
             />
             <p className="text-[11px] text-muted-foreground">
-              {devopsModules.length} מודולים
+              {devopsTrackProgress.modules.length} מודולים
             </p>
           </div>
         </header>
