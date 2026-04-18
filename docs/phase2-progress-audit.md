@@ -912,8 +912,171 @@ Intentionally identical from the selectors' point of view.
 
 ## 6. Migration Plan (Phase 2 steps)
 
-TBD — ordered, reversible steps to adopt the canonical source across every
-surface without breaking current behavior.
+Seven small, independently mergeable commits. Ordered smallest-safe-first.
+None touch Stripe / infra / legal / landing / PWA / auth. After each step
+the app renders the same numbers as before (or strictly more consistent
+numbers) — no step leaves the tree visually broken.
+
+### Step 1 — Add pure selector module + types (no UI change)
+- Goal: introduce the canonical progress types and the pure selector
+  functions that compute `TopicProgress`, `ModuleProgress`, `TrackProgress`,
+  `ResumeTarget` from raw inputs. Nothing imports them yet.
+- Files changed:
+  - new `src/features/progress/lib/progressTypes.ts`
+  - new `src/features/progress/lib/progressSelectors.ts`
+  - new `src/features/progress/lib/__tests__/progressSelectors.test.ts`
+    (Vitest, unit-only, deterministic fixtures).
+- Validation:
+  - `npm run typecheck` green.
+  - New unit tests pass (coverage math, slug↔UUID resolution,
+    `max(remote, static)` denominator policy, clamp/round behavior,
+    `resumeTarget` fallback order).
+  - No file outside `src/features/progress/lib/` is modified.
+- Risk: very low. Dead code at merge time.
+
+### Step 2 — Add the new hooks (still unused by UI)
+- Goal: thin React wrappers that compose existing queries and invoke the
+  selectors. Not yet consumed anywhere in the UI.
+- Files changed:
+  - new `src/features/progress/hooks/useTopicProgress.ts`
+  - new `src/features/progress/hooks/useModuleProgress.ts`
+  - new `src/features/progress/hooks/useTrackProgress.ts`
+  - new `src/features/progress/hooks/useResumeTarget.ts`
+  - new `src/features/progress/hooks/__tests__/*` (integration-level
+    tests using `@testing-library/react-hooks` or RTL wrappers with a
+    `QueryClient`).
+- Validation:
+  - `npm run typecheck` + `npm run test` green.
+  - Snapshot tests assert the same numbers as the current in-page
+    computations for a seeded fixture (so Step 3+ is a pure swap).
+  - No changes to any existing page or component file.
+- Risk: low. Still dead code in production paths.
+
+### Step 3 — Home track cards consume `useTrackProgress`
+- Goal: switch `HomePage.tsx` to read track-level percent/module count
+  from `useTrackProgress(trackId)`. First real UI consumer. Also
+  removes the dead `oopPercent` / `oopModuleCount` path and either
+  renders an OOP card (if the product wants it back; CONFIRM with
+  user first) or drops the unused computation.
+- Files changed:
+  - `src/pages/HomePage.tsx` (swap inline memos for hook calls).
+- Validation:
+  - Manual QA: Home Python card `%` equals the Dashboard hero `%`
+    (Dashboard still renders the old way at this step — the invariant
+    holds once Step 4 lands; for this step we only require Home matches
+    itself before/after for an unchanged fixture).
+  - Vitest `HomePage.test.tsx` updated to stub `useTrackProgress`.
+  - Lighthouse / bundle delta: no new chunk.
+- Risk: low. One file, one route.
+
+### Step 4 — Track pages consume `useTrackProgress`
+- Goal: `DashboardPage` (Python Fundamentals), `OopTrackPage`,
+  `DevOpsTrackPage` stop computing `overallCompletion` in-page. Hero bar
+  + module count come from `useTrackProgress(trackId)`.
+- Files changed:
+  - `src/pages/DashboardPage.tsx`
+  - `src/pages/OopTrackPage.tsx`
+  - `src/pages/DevOpsTrackPage.tsx`
+- Validation:
+  - Manual QA: Home Python card `%` === Dashboard hero `%` for the
+    same user. Same for OOP and DevOps cards once re-rendered.
+  - DevOps hero bar NO LONGER collapses to 0% from the slug/UUID key
+    mismatch in §4.3 (because the selector resolves keys once).
+    Question-count accuracy is still a Phase 3 issue — we only assert
+    CONSISTENCY, not correctness.
+  - `src/pages/__tests__/track-routing.test.tsx` still green; add
+    assertions that each track page renders the hero bar from the hook.
+- Risk: low. Three pages, no data-layer change.
+
+### Step 5 — `TrackModuleList` consumes `ModuleProgress` / `TopicProgress`
+- Goal: move `ModuleSection.moduleCompletion`, `TopicCard.completion`,
+  and the `answeredCorrect` label onto the selector-driven props.
+  `TrackModuleList` receives a `TrackProgress` prop from the track
+  pages (prop-drilling is fine here; no context needed).
+- Files changed:
+  - `src/components/TrackModuleList.tsx`
+  - The three track pages to pass the new prop (Dashboard, OOP,
+    DevOps).
+- Validation:
+  - Manual QA: inside every accordion, the module `%` is
+    `round(correct_in_module / questions_in_module * 100)` (single
+    formula). Topic card percent and `נפתרו נכון` count agree.
+  - DevOps module accordion `%` is internally consistent with the
+    track hero `%` (averaging issue in §3.2 goes away: hero is coverage
+    of the track, module bar is coverage of the module).
+  - Existing tests under `src/pages/__tests__/*` remain green; add a
+    focused test for `ModuleSection` with a fixture.
+- Risk: medium. Largest structural change in the phase; touches a
+  shared component. Mitigated by the pure selectors being already
+  covered by Step 1/2 tests.
+
+### Step 6 — Wire resume behavior via `useResumeTarget`
+- Goal: clicking a home track card lands on the user's last-in-progress
+  module/topic rather than the top of the track landing page.
+- Behavior:
+  - Home card `onSelect` calls `useResumeTarget(trackId)` and navigates:
+    - If `reason === "last_position"`: `/practice/<resumeTopicSlug>`
+      (PracticePage already resumes to the saved question index via
+      `progress.lastPosition`).
+    - Else: the track landing page as today (`/dashboard`,
+      `/tracks/python-oop`, `/tracks/devops`).
+  - Track landing pages auto-expand the module containing
+    `resumeModuleId` (today all active modules are open by default, so
+    this is additive — we set the initially-focused value only).
+- Files changed:
+  - `src/pages/HomePage.tsx` (navigation handlers).
+  - `src/pages/DashboardPage.tsx`, `OopTrackPage.tsx`,
+    `DevOpsTrackPage.tsx` (default accordion focus).
+  - Optional: `src/components/TrackModuleList.tsx` accepts a
+    `focusModuleId` prop.
+- Validation:
+  - Manual QA: practice a topic, return home, click the same track
+    card → you land on that topic's PracticePage at the saved index.
+  - Guest vs authed: same behavior (guest uses localStorage map,
+    authed uses `user_profiles.last_topic_id`).
+  - Brand-new user: card still goes to the track landing page, no 404,
+    no empty state.
+- Risk: medium. First user-visible behavior change in the phase. Feature-
+  flag this step with an env constant (`RESUME_ENABLED` default `true`)
+  so we can disable it via a one-line revert if a regression appears.
+
+### Step 7 — Align ProgressPage totals via selectors (visual parity)
+- Goal: `ProgressPage.tsx` computes its "overall coverage" and per-topic
+  cards from `useTrackProgress` for each active track instead of
+  re-deriving math inside `useSupabaseProgress`. Keeps the existing
+  visual layout (§6 hard constraint: no redesign).
+- Files changed:
+  - `src/pages/ProgressPage.tsx` (replace `supabaseProgress.topicStats`
+    usage for DISPLAY numbers; keep `useDashboardStats` for the 3-stat
+    grid).
+  - `src/hooks/useSupabaseProgress.ts` gains a deprecation comment and
+    is narrowed to internal use by the `useWeakPatterns` path.
+- Validation:
+  - Manual QA: Progress page overall % equals the sum of Home track
+    card coverage (weighted), and Progress page per-topic denominator
+    equals TrackModuleList denominator for the same topic.
+  - `src/test/useProgress.getWeakTopics.test.ts` still green.
+  - No change to the mastery-ladder section, exam history list, or
+    "review mistakes" button.
+- Risk: low. No Supabase-shape changes; pure read-path swap behind the
+  same React Query keys.
+
+### Step 8 — Cleanup + QA checklist
+- Goal: remove the dead code left over from Steps 3–7, and add the
+  Phase 2 QA checklist to the audit / PR description.
+- Files changed:
+  - `src/pages/HomePage.tsx`: drop `pythonPercent`/`oopPercent` inline
+    memos if not already removed.
+  - `src/components/TrackModuleList.tsx`: remove local
+    `STATIC_QUESTION_COUNTS` if fully moved into the selector module.
+  - Add a new short section in `docs/phase2-progress-audit.md` under
+    "Manual QA checklist" (see §7 risk table for the checklist items).
+- Validation:
+  - `npm run typecheck` + `npm run test` + `npm run lint` green.
+  - No imports of `useProgress` from display-only components remain for
+    progress math (grep gate in `scripts/` or a lint rule is optional).
+  - Bundle size delta across Steps 1–8 is < +5 KB gzipped.
+- Risk: very low. Mostly deletions behind already-tested selectors.
 
 ## 7. Risks & Rollback
 
