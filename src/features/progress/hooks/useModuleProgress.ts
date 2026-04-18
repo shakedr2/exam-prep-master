@@ -22,8 +22,6 @@ import type { ModuleProgress } from "../lib/progressTypes";
  * Memoised: returns a referentially-stable object while the underlying data
  * has not changed.
  *
- * **Dead code until Phase 2 Step 5** — no UI component calls this hook yet.
- *
  * @param moduleId - The `id` of a module in `src/data/modules.ts`.
  */
 export function useModuleProgress(moduleId: string): ModuleProgress {

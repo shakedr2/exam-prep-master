@@ -33,7 +33,6 @@ vi.mock("@/features/progress/hooks/useTopicProgress", () => ({
 vi.mock("@/hooks/useProgress", () => ({
   useProgress: () => ({
     progress: { answeredQuestions: {}, username: "tester", examHistory: [] },
-    getTopicCompletion: () => 0,
   }),
 }));
 

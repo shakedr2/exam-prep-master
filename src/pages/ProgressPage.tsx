@@ -5,13 +5,15 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProgress } from "@/hooks/useProgress";
-import { useSupabaseProgress } from "@/hooks/useSupabaseProgress";
+import { useSupabaseTopics } from "@/hooks/useSupabaseTopics";
 import { useWeakPatterns, type PatternStat } from "@/hooks/useWeakPatterns";
 import { useAllLearningProgress } from "@/hooks/useAllLearningProgress";
-import { getTutorialByTopicId } from "@/data/topicTutorials";
+import { getTutorialByTopicId, resolveTopicId } from "@/data/topicTutorials";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { patternFamilyLabel } from "@/lib/patternFamilyLabels";
+import { useTrackProgress } from "@/features/progress/hooks/useTrackProgress";
+import type { TopicProgress } from "@/features/progress/lib/progressTypes";
 
 type MasteryTier = "weak" | "inProgress" | "mastered";
 
@@ -55,64 +57,81 @@ function PatternMasteryCard({ stat, tier }: { stat: PatternStat; tier: MasteryTi
   );
 }
 
+interface TopicRow {
+  topicId: string;
+  topicName: string;
+  topicIcon: string;
+  correct: number;
+  attempted: number;
+  totalQuestions: number;
+  completionPct: number;
+  accuracy: number;
+  learnPct: number;
+  hasConcepts: boolean;
+}
+
 const ProgressPage = () => {
-  const { progress, getIncorrectQuestions } = useProgress();
   const { user } = useAuth();
-  const supabaseProgress = useSupabaseProgress();
-  const weakPatterns = useWeakPatterns();
+  const { progress, getIncorrectQuestions, totalCorrect, totalAnswered, isLoading } = useProgress();
+  const pythonTrack = useTrackProgress("python-fundamentals");
+  const oopTrack = useTrackProgress("python-oop");
+  const devopsTrack = useTrackProgress("devops");
+  const { topics, loading: topicsLoading } = useSupabaseTopics();
   const { learnMap } = useAllLearningProgress();
+  const weakPatterns = useWeakPatterns();
   const navigate = useNavigate();
 
   const isAuthenticated = !!user;
 
-  // Annotate each topic stat with learn/practice percentages and partition
-  // into "learned+practiced" vs "practiced only" in a single pass.
-  const { learnedAndPracticed, practicedOnly } = useMemo(() => {
-    type AnnotatedStat = typeof supabaseProgress.topicStats[number] & {
-      progressPct: number;
-      learnPct: number;
-    };
-    const learned: AnnotatedStat[] = [];
-    const practiceOnly: AnnotatedStat[] = [];
+  // Overall progress is composed from the per-track hooks so that the
+  // Progress page shows the exact same Σ-weighted totals as Home /
+  // Dashboard / Track pages. No local math here — everything flows from
+  // the single source of truth in `features/progress`.
+  const overallTotalQuestions =
+    pythonTrack.totalQuestions + oopTrack.totalQuestions + devopsTrack.totalQuestions;
+  const overallCorrect =
+    pythonTrack.correct + oopTrack.correct + devopsTrack.correct;
+  const coveragePct = overallTotalQuestions > 0
+    ? Math.min(100, Math.max(0, Math.round((overallCorrect / overallTotalQuestions) * 100)))
+    : 0;
 
-    for (const stat of supabaseProgress.topicStats) {
-      const conceptsLearned = learnMap[stat.topicId]?.length ?? 0;
-      const totalConcepts = getTutorialByTopicId(stat.topicId)?.concepts.length ?? 0;
-      const progressPct = stat.totalQuestions > 0
-        ? Math.round((stat.answered / stat.totalQuestions) * 100)
-        : 0;
-      const learnPct = totalConcepts > 0
-        ? Math.round((conceptsLearned / totalConcepts) * 100)
-        : 0;
-      const annotated: AnnotatedStat = { ...stat, progressPct, learnPct };
-      if (conceptsLearned > 0) {
-        learned.push(annotated);
-      } else {
-        practiceOnly.push(annotated);
+  const displayAccuracy = totalAnswered > 0
+    ? Math.round((totalCorrect / totalAnswered) * 100)
+    : 0;
+
+  // Build per-topic rows by flattening the 3 track hooks. Topic
+  // completion, correct, attempted and totalQuestions all come from the
+  // TopicProgress objects produced by `useTrackProgress`.
+  const { learnedAndPracticed, practicedOnly } = useMemo(() => {
+    const topicMeta = new Map<string, { name: string; icon: string }>();
+    for (const t of topics) {
+      topicMeta.set(t.id, { name: t.name, icon: t.icon ?? "📖" });
+    }
+
+    const rows: TopicRow[] = [];
+    const tracks = [pythonTrack, oopTrack, devopsTrack];
+    for (const track of tracks) {
+      for (const mod of track.modules) {
+        for (const topic of mod.topics) {
+          rows.push(buildTopicRow(topic, topicMeta, learnMap));
+        }
       }
     }
 
+    const learned: TopicRow[] = [];
+    const practiceOnly: TopicRow[] = [];
+    for (const row of rows) {
+      (row.hasConcepts ? learned : practiceOnly).push(row);
+    }
     return { learnedAndPracticed: learned, practicedOnly: practiceOnly };
-  }, [supabaseProgress.topicStats, learnMap]);
-
-  // After Sprint 3.1 `useSupabaseProgress` works for anonymous learners
-  // too, so we always read from Supabase. Total question count is the
-  // sum of per-topic counts reported by the same hook — the dashboard
-  // reads from the same source, so the two screens stay consistent.
-  const totalQuestions = supabaseProgress.topicStats.reduce(
-    (sum, stat) => sum + stat.totalQuestions,
-    0
-  );
-  const displayTotalAnswered = supabaseProgress.totalAnswered;
-  const displayTotalCorrect = supabaseProgress.totalCorrect;
-  const displayAccuracy = supabaseProgress.overallAccuracy;
-  const coveragePct = totalQuestions > 0
-    ? Math.round((displayTotalCorrect / totalQuestions) * 100)
-    : 0;
+  }, [pythonTrack, oopTrack, devopsTrack, topics, learnMap]);
 
   const incorrectQuestions = getIncorrectQuestions();
 
-  if (supabaseProgress.loading) {
+  // Show the skeleton while either the authed-user progress rows or the
+  // topic-metadata query are still in flight. Guests resolve instantly
+  // because `useProgress` returns `isLoading: false` for them.
+  if (isLoading || topicsLoading) {
     return (
       <div className="min-h-screen pb-24 pt-6">
         <div className="mx-auto max-w-lg px-4 space-y-6">
@@ -148,8 +167,8 @@ const ProgressPage = () => {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { icon: CheckCircle2, label: "נענו", value: displayTotalAnswered, color: "text-primary" },
-            { icon: Target, label: "נכונות", value: displayTotalCorrect, color: "text-success" },
+            { icon: CheckCircle2, label: "נענו", value: totalAnswered, color: "text-primary" },
+            { icon: Target, label: "נכונות", value: totalCorrect, color: "text-success" },
             { icon: BarChart3, label: "דיוק", value: `${displayAccuracy}%`, color: "text-foreground" },
           ].map(({ icon: Icon, label, value, color }, i) => (
             <motion.div
@@ -174,7 +193,7 @@ const ProgressPage = () => {
           </div>
           <Progress value={coveragePct} className="h-2.5" />
           <p className="text-xs text-muted-foreground">
-            {displayTotalCorrect} נכונות מתוך {totalQuestions} שאלות
+            {overallCorrect} נכונות מתוך {overallTotalQuestions} שאלות
           </p>
         </div>
 
@@ -227,28 +246,28 @@ const ProgressPage = () => {
           </motion.div>
         )}
 
-        {/* Per topic — Supabase data */}
+        {/* Per topic — composed from useTrackProgress hooks */}
         <div>
           <h2 className="font-bold text-foreground mb-3">לפי נושא</h2>
           {(() => {
-            const renderTopicCard = (stat: typeof learnedAndPracticed[number]) => (
-              <div key={stat.topicId} className="rounded-lg border border-foreground/10 bg-card p-3 space-y-2">
+            const renderTopicCard = (row: TopicRow) => (
+              <div key={row.topicId} className="rounded-lg border border-foreground/10 bg-card p-3 space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-base">{stat.topicIcon}</span>
-                  <span className="text-sm font-semibold flex-1 text-foreground">{stat.topicName}</span>
-                  <span className="text-xs text-muted-foreground font-mono">{stat.answered}/{stat.totalQuestions}</span>
-                  <span className="text-xs text-primary font-bold w-10 text-left">{stat.accuracy}%</span>
+                  <span className="text-base">{row.topicIcon}</span>
+                  <span className="text-sm font-semibold flex-1 text-foreground">{row.topicName}</span>
+                  <span className="text-xs text-muted-foreground font-mono">{row.attempted}/{row.totalQuestions}</span>
+                  <span className="text-xs text-primary font-bold w-10 text-left">{row.accuracy}%</span>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <BookOpen className="h-3 w-3 text-blue-500 shrink-0" />
-                    <Progress value={stat.learnPct} className="h-1.5 flex-1" />
-                    <span className="text-[10px] text-muted-foreground font-mono w-7 text-left">{stat.learnPct}%</span>
+                    <Progress value={row.learnPct} className="h-1.5 flex-1" />
+                    <span className="text-[10px] text-muted-foreground font-mono w-7 text-left">{row.learnPct}%</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Target className="h-3 w-3 text-green-500 shrink-0" />
-                    <Progress value={stat.progressPct} className="h-1.5 flex-1" />
-                    <span className="text-[10px] text-muted-foreground font-mono w-7 text-left">{stat.progressPct}%</span>
+                    <Progress value={row.completionPct} className="h-1.5 flex-1" />
+                    <span className="text-[10px] text-muted-foreground font-mono w-7 text-left">{row.completionPct}%</span>
                   </div>
                 </div>
               </div>
@@ -331,5 +350,51 @@ const ProgressPage = () => {
     </div>
   );
 };
+
+function buildTopicRow(
+  topic: TopicProgress,
+  topicMeta: Map<string, { name: string; icon: string }>,
+  learnMap: Record<string, number[]>,
+): TopicRow {
+  // Hook-layer topic IDs are slugs; Supabase `topics` rows are keyed by
+  // UUID; `user_learning_progress` rows can be keyed by either form
+  // depending on how they were written (see resolveTopicId). Bridge
+  // both lookups so the Progress page matches whatever DashboardPage
+  // sees for the same user.
+  const resolved = resolveTopicId(topic.topicId);
+  const slug = resolved?.slug ?? topic.topicId;
+  const uuid = resolved?.uuid;
+
+  const meta =
+    (uuid && topicMeta.get(uuid)) ||
+    topicMeta.get(slug) ||
+    topicMeta.get(topic.topicId);
+
+  const conceptsLearned =
+    (uuid && learnMap[uuid]?.length) ||
+    learnMap[slug]?.length ||
+    learnMap[topic.topicId]?.length ||
+    0;
+  const totalConcepts = getTutorialByTopicId(slug)?.concepts.length ?? 0;
+  const learnPct = totalConcepts > 0
+    ? Math.round((conceptsLearned / totalConcepts) * 100)
+    : 0;
+  const accuracy = topic.attempted > 0
+    ? Math.round((topic.correct / topic.attempted) * 100)
+    : 0;
+
+  return {
+    topicId: topic.topicId,
+    topicName: meta?.name ?? slug,
+    topicIcon: meta?.icon ?? "📖",
+    correct: topic.correct,
+    attempted: topic.attempted,
+    totalQuestions: topic.totalQuestions,
+    completionPct: topic.completionPct,
+    accuracy,
+    learnPct,
+    hasConcepts: conceptsLearned > 0,
+  };
+}
 
 export default ProgressPage;

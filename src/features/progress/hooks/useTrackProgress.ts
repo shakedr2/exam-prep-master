@@ -36,8 +36,6 @@ const MODULE_TO_PROGRESS_TRACK_ID: Record<ModuleTrackId, ProgressTrackId> = {
  * Memoised: returns a referentially-stable object while the underlying data
  * has not changed.
  *
- * **Dead code until Phase 2 Step 3** — no UI component calls this hook yet.
- *
  * @param trackId - One of the track identifiers from `src/data/modules.ts`,
  *   e.g. `"python-fundamentals"`, `"python-oop"`, or `"devops"`.
  */
@@ -72,8 +70,6 @@ export function useTrackProgress(trackId: ModuleTrackId): TrackProgress {
  *
  * Delegates entirely to {@link calcResumeTarget} applied to the result of
  * {@link useTrackProgress}. Returns `null` when the track is 100 % complete.
- *
- * **Dead code until Phase 2 Step 6.**
  *
  * @param trackId - Same identifier accepted by {@link useTrackProgress}.
  */

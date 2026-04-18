@@ -57,9 +57,6 @@ export function computeTopicProgress(
  * the underlying data ({@link useProgress}, {@link useDashboardData}) has not
  * changed.
  *
- * **Dead code until Phase 2 Step 3** — nothing in the UI tree calls this hook
- * yet. It will replace inline `getTopicCompletion` calls once Step 3 lands.
- *
  * @param topicId - Canonical topic slug, e.g. `"loops"` or `"conditions"`.
  */
 export function useTopicProgress(topicId: string): TopicProgress {
