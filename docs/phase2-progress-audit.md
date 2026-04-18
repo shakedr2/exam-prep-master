@@ -155,11 +155,201 @@ stats, or resume hints. Analysis/inconsistencies are deferred to §3.
 
 ## 2. Data Sources & Flow
 
-TBD — list every hook/service that feeds a progress surface
-(`useProgress`, `useLocalProgress`, `useRemoteProgress`, `useDashboardData`,
-`useDashboardStats`, `useSupabaseProgress`, `useTopicCompletion`,
-`useAllLearningProgress`, `useLearningProgress`), and the Supabase tables /
-RPCs / localStorage keys behind each one.
+### 2.1 Persistence layers
+
+- Supabase table `public.user_progress`
+  - Columns used: `user_id`, `question_id`, `topic_id`, `is_correct`,
+    `attempts`, `answered_at`, `last_attempted_at`.
+  - Writers: `useRemoteProgress.syncAnswer` (via RPC
+    `upsert_user_progress`), `mergeGuestProgress` (direct insert),
+    legacy `useSaveAnswer` / `useSubmitAnswer` paths.
+  - Readers: `useRemoteProgress` (full rows for authed), `useSupabaseProgress`
+    (direct read), `get_dashboard_stats` trigger aggregates, `useWeakPatterns`.
+- Supabase table `public.user_profiles`
+  - Columns: `id`, `username`, `last_topic_id`, `last_question_index`.
+  - File: `supabase/migrations/20260411000001_user_profiles.sql`.
+  - Writers: `useRemoteProgress.updateLastPosition`,
+    `useRemoteProgress.setUsername`.
+  - Readers: `useRemoteProgress` (used for `username`, `lastPosition`).
+- Supabase table `public.dashboard_stats` (precomputed, trigger-populated)
+  - Columns: `total_questions_answered`, `correct_answers`,
+    `total_practice_time_seconds`, `current_streak`, `longest_streak`,
+    `last_activity_at`.
+  - File: `supabase/migrations/20260416000008_dashboard_stats.sql`.
+  - Writers: SQL triggers on `user_progress` (SECURITY DEFINER); no direct
+    client writes.
+  - Readers: `useDashboardStats` via RPC `get_dashboard_stats`; consumed by
+    `DashboardPage` and indirectly by `useSupabaseProgress` for totals.
+- Supabase table `public.user_learning_progress`
+  - Columns: `user_id`, `topic_id`, `concept_index`.
+  - Writers: `useLearningProgress.markConceptComplete`.
+  - Readers: `useLearningProgress` (per topic), `useAllLearningProgress`
+    (all topics), `useDashboardData` (merged into `learnMap`).
+- Supabase table `public.user_topic_completions`
+  - Columns: `user_id`, `topic_id`.
+  - Writers: `useTopicCompletion.markTopicComplete`.
+  - Readers: `useTopicCompletion` → `isTopicComplete`, `isTopicUnlocked`.
+- Supabase tables `public.user_xp`, `public.user_streaks`, `public.user_milestones`
+  - Writers: RPCs `award_xp`, `touch_streak`, `claim_milestone`.
+  - Readers: `useGamification` (initial load + after each action).
+- Supabase tables `public.topics`, `public.questions`
+  - Read-only from the client.
+  - Readers: `useSupabaseTopics`, `useSupabaseQuestionsByTopic`,
+    `useSupabaseAnsweredQuestions`, `useSupabaseProgress` (for topic metadata
+    + question counts in progress page).
+- localStorage (guest + cache)
+  - `examprep_progress` — the whole `UserProgress` blob for guests
+    (`useLocalProgress`).
+  - `examprep_guest_merged` — one-shot flag set after `mergeGuestProgress`.
+  - `learn_progress_<topicId>` — array of completed concept indices
+    (`useLearningProgress`, mirrored by `useAllLearningProgress` and
+    `useDashboardData`).
+  - `guided_example_completed_<topicId>` — boolean flag
+    (`useLearningProgress`).
+  - `topic_quiz_passed_v1` — `{ [topicId]: true }` map
+    (`useTopicCompletion`).
+  - `practice_tip_dismissed` — UI flag only.
+  - Stable anonymous UUID used as `user_id` for guest writes to
+    `user_progress`, `user_learning_progress`, etc. (`src/lib/anonUserId.ts`).
+- Static files
+  - `src/data/questions.ts` — single source of truth for question content
+    and topic slug. Used to compute static question counts and to resolve
+    `question.topic` to the topic slug.
+  - `src/data/modules.ts` — tracks, modules, `topicIds[]` (slug).
+  - `src/data/topicTutorials.ts` — tutorials + `SLUG_TO_UUID` /
+    `UUID_TO_SLUG` maps via `resolveTopicId`.
+
+### 2.2 Hooks and services
+
+- `useProgress` — `src/hooks/useProgress.ts`
+  - Facade that returns `useLocalProgress` for guests and `useRemoteProgress`
+    for authed users, with a few merged fields (`examHistory`, `badges`
+    always from local). Exposes: `progress`, `answerQuestion`,
+    `addExamResult`, `updateLastPosition`, `getTopicCompletion`,
+    `getIncorrectQuestions`, `getIncorrectByTopic`, `getWeakTopics`,
+    `getAttempts`, `getTopicPosition`, `totalCorrect`, `totalAnswered`.
+  - Readers: HomePage, DashboardPage, OopTrackPage, DevOpsTrackPage,
+    TrackModuleList, TopicCard, PracticePage, ProgressPage, ReviewMistakes,
+    ExamMode, Navbar, OnboardingPage, AuthGuard tests.
+- `useLocalProgress` — `src/features/progress/hooks/useLocalProgress.ts`
+  - Reads / writes `examprep_progress` in localStorage. Computes `xp`,
+    `level`, `streak`, `answeredQuestions`, `totalCorrect`, `totalAnswered`,
+    `getTopicCompletion` (against `src/data/questions.ts`).
+- `useRemoteProgress` — `src/features/progress/hooks/useRemoteProgress.ts`
+  - React Query: `user_progress` rows, `user_profiles` row.
+  - Mutations: `syncAnswer` (RPC `upsert_user_progress`),
+    `updateLastPosition`, `setUsername`.
+  - Derives `answeredQuestions`, `xp` (from `totalCorrect`), `level`,
+    `lastPosition` (only the single `last_topic_id` pair),
+    `getTopicCompletion` (filters `user_progress` rows by `topic_id`).
+- `useDashboardData` — `src/hooks/useDashboardData.ts`
+  - Calls RPC `get_dashboard_data(userId_or_anonUuid)` → returns
+    `{ learning, topic_counts }`. Merges with localStorage
+    `learn_progress_*`. Exposes `learnMap`, `questionCounts`.
+  - Readers: DashboardPage, OopTrackPage, DevOpsTrackPage, TrackModuleList.
+- `useDashboardStats` — `src/hooks/useDashboardStats.ts`
+  - Calls RPC `get_dashboard_stats(userId)` (authed only). Returns
+    `total_questions_answered`, `correct_answers`,
+    `total_practice_time_seconds`, `current_streak`, `longest_streak`,
+    `last_activity_at`.
+  - Readers: DashboardPage (primary stats), `useSupabaseProgress` (prefers
+    these totals over direct `user_progress` sum).
+- `useSupabaseProgress` — `src/hooks/useSupabaseProgress.ts`
+  - Direct query: `user_progress`, `topics`, `questions` — computes
+    `topicStats` (per-topic `answered`, `correct`, `accuracy`, `totalQuestions`).
+    Totals come from `useDashboardStats` when available, else from direct
+    query.
+  - Readers: ProgressPage.
+- `useTopicCompletion` — `src/hooks/useTopicCompletion.ts`
+  - Reads / writes `user_topic_completions` + localStorage
+    `topic_quiz_passed_v1`. Exposes `isTopicComplete`, `isTopicUnlocked`
+    (sequential gating against hard-coded `SYLLABUS_ORDER`).
+  - Readers: DashboardPage, OopTrackPage, DevOpsTrackPage, TrackModuleList,
+    PracticePage.
+- `useLearningProgress(topicId)` — `src/hooks/useLearningProgress.ts`
+  - Reads / writes `user_learning_progress` + localStorage
+    `learn_progress_<topicId>` + `guided_example_completed_<topicId>`.
+  - Readers: LearnPage.
+- `useAllLearningProgress` — `src/hooks/useAllLearningProgress.ts`
+  - Fetches every `user_learning_progress` row for current user (or
+    anon UUID) and merges with localStorage keys. Exposes `learnMap`.
+  - Readers: ProgressPage.
+- `useGamification` — `src/features/gamification/hooks/useGamification.ts`
+  - Reads `user_xp`, `user_streaks`, `user_milestones`. Writes via RPCs.
+  - Readers: DashboardPage, PracticePage (awards XP + claims milestones).
+- `useWeakPatterns` — `src/hooks/useWeakPatterns.ts`
+  - Aggregates `user_progress` rows by question `pattern_family`. Used by
+    ProgressPage and PracticePage.
+- `useSupabaseAnsweredQuestions`, `useSupabaseQuestionsByTopic`,
+  `useSupabaseQuestionCount`, `useSupabaseTopics`
+  - Topic / question lookups used by PracticePage and TrackModuleList.
+- `useSaveAnswer` — `src/hooks/useSaveAnswer.ts`
+  - Additional write path into `user_progress` used by PracticePage alongside
+    `useProgress().answerQuestion` (see §2.3 flow note).
+- `useLocalProgressMigration` — `src/hooks/useLocalProgressMigration.ts`
+  - One-shot upload of legacy `examprep_progress` entries to Supabase on
+    first render of PracticePage for authed users.
+- `mergeGuestProgress` — `src/features/guest/lib/mergeProgress.ts`
+  - One-shot merge of the guest `examprep_progress` blob into
+    `user_progress` on first sign-in.
+
+### 2.3 Data flow
+
+Write paths (user answers a question):
+- Practice page calls:
+  1. `useProgress().answerQuestion(questionId, topicId, correct)`
+     → facade routes to `useRemoteProgress.syncAnswer` (RPC
+     `upsert_user_progress`) for authed, or `useLocalProgress.answerQuestion`
+     (localStorage) for guests.
+  2. `useSaveAnswer().saveAnswer(...)` — additional write into
+     `user_progress` / `curriculum_question_attempts`.
+  3. `useProgress().updateLastPosition(topicId, nextIdx)` — writes
+     `user_profiles.last_topic_id` + `last_question_index` (authed) and
+     `lastPosition` map in localStorage.
+  4. `useGamification().awardXp(...)` + `claimMilestone(...)` on correct
+     answers.
+- SQL trigger on `user_progress` rolls each insert/update into
+  `dashboard_stats` (counts, streak, last activity).
+- Exam completion: `useProgress().addExamResult(score, total)` writes to
+  localStorage only (no Supabase table for exams yet).
+
+Read paths (user opens a page):
+- Home → `useProgress()` → filters local or remote `answeredQuestions` by
+  static Python topic IDs → percent.
+- Dashboard → `useDashboardStats()` for totals/streaks; `useProgress()` for
+  `examHistory` and `getTopicCompletion`; `useDashboardData()` for
+  `learnMap` + `questionCounts`; `useSupabaseTopics()` for topic metadata;
+  `useTopicCompletion()` for gating.
+- Track pages (OOP, DevOps) → same hook set as Dashboard, but re-derive
+  "Overall completion" as the unweighted average of
+  `getTopicCompletion(slug, questionCounts[...])` across the track's topic
+  slugs.
+- TrackModuleList → re-derives per-module average from the same
+  `getTopicCompletion` and picks the larger of remote / static question
+  counts per topic.
+- Progress page → `useSupabaseProgress()` (with precomputed totals via
+  `useDashboardStats()`) + `useWeakPatterns()` + `useAllLearningProgress()`
+  + `useProgress().getIncorrectQuestions()` + `useProgress().progress.examHistory`.
+- Practice page → `useProgress().progress.lastPosition[topicId]` decides the
+  resume index; adaptive queue rebuilt from `useSupabaseAnsweredQuestions`
+  (authed) or `progress.answeredQuestions` (guest) plus in-memory session
+  answers.
+- Learn page → `useLearningProgress(topicId)` seeds `currentIndex` to the
+  first incomplete concept.
+
+Notable flow observations (neutral, no judgment):
+- The same logical fact ("how many correct Python answers does this user
+  have?") can be computed by at least four different code paths:
+  `useLocalProgress.totalCorrect`, `useRemoteProgress.totalCorrect`,
+  `useDashboardStats.correctAnswers`, and per-topic sums from
+  `useSupabaseProgress.topicStats`.
+- "Last position" is stored in two different shapes: a single
+  `(last_topic_id, last_question_index)` pair on `user_profiles` and a
+  per-topic map `lastPosition[topicId]` in localStorage. The remote hook
+  only surfaces the most recent pair.
+- Guest writes use a stable anon UUID and actually reach Supabase tables
+  (`user_progress`, `user_learning_progress`), so the "guest vs authed"
+  split is not purely local vs remote — guests also have remote rows.
 
 ## 3. Inconsistencies Found
 
