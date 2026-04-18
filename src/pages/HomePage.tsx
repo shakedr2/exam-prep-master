@@ -192,9 +192,9 @@ function TrackCard({
       onClick={interactive ? onSelect : undefined}
       disabled={!interactive}
       aria-label={nameHe}
-      whileHover={interactive ? { y: -4 } : undefined}
-      whileTap={interactive ? { scale: 0.98 } : undefined}
-      transition={{ type: "spring", stiffness: 300, damping: 22 }}
+      whileHover={interactive ? { y: -2 } : undefined}
+      whileTap={interactive ? { scale: 0.99 } : undefined}
+      transition={{ type: "spring", stiffness: 260, damping: 24 }}
       className={cn(
         "group relative w-full overflow-hidden rounded-2xl text-right",
         "border border-white/[0.08] bg-white/[0.03]",
@@ -343,6 +343,24 @@ const HomePage = () => {
 
   const oopModuleCount = MODULES.filter((m) => !m.comingSoon && m.track === "python-oop").length;
 
+  const devopsPercent = useMemo(() => {
+    const devopsTopicIds = new Set(
+      MODULES.filter((m) => !m.comingSoon && m.track === "devops").flatMap((m) => m.topicIds),
+    );
+    const devopsQuestionIds = new Set(
+      staticQuestions
+        .filter((q) => devopsTopicIds.has(q.topic))
+        .map((q) => q.id),
+    );
+    if (devopsQuestionIds.size === 0) return 0;
+
+    const answeredCorrect = Object.entries(progress.answeredQuestions).filter(
+      ([id, v]) => devopsQuestionIds.has(id) && v.correct,
+    ).length;
+
+    return Math.round((answeredCorrect / devopsQuestionIds.size) * 100);
+  }, [progress.answeredQuestions]);
+
   const devopsModuleCount = MODULES.filter((m) => !m.comingSoon && m.track === "devops").length;
 
   const handlePythonTrack = () => {
@@ -351,6 +369,14 @@ const HomePage = () => {
       return;
     }
     navigate("/dashboard");
+  };
+
+  const handleOopTrack = () => {
+    if (!user && !progress.username) {
+      navigate("/onboarding");
+      return;
+    }
+    navigate("/tracks/python-oop");
   };
 
   const greeting = progress.username
@@ -424,17 +450,17 @@ const HomePage = () => {
               hidden: { opacity: 0 },
               visible: {
                 opacity: 1,
-                transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+                transition: { staggerChildren: 0.06, delayChildren: 0.05 },
               },
             }}
-            className="grid grid-cols-1 gap-5 md:grid-cols-2"
+            className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
           >
             <motion.div
               variants={{
-                hidden: { opacity: 0, y: 16 },
+                hidden: { opacity: 0, y: 10 },
                 visible: { opacity: 1, y: 0 },
               }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             >
               <TrackCard
                 nameHe={t("home.pythonName")}
@@ -450,10 +476,29 @@ const HomePage = () => {
 
             <motion.div
               variants={{
-                hidden: { opacity: 0, y: 16 },
+                hidden: { opacity: 0, y: 10 },
                 visible: { opacity: 1, y: 0 },
               }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              <TrackCard
+                nameHe={t("home.oopName")}
+                nameEn="Object-Oriented Programming"
+                description={t("home.oopDescription")}
+                logo={<OopLogo />}
+                accentColor="#d946ef"
+                progressPercent={oopPercent}
+                moduleCount={oopModuleCount}
+                onSelect={handleOopTrack}
+              />
+            </motion.div>
+
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 10 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             >
               <TrackCard
                 nameHe={t("home.devopsName")}
@@ -461,18 +506,12 @@ const HomePage = () => {
                 description={t("home.devopsDescription")}
                 logo={<DevOpsLogo />}
                 accentColor="#7c5cfc"
+                progressPercent={devopsPercent}
                 moduleCount={devopsModuleCount}
                 onSelect={() => navigate("/tracks/devops")}
               />
             </motion.div>
           </motion.div>
-
-          <p
-            className="pt-4 text-center font-mono text-[11px] text-muted-foreground"
-            dir="ltr"
-          >
-            // more tracks coming soon — stay tuned
-          </p>
         </section>
 
         {/* Footer */}

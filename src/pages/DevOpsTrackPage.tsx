@@ -120,9 +120,6 @@ const DevOpsTrackPage = () => {
           />
         </div>
 
-        <p className="pt-2 text-center font-mono text-[11px] text-muted-foreground">
-          // שלבים נוספים בקרוב — הישארו מעודכנים
-        </p>
       </div>
     </div>
   );

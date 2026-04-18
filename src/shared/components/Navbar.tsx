@@ -68,7 +68,7 @@ export function Navbar() {
               )}
             </span>
             <span className="text-base font-bold font-mono tracking-tight">
-              ExamPrep
+              Logic Flow
               {track === "python" && <span className="text-gradient-snake"> Python</span>}
               {track === "devops" && <span className="text-accent"> DevOps</span>}
             </span>
