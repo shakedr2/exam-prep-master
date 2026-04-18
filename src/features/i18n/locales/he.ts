@@ -138,6 +138,26 @@ const he = {
     unexpectedError: "אירעה שגיאה בלתי צפויה. נסה לרענן את הדף.",
     refreshPage: "רענן דף",
   },
+  welcome: {
+    hero: {
+      title: "ברוכים הבאים ל‑ExamPrep!",
+      subtitle: "בחרו מסלול לימוד, והתחילו ללמוד בדרך המהירה והיעילה ביותר.",
+    },
+    trackPicker: {
+      heading: "באיזה מסלול תרצו להתחיל?",
+      python: {
+        name: "יסודות פייתון",
+        description: "משתנים, תנאים, לולאות, מחרוזות ופונקציות — הבסיס לתכנות.",
+      },
+      devops: {
+        name: "מהנדס DevOps",
+        description: "Linux, Git, Docker, CI/CD, ענן ו‑IaC — מ‑0 למהנדס.",
+      },
+      select: "בחרו מסלול זה",
+    },
+    cta: "בואו נתחיל!",
+    saving: "שומר...",
+  },
 } as const;
 
 export default he;

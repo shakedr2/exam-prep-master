@@ -139,6 +139,26 @@ const en: Translations = {
     unexpectedError: "An unexpected error occurred. Try refreshing the page.",
     refreshPage: "Refresh page",
   },
+  welcome: {
+    hero: {
+      title: "Welcome to ExamPrep!",
+      subtitle: "Choose a learning track and start learning the fast, effective way.",
+    },
+    trackPicker: {
+      heading: "Which track would you like to start with?",
+      python: {
+        name: "Python Fundamentals",
+        description: "Variables, conditions, loops, strings, and functions — the foundation of programming.",
+      },
+      devops: {
+        name: "DevOps Engineer",
+        description: "Linux, Git, Docker, CI/CD, Cloud & IaC — from zero to engineer.",
+      },
+      select: "Choose this track",
+    },
+    cta: "Let's get started!",
+    saving: "Saving...",
+  },
 };
 
 export default en;

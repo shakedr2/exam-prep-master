@@ -41,6 +41,7 @@ const LearnPage = lazy(retryLazy(() => import("./pages/LearnPage")));
 const DevOpsTrackPage = lazy(retryLazy(() => import("./pages/DevOpsTrackPage")));
 const OopTrackPage = lazy(retryLazy(() => import("./pages/OopTrackPage")));
 const PracticePage = lazy(retryLazy(() => import("./pages/PracticePage")));
+const WelcomePage = lazy(retryLazy(() => import("./pages/WelcomePage")));
 
 // Multi-topic tutor pages — one per expert tutor (Prof. Python, Prof. Linux, …).
 // Lazy-loaded to keep the initial bundle small; each page ships the topic's
@@ -118,6 +119,7 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LoadingSpinner />}><HomePage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/onboarding" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LoadingSpinner />}><OnboardingPage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/welcome" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LoadingSpinner />}><WelcomePage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
         <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
         <Route path="/auth/callback" element={<PageTransition><AuthCallbackPage /></PageTransition>} />
