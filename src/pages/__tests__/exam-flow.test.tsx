@@ -84,6 +84,14 @@ vi.mock("@/features/gamification/hooks/useGamification", () => ({
   }),
 }));
 
+// ExamMode now surfaces overall-course progress (issue #318). The real
+// hook pulls in useDashboardData → useAuth, neither of which this unit
+// test wires up, so we stub it with a static shape.
+vi.mock("@/features/progress/hooks/useTrackProgress", () => ({
+  useTrackProgress: () => ({ completionPct: 0, modules: [] }),
+  useResumeTarget: () => null,
+}));
+
 vi.mock("@/components/exam/ExamReviewScreen", () => ({
   ExamReviewScreen: () => <div>Review</div>,
 }));
