@@ -11,8 +11,10 @@ const useModuleProgressMock = vi.fn();
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
-    t: (key: string, params?: { name?: string }) => {
+    t: (key: string, params?: { name?: string; topic?: string }) => {
       if (key === "home.greeting") return `Hello, ${params?.name}`;
+      if (key === "home.resumeTitle")
+        return `Continue practicing: ${params?.topic}`;
       const dict: Record<string, string> = {
         "home.welcome": "Welcome",
         "home.heroEyebrow": "Eyebrow",
@@ -28,6 +30,8 @@ vi.mock("react-i18next", () => ({
         "home.oopDescription": "OOP desc",
         "home.devopsName": "DevOps Engineer",
         "home.devopsDescription": "DevOps desc",
+        "home.resumeEyebrow": "Pick up where you left off",
+        "home.resumeCta": "Resume practice",
         "common.progress": "Progress",
         "common.modules": "modules",
         "common.termsOfService": "Terms",
@@ -128,5 +132,33 @@ describe("HomePage", () => {
     expect(screen.getByText("33%")).toBeInTheDocument();
     expect(useTrackProgressMock).toHaveBeenCalledWith("python-fundamentals");
     expect(useTrackProgressMock).toHaveBeenCalledWith("devops");
+  });
+
+  it("renders resume banner for authed user with progress and deep-links to /practice/:topicId", () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    );
+
+    const banner = screen.getByTestId("resume-banner");
+    expect(banner).toBeInTheDocument();
+    expect(banner.getAttribute("data-resume-topic-id")).toBe("loops");
+    expect(screen.getByText(/Continue practicing: לולאות/)).toBeInTheDocument();
+
+    fireEvent.click(banner);
+    expect(navigateSpy).toHaveBeenCalledWith("/practice/loops");
+  });
+
+  it("hides resume banner when no track has progress", () => {
+    useResumeTargetMock.mockReturnValue(null);
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByTestId("resume-banner")).not.toBeInTheDocument();
   });
 });
