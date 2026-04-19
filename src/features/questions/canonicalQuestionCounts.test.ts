@@ -1,11 +1,37 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import { resolveTopicId } from "@/data/topicTutorials";
 
 const REPO_ROOT = process.cwd();
 const DOC_PATH = path.join(REPO_ROOT, "docs/questions-source-of-truth.md");
 const MIGRATIONS_DIR = path.join(REPO_ROOT, "supabase/migrations");
+
+// Canonical UUID → slug map for every topic seeded by Supabase migrations.
+// Kept local to this test on purpose: the product's SLUG_TO_UUID map in
+// `src/data/topicTutorials.ts` tracks only slugs that are actively wired into
+// the UI (e.g. `files_exceptions` was dropped from Python Fundamentals in
+// PR #330), so using it here would under-count rows that are still seeded in
+// `supabase/migrations/`. The doc itself (docs/questions-source-of-truth.md)
+// is the canonical source of per-topic counts and lists every topic below.
+const MIGRATION_UUID_TO_SLUG: Record<string, string> = {
+  "11111111-0001-0000-0000-000000000000": "variables_io",
+  "11111111-0002-0000-0000-000000000000": "arithmetic",
+  "11111111-0003-0000-0000-000000000000": "conditions",
+  "11111111-0004-0000-0000-000000000000": "loops",
+  "11111111-0005-0000-0000-000000000000": "functions",
+  "11111111-0006-0000-0000-000000000000": "strings",
+  "11111111-0007-0000-0000-000000000000": "lists",
+  "11111111-0008-0000-0000-000000000000": "tuples_sets_dicts",
+  "11111111-0009-0000-0000-000000000000": "classes_objects",
+  "11111111-000a-0000-0000-000000000000": "inheritance",
+  "11111111-000b-0000-0000-000000000000": "polymorphism",
+  "11111111-000c-0000-0000-000000000000": "files_exceptions",
+  "11111111-000d-0000-0000-000000000000": "decorators_special",
+  "22222222-0001-0000-0000-000000000000": "linux_basics",
+  "22222222-0002-0000-0000-000000000000": "bash_scripting",
+  "22222222-0003-0000-0000-000000000000": "file_permissions",
+  "22222222-0004-0000-0000-000000000000": "networking_fundamentals",
+};
 
 function parseSupabaseCount(cell: string): number {
   const matches = cell.match(/\d+/g);
@@ -58,9 +84,9 @@ function parseQuestionInsertsByTopicFromMigrations(): Record<string, number> {
 
       const uuids = line.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi) ?? [];
       for (const uuidRaw of uuids) {
-        const resolved = resolveTopicId(uuidRaw.toLowerCase());
-        if (!resolved) continue;
-        out[resolved.slug] = (out[resolved.slug] ?? 0) + 1;
+        const slug = MIGRATION_UUID_TO_SLUG[uuidRaw.toLowerCase()];
+        if (!slug) continue;
+        out[slug] = (out[slug] ?? 0) + 1;
       }
 
       if (line.includes(";")) {
