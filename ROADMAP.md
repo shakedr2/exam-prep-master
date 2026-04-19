@@ -7,6 +7,24 @@ See commit history and closed issues for completed work.
 
 ---
 
+## Phase 4 — Welcome & Onboarding
+
+### PR1 — Landing + RootRoute gating
+**Status:** Shipped ✅ (#310 / #311, merged)
+
+### PR2 — Welcome Email via Resend + Auth Webhook
+**Status:** In Progress 🚧
+**Tracking:** #320 (spec), closes #319 (bug/infra)
+
+- Edge Function `supabase/functions/send-welcome-email` refactored to be
+  Supabase Auth Hook driven (Bearer `SUPABASE_WEBHOOK_SECRET`).
+- New `public.email_events` audit table with RLS.
+- Vitest unit tests for the handler.
+- `scripts/smoke-welcome-email.sh` for staging smoke verification.
+- Dashboard hook registration instructions in the function README.
+
+---
+
 ## Phase 10 — DevOps, Security, and Reliability Foundations
 **Status:** Active  
 **Priority:** P0  
