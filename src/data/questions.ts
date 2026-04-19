@@ -1,8 +1,10 @@
 import { pythonOopQuestionSeeds } from "./topicTutorials/python-oop";
 
 export type QuestionType = "quiz" | "tracing" | "coding" | "fill-blank";
-// The 8 official syllabus topics. "tracing" and "math" are legacy aliases kept until PR 1B remaps all questions.
-export type TopicId = "variables_io" | "arithmetic" | "conditions" | "loops" | "functions" | "strings" | "lists" | "tuples_sets_dicts" | "tracing" | "math" | "classes_objects" | "inheritance" | "polymorphism" | "files_exceptions" | "decorators_special" | "python_oop" | "linux_basics" | "file_permissions" | "bash_scripting" | "networking_fundamentals";
+// The 8 official syllabus topics plus `tracing` (code-tracing meta-topic that
+// spans arithmetic + string + list manipulation) and the OOP + DevOps track
+// topics. Legacy `math` alias was folded into `tracing` — see #314.
+export type TopicId = "variables_io" | "arithmetic" | "conditions" | "loops" | "functions" | "strings" | "lists" | "tuples_sets_dicts" | "tracing" | "classes_objects" | "inheritance" | "polymorphism" | "decorators_special" | "python_oop" | "linux_basics" | "file_permissions" | "bash_scripting" | "networking_fundamentals";
 export type Difficulty = "easy" | "medium" | "hard";
 
 export interface WarmupQuestion {
@@ -1233,7 +1235,7 @@ print(mystery([1,2,3,2,1,4]))`,
   {
     id: "m1",
     type: "quiz",
-    topic: "math",
+    topic: "tracing",
     difficulty: "medium",
     question: "מה תחזיר הפונקציה is_prime(17)?",
     code: `def is_prime(n):
@@ -1265,7 +1267,7 @@ print(mystery([1,2,3,2,1,4]))`,
   {
     id: "m2",
     type: "coding",
-    topic: "math",
+    topic: "tracing",
     difficulty: "hard",
     title: "ספרות ייחודיות",
     description: "כתבו פונקציה unique_digits(n) שמקבלת מספר שלם חיובי ומחזירה True אם כל הספרות במספר שונות זו מזו, ו-False אחרת.",
@@ -1294,7 +1296,7 @@ print(mystery([1,2,3,2,1,4]))`,
   {
     id: "m3",
     type: "coding",
-    topic: "math",
+    topic: "tracing",
     difficulty: "hard",
     title: "סדרת Pell",
     description: "כתבו פונקציה pell(n) שמחזירה את האיבר ה-n בסדרת Pell.\n\nסדרת Pell מוגדרת:\nP(0) = 0\nP(1) = 1\nP(n) = 2 * P(n-1) + P(n-2)",
@@ -1335,7 +1337,7 @@ print(mystery([1,2,3,2,1,4]))`,
   {
     id: "m4",
     type: "tracing",
-    topic: "math",
+    topic: "tracing",
     difficulty: "medium",
     question: "מה ידפיס הקוד הבא?",
     code: `def sum_digits(n):
@@ -1487,7 +1489,7 @@ print(lst[1:4])`,
   {
     id: "m5",
     type: "quiz",
-    topic: "math",
+    topic: "tracing",
     difficulty: "easy",
     question: "מה ידפיס הקוד הבא?",
     code: `print(2 ** 3 + 1)`,
@@ -2247,7 +2249,7 @@ print(a, b)`,
   {
     id: "m6",
     type: "coding",
-    topic: "math",
+    topic: "tracing",
     difficulty: "medium",
     title: "בדיקת מספר משוכלל",
     description: "כתבו פונקציה is_perfect(n) שבודקת אם n הוא מספר משוכלל. מספר משוכלל הוא מספר שסכום מחלקיו (לא כולל עצמו) שווה לו.\n\nלדוגמה: 6 = 1+2+3, 28 = 1+2+4+7+14",
@@ -2281,7 +2283,7 @@ print(a, b)`,
   {
     id: "m7",
     type: "tracing",
-    topic: "math",
+    topic: "tracing",
     difficulty: "medium",
     question: "מה ידפיס הקוד הבא?",
     code: `def mystery(n):
@@ -2313,7 +2315,7 @@ print(mystery(9876))`,
   {
     id: "m8",
     type: "quiz",
-    topic: "math",
+    topic: "tracing",
     difficulty: "hard",
     question: "מה תחזיר הפונקציה עבור הקריאה collatz(6)?",
     code: `def collatz(n):
@@ -2353,7 +2355,7 @@ print(mystery(9876))`,
   {
     id: "m9",
     type: "coding",
-    topic: "math",
+    topic: "tracing",
     difficulty: "easy",
     title: "חישוב חזקה",
     description: "כתבו פונקציה power(base, exp) שמחשבת base בחזקת exp בלי להשתמש באופרטור **.",
@@ -2384,7 +2386,7 @@ print(mystery(9876))`,
   {
     id: "m10",
     type: "tracing",
-    topic: "math",
+    topic: "tracing",
     difficulty: "hard",
     question: "מה ידפיס הקוד הבא?",
     code: `def mystery(n):
@@ -2420,7 +2422,7 @@ print(mystery(7))`,
   {
     id: "m11",
     type: "quiz",
-    topic: "math",
+    topic: "tracing",
     difficulty: "medium",
     question: "מה ידפיס הקוד הבא?",
     code: `def reverse_num(n):
@@ -2564,7 +2566,7 @@ print(x and y, x or y, not x)`,
   {
     id: "m12",
     type: "coding",
-    topic: "math",
+    topic: "tracing",
     difficulty: "medium",
     title: "סכום ספרות",
     description: "כתבו פונקציה digit_sum(n) שמקבלת מספר שלם חיובי ומחזירה את סכום ספרותיו. ממשו בלי להמיר למחרוזת.",
@@ -3274,7 +3276,7 @@ print(lst[::2])`,
   {
     id: "m13",
     type: "tracing",
-    topic: "math",
+    topic: "tracing",
     difficulty: "hard",
     question: "מה ידפיס הקוד הבא?",
     code: `def mystery(n):
@@ -3315,7 +3317,7 @@ print(mystery(60))`,
   {
     id: "m14",
     type: "quiz",
-    topic: "math",
+    topic: "tracing",
     difficulty: "medium",
     question: "מה ידפיס הקוד הבא?",
     code: `def mystery(a, b):
@@ -3346,7 +3348,7 @@ print(mystery(48, 18))`,
   {
     id: "m15",
     type: "coding",
-    topic: "math",
+    topic: "tracing",
     difficulty: "medium",
     title: "מציאת כל המחלקים",
     description: "כתבו פונקציה divisors(n) שמקבלת מספר שלם חיובי ומחזירה רשימה ממוינת של כל המחלקים שלו.",
@@ -3378,7 +3380,7 @@ print(mystery(48, 18))`,
   {
     id: "m16",
     type: "tracing",
-    topic: "math",
+    topic: "tracing",
     difficulty: "medium",
     question: "מה ידפיס הקוד הבא?",
     code: `def mystery(n):
@@ -3410,7 +3412,7 @@ print(mystery(13))`,
   {
     id: "m17",
     type: "quiz",
-    topic: "math",
+    topic: "tracing",
     difficulty: "hard",
     question: "מה ידפיס הקוד הבא?",
     code: `def mystery(n):
@@ -3441,7 +3443,7 @@ print(mystery(4321).strip())`,
   {
     id: "m18",
     type: "coding",
-    topic: "math",
+    topic: "tracing",
     difficulty: "hard",
     title: "המרה בסיסים (עשרוני לבסיס כלשהו)",
     description: "כתבו פונקציה to_base(n, base) שמקבלת מספר עשרוני n ובסיס base (2-9) ומחזירה מחרוזת שמייצגת את n בבסיס הנתון.",
@@ -3485,7 +3487,7 @@ print(mystery(4321).strip())`,
   {
     id: "fb1",
     type: "fill-blank",
-    topic: "math",
+    topic: "tracing",
     difficulty: "easy",
     title: "השלם: בדיקת מספר ראשוני",
     description: "השלם את החלקים החסרים בפונקציה שבודקת אם מספר הוא ראשוני.",
@@ -3593,7 +3595,7 @@ print(mystery(4321).strip())`,
   {
     id: "fb4",
     type: "fill-blank",
-    topic: "math",
+    topic: "tracing",
     difficulty: "medium",
     title: "השלם: סכום ספרות",
     description: "השלם את הפונקציה שמחשבת סכום ספרות של מספר.",
@@ -3885,7 +3887,7 @@ print(mystery(4321).strip())`,
   {
     id: "concept_math_1",
     type: "quiz",
-    topic: "math",
+    topic: "tracing",
     difficulty: "easy",
     question: "מה עושה האופרטור % (מודולו) בפייתון?",
     options: [
@@ -3900,7 +3902,7 @@ print(mystery(4321).strip())`,
   {
     id: "concept_math_2",
     type: "quiz",
-    topic: "math",
+    topic: "tracing",
     difficulty: "easy",
     question: "מה ההבדל בין / ל-// בפייתון?",
     options: [
@@ -3915,7 +3917,7 @@ print(mystery(4321).strip())`,
   {
     id: "concept_math_3",
     type: "quiz",
-    topic: "math",
+    topic: "tracing",
     difficulty: "easy",
     question: "מה עושה האופרטור ** בפייתון?",
     options: [
