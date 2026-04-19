@@ -1,0 +1,44 @@
+ברוך הבא ל-ExamPrep / Welcome to ExamPrep
+==========================================
+
+שלום {{userName}} / Hi {{userName}},
+
+ברוך הבא ל-ExamPrep — כלי ההכנה למבחן בקורס מבוא לתכנות בפייתון של האוניברסיטה הפתוחה.
+Welcome to ExamPrep — the exam preparation tool for the Introduction to Programming with Python
+course at the Open University of Israel.
+
+------------------------------------------
+איך מתחילים / How to get started
+------------------------------------------
+
+1. בחר נושא מהדשבורד — יש 8 נושאים שמכסים את כל החומר לבחינה
+   Pick a topic from the dashboard — 8 topics covering the full exam syllabus
+
+2. ענה על שאלות תרגול: רב-ברירה, מעקב ביצוע, כתיבת פונקציה והשלמת קוד
+   Answer practice questions: multiple choice, code tracing, function writing, and fill-in-the-blank
+
+3. קרא את ההסברים — כל שאלה מגיעה עם הסבר מפורט על התשובה הנכונה
+   Read the explanations — every question includes a detailed explanation of the correct answer
+
+4. נסה מצב מבחן — 6 שאלות, 3 שעות, בדיוק כמו הבחינה האמיתית
+   Try exam mode — 6 questions, 3 hours, just like the real exam
+
+------------------------------------------
+התחל ללמוד / Start learning
+------------------------------------------
+
+{{firstTrackUrl}}
+
+כל שאלה מבוססת על תבניות אמיתיות ממבחנים קודמים.
+Every question is based on real patterns from past exams.
+
+------------------------------------------
+
+קיבלת מייל זה כי נרשמת ל-ExamPrep.
+You received this email because you signed up for ExamPrep.
+
+אם לא נרשמת, ניתן להתעלם ממייל זה.
+If you didn't sign up, you can safely ignore this email.
+
+הסרה מרשימת התפוצה / Unsubscribe:
+{{unsubscribeUrl}}

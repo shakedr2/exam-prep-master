@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to ExamPrep</title>
+  <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background-color: #f4f4f5;
+      color: #18181b;
+      direction: ltr;
+      text-align: left;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    table { border-collapse: collapse; }
+    img { border: 0; display: block; }
+    .wrapper {
+      max-width: 560px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e4e4e7;
+    }
+    .header {
+      background-color: #18181b;
+      padding: 32px 40px;
+      text-align: center;
+    }
+    .header .logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      background: #ffffff;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .header .logo span {
+      font-size: 28px;
+      line-height: 1;
+    }
+    .header h1 {
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin: 0;
+    }
+    .body {
+      padding: 36px 40px;
+    }
+    .greeting {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #18181b;
+    }
+    .intro {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #52525b;
+      margin-bottom: 28px;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #18181b;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .steps {
+      list-style: none;
+      margin-bottom: 32px;
+      padding: 0;
+    }
+    .steps li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #3f3f46;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #18181b;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .cta-wrap {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .cta-btn {
+      display: inline-block;
+      background-color: #18181b;
+      color: #ffffff !important;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px 36px;
+      border-radius: 8px;
+      letter-spacing: -0.2px;
+    }
+    .tagline {
+      font-size: 13px;
+      color: #a1a1aa;
+      line-height: 1.6;
+      margin-bottom: 0;
+    }
+    .footer {
+      border-top: 1px solid #e4e4e7;
+      padding: 20px 40px;
+      text-align: center;
+    }
+    .footer p {
+      font-size: 12px;
+      color: #a1a1aa;
+      line-height: 1.8;
+    }
+    .footer a {
+      color: #a1a1aa;
+      text-decoration: underline;
+    }
+    @media only screen and (max-width: 600px) {
+      .wrapper { margin: 0; border-radius: 0; border: none; }
+      .header { padding: 24px 20px; }
+      .body { padding: 24px 20px; }
+      .footer { padding: 16px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="logo"><span>📚</span></div>
+      <h1>ExamPrep — Python Exam Prep</h1>
+    </div>
+    <div class="body">
+      <p class="greeting">Hi {{userName}} 👋</p>
+      <p class="intro">
+        Welcome to ExamPrep — the exam preparation tool for the
+        <strong>Introduction to Programming with Python</strong> course at the Open University of Israel.<br />
+        We're here to help you walk into exam day with confidence.
+      </p>
+
+      <p class="section-title">How to get started</p>
+      <ul class="steps">
+        <li>
+          <span class="step-num">1</span>
+          <span>Pick a topic from the dashboard — 8 topics covering the full exam syllabus</span>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <span>Answer practice questions: multiple choice, code tracing, function writing, and fill-in-the-blank</span>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <span>Read the explanations — every question includes a detailed Hebrew explanation of the correct answer</span>
+        </li>
+        <li>
+          <span class="step-num">4</span>
+          <span>Try exam mode — 6 questions, 3 hours, just like the real exam</span>
+        </li>
+      </ul>
+
+      <div class="cta-wrap">
+        <a href="{{firstTrackUrl}}" class="cta-btn">Start Learning →</a>
+      </div>
+
+      <p class="tagline">
+        Every question is based on real patterns from past exams.
+        The more you practice, the more prepared you'll be on exam day.
+      </p>
+    </div>
+    <div class="footer">
+      <p>
+        You received this email because you signed up for ExamPrep.<br />
+        If you didn't sign up, you can safely ignore this email.<br />
+        <a href="{{unsubscribeUrl}}">Unsubscribe</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
