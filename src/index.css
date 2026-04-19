@@ -158,6 +158,14 @@
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   }
 
+  /* Reserves enough space for fixed navigation bars (e.g. PracticePage's
+     prev/next bar) to clear the mobile BottomNav. Mirrors BottomNav's own
+     height (min-h-[52px] + py-1 + 1px border + pb-safe ≈ 85–95px) with a
+     small safety margin. */
+  .pb-above-bottom-nav {
+    padding-bottom: calc(max(1.5rem, env(safe-area-inset-bottom)) + 4.5rem);
+  }
+
   /* Python dotted background pattern — adds identity to heroes */
   .bg-dots {
     background-image:

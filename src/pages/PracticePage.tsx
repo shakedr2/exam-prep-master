@@ -26,6 +26,8 @@ import { useWeakPatterns } from "@/hooks/useWeakPatterns";
 import { useTopicCompletion } from "@/hooks/useTopicCompletion";
 import { MiniQuizMode, type MiniQuizResult } from "@/features/questions/components/MiniQuizMode";
 import { getTutorialByTopicId, resolveTopicId } from "@/data/topicTutorials";
+import { getModuleForTopic } from "@/data/modules";
+import { useTrackProgress } from "@/features/progress/hooks/useTrackProgress";
 import {
   selectNextQuestion,
   type ProgressLike,
@@ -99,6 +101,10 @@ const PracticePage = () => {
   const { topicId: rawTopicId } = useParams<{ topicId: string }>();
   const resolved = resolveTopicId(rawTopicId ?? "");
   const topicId = resolved?.uuid ?? rawTopicId;
+  // Slug form is what `modules.ts` and the tutor registry are keyed by.
+  const topicSlug = resolved?.slug ?? rawTopicId;
+  const trackId = getModuleForTopic(topicSlug ?? "")?.track ?? "python-fundamentals";
+  const trackProgress = useTrackProgress(trackId);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { answerQuestion, getWeakTopics, progress, updateLastPosition, totalCorrect, isLoading: progressLoading } = useProgress();
@@ -174,6 +180,9 @@ const PracticePage = () => {
   // Tracks which (topic, allQuestions) combination the queue has been seeded
   // for, so we only re-seed when those inputs actually change.
   const seededKeyRef = useRef<string | null>(null);
+  // Top of the question area — scrolled into view when advancing so the next
+  // question is immediately visible (issue #317).
+  const questionAnchorRef = useRef<HTMLDivElement>(null);
 
   const globalWeakPatterns = useMemo(
     () => new Set(weakPatternStats.map((s) => s.patternFamily)),
@@ -330,6 +339,18 @@ const PracticePage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished]);
+
+  // Auto-scroll to the top of the question area whenever the learner advances
+  // (issue #317). Skipped on the initial mount so we don't yank the page on
+  // first render.
+  const hasScrolledRef = useRef(false);
+  useEffect(() => {
+    if (!hasScrolledRef.current) {
+      hasScrolledRef.current = true;
+      return;
+    }
+    questionAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [currentIndex]);
 
   // Phase C: auto-show hint 10 seconds after a wrong answer in guided_practice mode.
   // This is proactive (not on-demand) scaffolding per the pedagogy spec §4.3.
@@ -1027,6 +1048,22 @@ const PracticePage = () => {
 
         <Progress value={progressPct} className="h-2" />
 
+        {/* Persistent overall-track progress (issue #318). Gives the learner
+            a stable sense of how far they are through the whole course, not
+            just the topic. */}
+        <div className="space-y-1" aria-label="track-progress">
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+            <span>התקדמות כוללת במסלול</span>
+            <span className="font-mono font-semibold text-foreground">
+              {trackProgress.completionPct}%
+            </span>
+          </div>
+          <Progress value={trackProgress.completionPct} className="h-1" />
+        </div>
+
+        {/* Anchor — scrolled into view when advancing to the next question. */}
+        <div ref={questionAnchorRef} aria-hidden="true" />
+
         {/* Session progress indicator */}
         {totalAttempts > 0 && (
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -1149,8 +1186,10 @@ const PracticePage = () => {
         )}
       </div>
 
-      {/* Sticky navigation bar */}
-      <div className="fixed bottom-0 inset-x-0 z-30 border-t border-foreground/10 bg-background/95 backdrop-blur-sm pb-16 md:pb-0">
+      {/* Sticky navigation bar. On mobile the BottomNav sits at bottom:0 on
+          top of us (z-50), so we reserve enough bottom padding to keep the
+          "הבא" button clear of it — including iOS safe-area (issue #316). */}
+      <div className="fixed bottom-0 inset-x-0 z-30 border-t border-foreground/10 bg-background/95 backdrop-blur-sm pb-above-bottom-nav md:pb-0">
         <div className="mx-auto max-w-2xl px-4 py-2 flex gap-3">
           <Button
             variant="outline"
