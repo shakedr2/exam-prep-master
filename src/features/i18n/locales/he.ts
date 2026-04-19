@@ -119,6 +119,9 @@ const he = {
     oopDescription: "מחלקות, אובייקטים, ירושה, פולימורפיזם ודקורטורים — עקרונות OOP בפייתון.",
     devopsName: "מהנדס DevOps",
     devopsDescription: "Linux, Git, רשתות, Docker, CI/CD, ענן ו‑Infrastructure as Code. מסלול שלם מ‑0 למהנדס.",
+    resumeEyebrow: "להמשיך מאיפה שהפסקת",
+    resumeTitle: "המשך בתרגול: {{topic}}",
+    resumeCta: "המשך תרגול",
   },
   dashboard: {
     breadcrumbHome: "בית",

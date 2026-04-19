@@ -5,11 +5,13 @@ import {
   BookOpen,
   Target,
   Sparkles,
+  PlayCircle,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useProgress } from "@/hooks/useProgress";
 import { useAuth } from "@/contexts/AuthContext";
 import { getModulesByTrack } from "@/data/modules";
+import { topics } from "@/data/questions";
 import { Progress } from "@/components/ui/progress";
 import { HeroFrame } from "@/shared/components/HeroFrame";
 import { cn } from "@/lib/utils";
@@ -161,6 +163,62 @@ function DevOpsLogo({ className }: { className?: string }) {
   );
 }
 
+/* ── ResumeBanner ─────────────────────────────────────── */
+
+type ResumeBannerProps = {
+  topicId: string;
+  topicLabel: string;
+  onResume: () => void;
+};
+
+function ResumeBanner({ topicId, topicLabel, onResume }: ResumeBannerProps) {
+  const { t } = useTranslation();
+
+  return (
+    <motion.button
+      type="button"
+      onClick={onResume}
+      data-testid="resume-banner"
+      data-resume-topic-id={topicId}
+      aria-label={t("home.resumeCta")}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -1 }}
+      whileTap={{ scale: 0.99 }}
+      transition={{ type: "spring", stiffness: 260, damping: 24 }}
+      className={cn(
+        "group relative flex w-full items-center gap-4 rounded-2xl text-right",
+        "border border-primary/40 bg-primary/10 p-4 sm:p-5",
+        "backdrop-blur-xl transition-colors duration-300",
+        "hover:border-primary/60 hover:bg-primary/15",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+      )}
+    >
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+        <PlayCircle className="h-5 w-5" aria-hidden="true" />
+      </div>
+      <div className="flex-1 space-y-0.5">
+        <p className="font-mono text-[11px] uppercase tracking-wide text-primary/80">
+          {t("home.resumeEyebrow")}
+        </p>
+        <p className="text-sm font-semibold text-foreground sm:text-base">
+          {t("home.resumeTitle", { topic: topicLabel })}
+        </p>
+      </div>
+      <span
+        className={cn(
+          "mr-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+          "border border-primary/40 bg-primary/10 text-primary",
+          "transition-all duration-300 group-hover:-translate-x-1",
+        )}
+        aria-hidden="true"
+      >
+        <ArrowLeft className="h-4 w-4" />
+      </span>
+    </motion.button>
+  );
+}
+
 /* ── TrackCard (glass-morphism) ───────────────────────── */
 
 type TrackCardProps = {
@@ -309,8 +367,19 @@ const HomePage = () => {
   const oopTrackProgress = useTrackProgress("python-oop");
   const devopsTrackProgress = useTrackProgress("devops");
   const pythonResumeTarget = useResumeTarget("python-fundamentals");
+  const oopResumeTarget = useResumeTarget("python-oop");
+  const devopsResumeTarget = useResumeTarget("devops");
   const firstOopModule = getModulesByTrack("python-oop")[0];
   const oopModuleProgress = useModuleProgress(firstOopModule?.id ?? "");
+
+  // First non-null resume target across tracks, in curriculum order.
+  const resumeTarget =
+    pythonResumeTarget ?? oopResumeTarget ?? devopsResumeTarget ?? null;
+  const showResumeBanner = !!user && !!resumeTarget?.topicId;
+  const resumeTopicLabel = resumeTarget?.topicId
+    ? topics.find((t) => t.id === resumeTarget.topicId)?.name ??
+      resumeTarget.topicId
+    : "";
 
   const handleTrackNavigation = (
     fallbackPath: string,
@@ -395,6 +464,17 @@ const HomePage = () => {
             )
           }
         />
+
+        {/* Resume CTA — authed users with prior progress only */}
+        {showResumeBanner && resumeTarget?.topicId && (
+          <ResumeBanner
+            topicId={resumeTarget.topicId}
+            topicLabel={resumeTopicLabel}
+            onResume={() =>
+              navigate(`/practice/${resumeTarget.topicId}`)
+            }
+          />
+        )}
 
         {/* Track cards */}
         <section aria-labelledby="tracks-heading" className="space-y-5">

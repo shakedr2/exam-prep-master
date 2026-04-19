@@ -120,6 +120,9 @@ const en: Translations = {
     oopDescription: "Classes, objects, inheritance, polymorphism, and decorators — OOP principles in Python.",
     devopsName: "DevOps Engineer",
     devopsDescription: "Linux, Git, Networking, Docker, CI/CD, Cloud, and Infrastructure as Code. A complete path from zero to engineer.",
+    resumeEyebrow: "Pick up where you left off",
+    resumeTitle: "Continue practicing: {{topic}}",
+    resumeCta: "Resume practice",
   },
   dashboard: {
     breadcrumbHome: "Home",
