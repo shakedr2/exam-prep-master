@@ -22,7 +22,7 @@ auth.users INSERT
     │
     ▼
 Supabase Auth Hook (HTTP)
-    │   Authorization: Bearer <SUPABASE_WEBHOOK_SECRET>
+    │   Authorization: Bearer <WEBHOOK_SECRET>
     │   payload: { type:"INSERT", table:"users", record:{id,email,raw_user_meta_data} }
     ▼
 Edge Function: send-welcome-email (Deno)
@@ -45,7 +45,7 @@ Edge Function: send-welcome-email (Deno)
 | `RESEND_API_KEY` | Resend API key (`re_...`). |
 | `RESEND_FROM` | From address. Default `Logic Flow <onboarding@resend.dev>`. |
 | `APP_URL` | Public app URL used in the CTA. |
-| `SUPABASE_WEBHOOK_SECRET` | Shared bearer secret the Auth Hook sends. |
+| `WEBHOOK_SECRET` | Shared bearer secret the DB webhook sends (legacy `SUPABASE_WEBHOOK_SECRET` kept as a fallback for rotation). |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Auto-injected by Supabase. |
 | `UNSUBSCRIBE_EMAIL` | Footer mailto (default `unsubscribe@logicflow.dev`). |
 

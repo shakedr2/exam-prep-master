@@ -56,7 +56,7 @@ export interface EmailEventWriter {
 export interface HandlerEnv {
   RESEND_FROM: string;
   APP_URL: string;
-  SUPABASE_WEBHOOK_SECRET: string;
+  WEBHOOK_SECRET: string;
   UNSUBSCRIBE_EMAIL?: string;
 }
 
@@ -112,7 +112,7 @@ export function validateEnv(env: Partial<HandlerEnv>): string[] {
   const missing: string[] = [];
   if (!env.RESEND_FROM) missing.push("RESEND_FROM");
   if (!env.APP_URL) missing.push("APP_URL");
-  if (!env.SUPABASE_WEBHOOK_SECRET) missing.push("SUPABASE_WEBHOOK_SECRET");
+  if (!env.WEBHOOK_SECRET) missing.push("WEBHOOK_SECRET");
   return missing;
 }
 
@@ -135,7 +135,7 @@ export async function handleWelcomeEmailRequest(
   }
 
   const provided = parseBearerToken(req.headers.get("Authorization"));
-  if (!provided || provided !== deps.env.SUPABASE_WEBHOOK_SECRET) {
+  if (!provided || provided !== deps.env.WEBHOOK_SECRET) {
     return json(401, { error: "Unauthorized" });
   }
 

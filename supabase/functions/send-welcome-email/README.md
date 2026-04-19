@@ -25,7 +25,7 @@ Set these as **function secrets** in Supabase — never as Vite envs.
 | `RESEND_API_KEY` | yes | Resend API key (`re_...`). |
 | `RESEND_FROM` | no | From address. Defaults to `Logic Flow <onboarding@resend.dev>` until the custom domain is verified. |
 | `APP_URL` | yes | Public URL of the app, used for the CTA (e.g. `https://logicflow.dev`). |
-| `SUPABASE_WEBHOOK_SECRET` | yes | Shared secret expected in the `Authorization: Bearer …` header. Rotate quarterly. |
+| `WEBHOOK_SECRET` | yes | Shared secret expected in the `Authorization: Bearer …` header. Rotate quarterly. Supabase reserves the `SUPABASE_` prefix for Edge Function secrets, so this must be set under the unprefixed name. The runtime still falls back to the legacy `SUPABASE_WEBHOOK_SECRET` env var for backwards compatibility during rotation. |
 | `SUPABASE_URL` | yes | Project URL (auto-injected by Supabase runtime). |
 | `SUPABASE_SERVICE_ROLE_KEY` | yes | Service-role key (auto-injected by Supabase runtime). |
 | `UNSUBSCRIBE_EMAIL` | no | Address used in the footer `mailto:` link. Defaults to `unsubscribe@logicflow.dev`. |
@@ -37,7 +37,7 @@ supabase secrets set \
   RESEND_API_KEY=re_xxx \
   RESEND_FROM='Logic Flow <onboarding@resend.dev>' \
   APP_URL=https://logicflow.dev \
-  SUPABASE_WEBHOOK_SECRET=$(openssl rand -hex 32)
+  WEBHOOK_SECRET=$(openssl rand -hex 32)
 ```
 
 ## Deploy
@@ -62,7 +62,7 @@ https://<project-ref>.supabase.co/functions/v1/send-welcome-email
 4. URL:
    `https://<project-ref>.supabase.co/functions/v1/send-welcome-email`
 5. Headers:
-   - `Authorization: Bearer <SUPABASE_WEBHOOK_SECRET>` — must match the
+   - `Authorization: Bearer <WEBHOOK_SECRET>` — must match the
      secret you set on the function.
    - `Content-Type: application/json`
 6. Save. The hook fires on every successful signup with a payload of the form:
@@ -84,7 +84,7 @@ https://<project-ref>.supabase.co/functions/v1/send-welcome-email
 ### Secret rotation
 
 1. Generate a new secret: `openssl rand -hex 32`.
-2. Set it on the function first: `supabase secrets set SUPABASE_WEBHOOK_SECRET=<new>`.
+2. Set it on the function first: `supabase secrets set WEBHOOK_SECRET=<new>`.
 3. Update the Auth Hook header in the dashboard to the new value.
 4. Re-run `scripts/smoke-welcome-email.sh` to confirm delivery.
 5. Log the rotation in `STAGING_SETUP.md`.

@@ -1,8 +1,9 @@
 // Deno entrypoint for the send-welcome-email Supabase Edge Function.
 //
-// Phase 4 PR2 — issue #320 (closes #319). The Supabase Auth webhook on
+// Phase 4 PR2 — issue #320 (closes #319). The Supabase database webhook on
 // auth.users INSERT invokes this function with an Authorization: Bearer
-// <SUPABASE_WEBHOOK_SECRET> header and a payload of the form:
+// <WEBHOOK_SECRET> header (env var name avoids the reserved SUPABASE_ prefix)
+// and a payload of the form:
 //
 //   { type: "INSERT", table: "users", record: { id, email, raw_user_meta_data } }
 //
@@ -29,7 +30,13 @@ const RESEND_FROM =
   Deno.env.get("RESEND_FROM") ??
   Deno.env.get("RESEND_FROM_EMAIL") ??
   "Logic Flow <onboarding@resend.dev>";
-const SUPABASE_WEBHOOK_SECRET = Deno.env.get("SUPABASE_WEBHOOK_SECRET") ?? "";
+// Supabase blocks the SUPABASE_ prefix for user-settable Edge Function
+// secrets, so the bearer secret is exposed as WEBHOOK_SECRET. The older name
+// is kept as a fallback so rotation can be staged without downtime.
+const WEBHOOK_SECRET =
+  Deno.env.get("WEBHOOK_SECRET") ??
+  Deno.env.get("SUPABASE_WEBHOOK_SECRET") ??
+  "";
 const UNSUBSCRIBE_EMAIL =
   Deno.env.get("UNSUBSCRIBE_EMAIL") ?? "unsubscribe@logicflow.dev";
 
@@ -58,7 +65,7 @@ serve((req: Request) =>
     env: {
       RESEND_FROM,
       APP_URL,
-      SUPABASE_WEBHOOK_SECRET,
+      WEBHOOK_SECRET,
       UNSUBSCRIBE_EMAIL,
     },
     now: () => new Date().toISOString(),
