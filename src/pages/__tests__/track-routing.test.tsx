@@ -47,8 +47,6 @@ vi.mock("@/hooks/useDashboardData", () => ({
       tuples_sets_dicts: 10,
       functions: 10,
       tracing: 10,
-      math: 10,
-      files_exceptions: 10,
     },
   }),
 }));
@@ -141,7 +139,7 @@ describe("track routing", () => {
     );
 
     expect(screen.getByText("Python Basics")).toBeInTheDocument();
-    expect(screen.getByText("6 modules")).toBeInTheDocument();
-    expect(screen.getByText("11 topics")).toBeInTheDocument();
+    expect(screen.getByText("5 modules")).toBeInTheDocument();
+    expect(screen.getByText("9 topics")).toBeInTheDocument();
   });
 });

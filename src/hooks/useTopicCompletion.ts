@@ -28,7 +28,6 @@ export const SYLLABUS_ORDER: string[] = [
   "classes_objects",
   "inheritance",
   "polymorphism",
-  "files_exceptions",
   "decorators_special",
 ];
 
