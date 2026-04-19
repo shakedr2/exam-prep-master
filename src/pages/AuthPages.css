@@ -1,0 +1,59 @@
+.lf-theme {
+  --lf-accent-violet: #7c5cfc;
+  --lf-accent-violet-2: #9b7fff;
+  --lf-bg: #07080d;
+  --lf-surface: rgba(255, 255, 255, 0.04);
+  --lf-border: rgba(255, 255, 255, 0.12);
+  --lf-text: #f0f0f5;
+  --lf-text-dim: #a8a9b8;
+  --lf-danger: #ff7676;
+  background: var(--lf-bg);
+  color: var(--lf-text);
+}
+
+.lf-theme.lf-light {
+  --lf-bg: #fafafa;
+  --lf-surface: rgba(10, 11, 16, 0.04);
+  --lf-border: rgba(10, 11, 16, 0.14);
+  --lf-text: #0a0b10;
+  --lf-text-dim: #515468;
+  --lf-danger: #d93636;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, color-mix(in srgb, var(--lf-accent-violet) 18%, transparent) 0%, transparent 52%), var(--lf-bg);
+}
+
+.auth-card {
+  background: var(--lf-surface);
+  border-color: var(--lf-border) !important;
+  backdrop-filter: blur(6px);
+}
+
+.auth-icon-wrap {
+  border-color: var(--lf-border);
+  color: #fff;
+  background: linear-gradient(135deg, var(--lf-accent-violet), var(--lf-accent-violet-2));
+}
+
+.auth-muted {
+  color: var(--lf-text-dim);
+}
+
+.auth-input {
+  border-color: var(--lf-border) !important;
+}
+
+.auth-separator-line {
+  border-color: var(--lf-border);
+}
+
+.auth-error {
+  color: var(--lf-danger);
+}
+
+.auth-primary-btn {
+  background: linear-gradient(135deg, var(--lf-accent-violet), var(--lf-accent-violet-2));
+  color: #fff;
+}

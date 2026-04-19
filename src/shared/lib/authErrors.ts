@@ -1,4 +1,4 @@
-export const MIN_PASSWORD_LENGTH = 6;
+export const MIN_PASSWORD_LENGTH = 8;
 
 export function translateAuthError(message: string): string {
   if (message.includes("Invalid login credentials")) return "אימייל או סיסמה שגויים";

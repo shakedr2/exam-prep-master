@@ -26,6 +26,8 @@ import { CookieConsent } from "@/components/CookieConsent";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 // All other pages are lazy-loaded to reduce the initial bundle size.
 const HomePage = lazy(retryLazy(() => import("./pages/HomePage")));
@@ -136,6 +138,8 @@ function AnimatedRoutes() {
         <Route path="/welcome" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LoadingSpinner />}><WelcomePage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
         <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
+        <Route path="/forgot-password" element={<PageTransition><ForgotPasswordPage /></PageTransition>} />
+        <Route path="/reset-password" element={<PageTransition><ResetPasswordPage /></PageTransition>} />
         <Route path="/auth/callback" element={<PageTransition><AuthCallbackPage /></PageTransition>} />
         <Route path="/dashboard" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LoadingSpinner />}><DashboardPage /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
         <Route path="/practice/:topicId" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LoadingSpinner />}><PracticePage /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
