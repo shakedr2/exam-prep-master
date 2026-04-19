@@ -60,6 +60,15 @@ const AuthCallbackPage = () => {
         console.error("send-welcome-email failed (non-fatal):", err);
       }
 
+      const searchType = new URLSearchParams(window.location.search).get("type");
+      const hashType = new URLSearchParams(window.location.hash.replace(/^#/, "")).get("type");
+      const callbackType = searchType ?? hashType;
+
+      if (callbackType === "recovery") {
+        navigate("/reset-password", { replace: true });
+        return;
+      }
+
       navigate("/dashboard", { replace: true });
     }
 

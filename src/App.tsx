@@ -13,7 +13,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/shared/components/AuthGuard";
 import { Navbar } from "@/shared/components/Navbar";
 import { BottomNav } from "@/shared/components/BottomNav";
@@ -26,6 +26,8 @@ import { CookieConsent } from "@/components/CookieConsent";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 // All other pages are lazy-loaded to reduce the initial bundle size.
 const HomePage = lazy(retryLazy(() => import("./pages/HomePage")));
@@ -42,6 +44,7 @@ const DevOpsTrackPage = lazy(retryLazy(() => import("./pages/DevOpsTrackPage")))
 const OopTrackPage = lazy(retryLazy(() => import("./pages/OopTrackPage")));
 const PracticePage = lazy(retryLazy(() => import("./pages/PracticePage")));
 const WelcomePage = lazy(retryLazy(() => import("./pages/WelcomePage")));
+const LandingPage = lazy(retryLazy(() => import("./features/welcome/WelcomePage")));
 
 // Multi-topic tutor pages — one per expert tutor (Prof. Python, Prof. Linux, …).
 // Lazy-loaded to keep the initial bundle small; each page ships the topic's
@@ -99,6 +102,19 @@ function PostHogPageviewTracker() {
 }
 
 /**
+ * `/` is dual-purpose: unauthenticated visitors see the Logic Flow landing
+ * page (marketing), authenticated users see the in-app HomePage (progress
+ * + tracks). While the auth session is still being resolved we render
+ * nothing to avoid a flash of the wrong page — `LazyRouteBoundary`'s
+ * spinner is already taking care of the visual.
+ */
+function RootRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingSpinner />;
+  return user ? <HomePage /> : <LandingPage />;
+}
+
+/**
  * Renders the route table inside an AnimatePresence so that each page
  * element gets a fade/slide transition on mount and unmount.
  *
@@ -117,11 +133,13 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LoadingSpinner />}><HomePage /></Suspense></LazyRouteBoundary></PageTransition>} />
+        <Route path="/" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LoadingSpinner />}><RootRoute /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/onboarding" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LoadingSpinner />}><OnboardingPage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/welcome" element={<PageTransition><LazyRouteBoundary><Suspense fallback={<LoadingSpinner />}><WelcomePage /></Suspense></LazyRouteBoundary></PageTransition>} />
         <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
         <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
+        <Route path="/forgot-password" element={<PageTransition><ForgotPasswordPage /></PageTransition>} />
+        <Route path="/reset-password" element={<PageTransition><ResetPasswordPage /></PageTransition>} />
         <Route path="/auth/callback" element={<PageTransition><AuthCallbackPage /></PageTransition>} />
         <Route path="/dashboard" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LoadingSpinner />}><DashboardPage /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
         <Route path="/practice/:topicId" element={<AuthGuard><PageTransition><LazyRouteBoundary><Suspense fallback={<LoadingSpinner />}><PracticePage /></Suspense></LazyRouteBoundary></PageTransition></AuthGuard>} />
@@ -149,6 +167,37 @@ function AnimatedRoutes() {
 
 const queryClient = new QueryClient();
 
+/**
+ * Renders the shared app chrome (Navbar, BottomNav, AppFooter) unless the
+ * user is on the marketing landing (`/` while unauthenticated). The landing
+ * ships its own nav + footer, so stacking the shared chrome on top would
+ * duplicate controls and break the visual.
+ */
+function AppChrome() {
+  const { user, loading } = useAuth();
+  const { pathname } = useLocation();
+  const hideForLanding = pathname === "/" && !loading && !user;
+
+  if (hideForLanding) {
+    return (
+      <>
+        <AnimatedRoutes />
+        <CookieConsent />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Navbar />
+      <AnimatedRoutes />
+      <AppFooter />
+      <BottomNav />
+      <CookieConsent />
+    </>
+  );
+}
+
 const AppContent = () => {
   return (
     <div>
@@ -156,11 +205,7 @@ const AppContent = () => {
       <Sonner />
       <BrowserRouter>
         <PostHogPageviewTracker />
-        <Navbar />
-        <AnimatedRoutes />
-        <AppFooter />
-        <BottomNav />
-        <CookieConsent />
+        <AppChrome />
       </BrowserRouter>
     </div>
   );

@@ -1,0 +1,721 @@
+/* ==========================================================================
+   Logic Flow — Welcome landing page (scoped styles)
+   --------------------------------------------------------------------------
+   All rules are scoped under `.lf-root` so they cannot leak into the rest of
+   the app. Colors, radii, and shadows come from CSS custom properties defined
+   on `.lf-root` itself (NOT the global `:root`) so we do not collide with the
+   existing app theme tokens.
+
+   Theme switching:
+     • Default state is dark.
+     • Adding `.lf-light` to `.lf-root` applies the light-mode overrides.
+     • The React component reads `lf-theme` from localStorage and applies the
+       class accordingly.
+
+   Hebrew-first RTL:
+     • Layout is direction-agnostic (flex + grid only). Text direction comes
+       from the app's `document.documentElement.dir` (set by i18n config).
+   ========================================================================== */
+
+.lf-root {
+  /* ---- Brand palette ----------------------------------------------------*/
+  --lf-accent-violet: #7c5cfc;
+  --lf-accent-violet-2: #9b7fff;
+  --lf-accent-green: #3ddc84;
+  --lf-accent-yellow: #ffd86b;
+
+  /* ---- Dark-first surface + text ladder --------------------------------*/
+  --lf-bg: #07080d;
+  --lf-bg-elev: #0d0f16;
+  --lf-surface: rgba(255, 255, 255, 0.04);
+  --lf-surface-hover: rgba(255, 255, 255, 0.07);
+  --lf-border: rgba(255, 255, 255, 0.08);
+  --lf-border-strong: rgba(255, 255, 255, 0.16);
+  --lf-text: #f0f0f5;
+  --lf-text-dim: #a8a9b8;
+  --lf-text-muted: #6b6c7a;
+
+  /* ---- Hover overlay (used by interactive surfaces) --------------------*/
+  --lf-hover-overlay: rgba(255, 255, 255, 0.06);
+
+  /* ---- Typographic scale -----------------------------------------------*/
+  --lf-font-display: "Heebo", "Inter", system-ui, -apple-system, sans-serif;
+  --lf-font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* ---- Radii + shadows -------------------------------------------------*/
+  --lf-radius-sm: 10px;
+  --lf-radius-md: 16px;
+  --lf-radius-lg: 24px;
+  --lf-shadow-lg: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+
+  /* ---- Component local ------------------------------------------------*/
+  background: var(--lf-bg);
+  color: var(--lf-text);
+  font-family: var(--lf-font-display);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.lf-root.lf-light {
+  --lf-bg: #fafafa;
+  --lf-bg-elev: #ffffff;
+  --lf-surface: rgba(10, 11, 16, 0.04);
+  --lf-surface-hover: rgba(10, 11, 16, 0.07);
+  --lf-border: rgba(10, 11, 16, 0.08);
+  --lf-border-strong: rgba(10, 11, 16, 0.16);
+  --lf-text: #0a0b10;
+  --lf-text-dim: #42455a;
+  --lf-text-muted: #6b6c7a;
+  --lf-hover-overlay: rgba(10, 11, 16, 0.05);
+}
+
+/* ==========================================================================
+   NAV
+   ========================================================================== */
+.lf-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  backdrop-filter: blur(14px);
+  background: color-mix(in srgb, var(--lf-bg) 75%, transparent);
+  border-bottom: 1px solid var(--lf-border);
+}
+
+.lf-nav-left,
+.lf-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lf-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-family: var(--lf-font-mono);
+  font-size: 15px;
+  text-decoration: none;
+  color: var(--lf-text);
+}
+
+.lf-brand-mark {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+}
+
+.lf-grad-text {
+  background: linear-gradient(135deg, var(--lf-accent-violet-2), var(--lf-accent-violet) 55%, var(--lf-accent-green));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lf-nav-links {
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .lf-nav-links {
+    display: inline-flex;
+  }
+}
+
+.lf-nav-link {
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--lf-text-dim);
+  font-size: 13px;
+  text-decoration: none;
+  transition: background 160ms, color 160ms;
+}
+
+.lf-nav-link:hover {
+  background: var(--lf-hover-overlay);
+  color: var(--lf-text);
+}
+
+.lf-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--lf-border);
+  background: var(--lf-surface);
+  color: var(--lf-text-dim);
+  cursor: pointer;
+  transition: background 160ms, color 160ms, border-color 160ms;
+}
+
+.lf-theme-btn:hover {
+  background: var(--lf-hover-overlay);
+  color: var(--lf-text);
+  border-color: var(--lf-border-strong);
+}
+
+.lf-btn-ghost,
+.lf-btn-cta-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 160ms, color 160ms, border-color 160ms, transform 160ms;
+}
+
+.lf-btn-ghost {
+  color: var(--lf-text-dim);
+  border: 1px solid transparent;
+}
+
+.lf-btn-ghost:hover {
+  color: var(--lf-text);
+  background: var(--lf-hover-overlay);
+}
+
+.lf-btn-cta-sm {
+  color: #fff;
+  background: linear-gradient(135deg, var(--lf-accent-violet), var(--lf-accent-violet-2));
+  border: 1px solid var(--lf-border-strong);
+  box-shadow: 0 6px 20px -6px rgba(124, 92, 252, 0.6);
+}
+
+.lf-btn-cta-sm:hover {
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
+.lf-hero-wrap {
+  position: relative;
+  min-height: 88vh;
+  padding: 80px 24px 100px;
+  overflow: hidden;
+  perspective: 1100px;
+}
+
+.lf-hero-grid {
+  position: absolute;
+  inset: -20%;
+  background-image:
+    linear-gradient(var(--lf-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--lf-border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.35;
+  mask-image: radial-gradient(closest-side at 50% 40%, #000 55%, transparent 85%);
+  pointer-events: none;
+}
+
+.lf-floater-stage {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.lf-floater {
+  position: absolute;
+  will-change: transform;
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 14px 32px rgba(0, 0, 0, 0.45));
+  transition: filter 400ms;
+}
+
+.lf-logo-card {
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  background: var(--lf-surface);
+  border: 1px solid var(--lf-border);
+  padding: 12px;
+  backdrop-filter: blur(6px);
+}
+
+.lf-logo-card > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.lf-hero-content {
+  position: relative;
+  z-index: 5;
+  max-width: 780px;
+  margin: 40px auto 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.lf-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lf-text-dim);
+  background: var(--lf-surface);
+  border: 1px solid var(--lf-border);
+}
+
+.lf-hero-title {
+  font-size: clamp(40px, 7vw, 76px);
+  line-height: 1.02;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.lf-hero-title .lf-line2 {
+  display: block;
+  background: linear-gradient(135deg, var(--lf-accent-violet-2), var(--lf-accent-violet) 55%, var(--lf-accent-green));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lf-hero-sub {
+  font-size: clamp(15px, 1.6vw, 18px);
+  color: var(--lf-text-dim);
+  max-width: 620px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.lf-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.lf-btn-primary,
+.lf-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: transform 160ms, background 160ms, border-color 160ms;
+}
+
+.lf-btn-primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--lf-accent-violet), var(--lf-accent-violet-2));
+  box-shadow: 0 10px 28px -8px rgba(124, 92, 252, 0.65);
+}
+
+.lf-btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+.lf-btn-secondary {
+  color: var(--lf-text);
+  background: var(--lf-surface);
+  border: 1px solid var(--lf-border);
+}
+
+.lf-btn-secondary:hover {
+  background: var(--lf-hover-overlay);
+  border-color: var(--lf-border-strong);
+}
+
+.lf-arrow-flip {
+  transform: rotate(180deg);
+}
+
+.lf-scroll-hint {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--lf-text-muted);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   SECTIONS
+   ========================================================================== */
+.lf-content {
+  padding: 80px 24px;
+}
+
+.lf-container {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.lf-section-head {
+  max-width: 720px;
+  margin: 0 auto 48px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lf-section-eyebrow {
+  color: var(--lf-accent-violet-2);
+  font-family: var(--lf-font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lf-section-head h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.lf-section-head p {
+  color: var(--lf-text-dim);
+  font-size: 15px;
+  margin: 0;
+}
+
+/* ==========================================================================
+   TRACKS
+   ========================================================================== */
+.lf-tracks {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .lf-tracks {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .lf-tracks {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.lf-track {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+  border-radius: var(--lf-radius-md);
+  border: 1px solid var(--lf-border);
+  background: var(--lf-surface);
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  transition: background 180ms, border-color 180ms, transform 180ms;
+}
+
+.lf-track:hover:not(.lf-track-coming) {
+  transform: translateY(-2px);
+  background: var(--lf-hover-overlay);
+  border-color: var(--lf-border-strong);
+}
+
+.lf-track-glow {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+.lf-track-glow.a { top: -80px; left: -60px; background: var(--lf-accent-violet-2); }
+.lf-track-glow.b { bottom: -80px; right: -60px; background: var(--lf-accent-green); }
+
+.lf-track-eb {
+  font-family: var(--lf-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--lf-text-muted);
+  text-transform: uppercase;
+}
+
+.lf-track-t {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.lf-track-t-sub {
+  color: var(--lf-text-dim);
+  font-family: var(--lf-font-mono);
+  font-size: 12px;
+}
+
+.lf-track-s {
+  color: var(--lf-text-dim);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.lf-track-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.lf-track-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 999px;
+  background: var(--lf-surface);
+  border: 1px solid var(--lf-border);
+  color: var(--lf-text-dim);
+}
+
+.lf-track-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--lf-surface);
+  border: 1px solid var(--lf-border);
+  color: var(--lf-text-dim);
+  transition: background 180ms, color 180ms, border-color 180ms;
+}
+
+.lf-track:hover .lf-track-arrow {
+  background: var(--lf-hover-overlay);
+  color: var(--lf-text);
+  border-color: var(--lf-border-strong);
+}
+
+.lf-track-coming {
+  cursor: not-allowed;
+  opacity: 0.82;
+}
+
+.lf-soon-tag {
+  position: absolute;
+  top: 14px;
+  inset-inline-end: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: var(--lf-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lf-accent-yellow);
+  background: rgba(255, 216, 107, 0.1);
+  border: 1px solid rgba(255, 216, 107, 0.3);
+}
+
+.lf-soon-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lf-accent-yellow);
+  box-shadow: 0 0 0 0 rgba(255, 216, 107, 0.7);
+  animation: lf-pulse 1.8s ease-out infinite;
+}
+
+@keyframes lf-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 216, 107, 0.7); }
+  100% { box-shadow: 0 0 0 10px rgba(255, 216, 107, 0); }
+}
+
+/* ==========================================================================
+   FOUNDER
+   ========================================================================== */
+.lf-founder-section .lf-founder-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: center;
+  padding: 40px;
+  border-radius: var(--lf-radius-lg);
+  background: linear-gradient(135deg, var(--lf-surface), transparent);
+  border: 1px solid var(--lf-border);
+}
+
+@media (min-width: 768px) {
+  .lf-founder-section .lf-founder-card {
+    grid-template-columns: 240px 1fr;
+    padding: 56px;
+  }
+}
+
+.lf-founder-photo-wrap {
+  position: relative;
+}
+
+.lf-founder-photo {
+  width: 200px;
+  height: 200px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--lf-border-strong);
+  background: var(--lf-surface);
+}
+
+.lf-founder-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.lf-founder-badge {
+  position: absolute;
+  bottom: -10px;
+  inset-inline-start: -10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--lf-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #0a0b10;
+  background: linear-gradient(135deg, var(--lf-accent-violet-2), var(--lf-accent-green));
+}
+
+.lf-founder-text {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lf-founder-eb {
+  color: var(--lf-accent-violet-2);
+  font-family: var(--lf-font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lf-founder-text h2 {
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.lf-founder-text blockquote {
+  margin: 0;
+  color: var(--lf-text-dim);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.lf-founder-sig {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--lf-text-dim);
+}
+
+.lf-founder-name {
+  font-weight: 700;
+  color: var(--lf-text);
+}
+
+.lf-founder-divider {
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+  background: var(--lf-border-strong);
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+.lf-footer {
+  padding: 40px 24px 80px;
+  border-top: 1px solid var(--lf-border);
+  background: var(--lf-bg-elev);
+}
+
+.lf-footer-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lf-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lf-footer-tag {
+  color: var(--lf-text-muted);
+  font-size: 12px;
+}
+
+.lf-footer-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lf-footer-links a {
+  color: var(--lf-text-dim);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 160ms;
+}
+
+.lf-footer-links a:hover {
+  color: var(--lf-text);
+}
+
+.lf-footer-copy {
+  max-width: 1120px;
+  margin: 16px auto 0;
+  color: var(--lf-text-muted);
+  font-size: 11px;
+  text-align: center;
+}

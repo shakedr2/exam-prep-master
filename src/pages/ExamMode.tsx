@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Trophy, Flag, ChevronLeft, ArrowRight, Timer } from "lucide-react";
@@ -35,6 +35,7 @@ import {
   XP_PER_EXAM_COMPLETE,
   XP_PER_PERFECT_EXAM,
 } from "@/features/gamification/lib/constants";
+import { useTrackProgress } from "@/features/progress/hooks/useTrackProgress";
 
 const EXAM_DURATION = 3 * 60 * 60;
 const EXAM_QUESTIONS = 6;
@@ -75,6 +76,23 @@ const ExamMode = () => {
 
   const { questions: examQuestions, loading: questionsLoading } = useSupabaseExamQuestions(EXAM_QUESTIONS, started);
   const { topics } = useSupabaseTopics();
+  // Exam covers the full Python Fundamentals track — surface that track's
+  // mastery % so the learner sees their overall course progress while
+  // writing the exam (issue #318).
+  const courseProgress = useTrackProgress("python-fundamentals");
+  const questionAnchorRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to the top of the question area whenever the learner advances
+  // (issue #317). Skipped on the first render so we don't yank the page on
+  // mount.
+  const hasScrolledRef = useRef(false);
+  useEffect(() => {
+    if (!hasScrolledRef.current) {
+      hasScrolledRef.current = true;
+      return;
+    }
+    questionAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [currentIndex]);
 
   useEffect(() => {
     if (!started || finished) return;
@@ -314,7 +332,7 @@ const ExamMode = () => {
   const budgetMin = timeBudgetPerQuestion(timeLeft, unansweredCount);
 
   return (
-    <div className="min-h-screen pb-24 pt-4">
+    <div className="min-h-screen pb-above-bottom-nav md:pb-24 pt-4">
       <div className="mx-auto max-w-4xl px-4">
         {/* Timer bar */}
         <div className="flex items-center justify-between mb-2 gap-2">
@@ -336,7 +354,23 @@ const ExamMode = () => {
           </div>
           <span className="text-sm text-muted-foreground shrink-0">שאלה {currentIndex + 1}/{totalQuestions}</span>
         </div>
-        <Progress value={((currentIndex + 1) / totalQuestions) * 100} className="h-2 mb-4" />
+        <Progress value={((currentIndex + 1) / totalQuestions) * 100} className="h-2 mb-2" />
+
+        {/* Persistent overall-course progress bar (issue #318). Shows
+            Python Fundamentals track mastery — a stable signal of where
+            the learner stands beyond the current exam. */}
+        <div className="mb-4 space-y-1" aria-label="course-progress">
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+            <span>התקדמות כוללת בקורס</span>
+            <span className="font-mono font-semibold text-foreground">
+              {courseProgress.completionPct}%
+            </span>
+          </div>
+          <Progress value={courseProgress.completionPct} className="h-1" />
+        </div>
+
+        {/* Anchor — scrolled into view when advancing to the next question. */}
+        <div ref={questionAnchorRef} aria-hidden="true" />
 
         <div className="md:flex md:gap-6 md:items-start">
           {/* Main question area */}

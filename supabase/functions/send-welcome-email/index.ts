@@ -1,344 +1,81 @@
+// Deno entrypoint for the send-welcome-email Supabase Edge Function.
+//
+// Phase 4 PR2 — issue #320 (closes #319). The Supabase database webhook on
+// auth.users INSERT invokes this function with an Authorization: Bearer
+// <WEBHOOK_SECRET> header (env var name avoids the reserved SUPABASE_ prefix)
+// and a payload of the form:
+//
+//   { type: "INSERT", table: "users", record: { id, email, raw_user_meta_data } }
+//
+// The function sends the HTML welcome email via Resend and records the
+// delivery attempt (success or failure) in public.email_events.
+//
+// All pure logic lives in ./handler.ts so it can be unit-tested under Node
+// + Vitest without needing the Deno runtime.
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "npm:resend@3.2.0";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { handleWelcomeEmailRequest } from "./handler.ts";
 
-interface WelcomeEmailRequest {
-  userId: string;
-  email: string;
-  displayName: string;
-}
+// Deno global is provided by the Supabase edge runtime.
+declare const Deno: { env: { get: (k: string) => string | undefined } };
 
-function buildEmailHtml(displayName: string, dashboardUrl: string): string {
-  return `<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ברוך הבא ל-ExamPrep</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-      background-color: #f4f4f5;
-      color: #18181b;
-      direction: rtl;
-      text-align: right;
-    }
-    .wrapper {
-      max-width: 560px;
-      margin: 40px auto;
-      background: #ffffff;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid #e4e4e7;
-    }
-    .header {
-      background-color: #18181b;
-      padding: 32px 40px;
-      text-align: center;
-    }
-    .header .logo {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 52px;
-      height: 52px;
-      background: #ffffff;
-      border-radius: 8px;
-      margin-bottom: 12px;
-    }
-    .header .logo span {
-      font-size: 28px;
-    }
-    .header h1 {
-      color: #ffffff;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-    }
-    .body {
-      padding: 36px 40px;
-    }
-    .greeting {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: #18181b;
-    }
-    .intro {
-      font-size: 15px;
-      line-height: 1.7;
-      color: #52525b;
-      margin-bottom: 28px;
-    }
-    .section-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #18181b;
-      margin-bottom: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .steps {
-      list-style: none;
-      margin-bottom: 32px;
-    }
-    .steps li {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 14px;
-      font-size: 14px;
-      line-height: 1.6;
-      color: #3f3f46;
-    }
-    .steps li .step-num {
-      flex-shrink: 0;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: #18181b;
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 1px;
-    }
-    .cta-wrap {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    .cta-btn {
-      display: inline-block;
-      background-color: #18181b;
-      color: #ffffff !important;
-      text-decoration: none;
-      font-size: 15px;
-      font-weight: 600;
-      padding: 14px 36px;
-      border-radius: 8px;
-      letter-spacing: -0.2px;
-    }
-    .tagline {
-      font-size: 13px;
-      color: #a1a1aa;
-      line-height: 1.6;
-      margin-bottom: 0;
-    }
-    .footer {
-      border-top: 1px solid #e4e4e7;
-      padding: 20px 40px;
-      text-align: center;
-    }
-    .footer p {
-      font-size: 12px;
-      color: #a1a1aa;
-      line-height: 1.6;
-    }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="header">
-      <div class="logo"><span>📚</span></div>
-      <h1>ExamPrep — הכנה למבחן Python</h1>
-    </div>
-    <div class="body">
-      <p class="greeting">שלום ${displayName} 👋</p>
-      <p class="intro">
-        ברוך הבא ל-ExamPrep — כלי ההכנה למבחן בקורס <strong>מבוא לתכנות בפייתון</strong>
-        של האוניברסיטה הפתוחה.<br />
-        אנחנו כאן כדי לעזור לך להגיע למבחן בביטחון מלא.
-      </p>
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const APP_URL = Deno.env.get("APP_URL") ?? "";
+const RESEND_FROM =
+  Deno.env.get("RESEND_FROM") ??
+  Deno.env.get("RESEND_FROM_EMAIL") ??
+  "Logic Flow <onboarding@resend.dev>";
+// Supabase blocks the SUPABASE_ prefix for user-settable Edge Function
+// secrets, so the bearer secret is exposed as WEBHOOK_SECRET. The older name
+// is kept as a fallback so rotation can be staged without downtime.
+const WEBHOOK_SECRET =
+  Deno.env.get("WEBHOOK_SECRET") ??
+  Deno.env.get("SUPABASE_WEBHOOK_SECRET") ??
+  "";
+const UNSUBSCRIBE_EMAIL =
+  Deno.env.get("UNSUBSCRIBE_EMAIL") ?? "unsubscribe@logicflow.dev";
 
-      <p class="section-title">איך מתחילים?</p>
-      <ul class="steps">
-        <li>
-          <span class="step-num">1</span>
-          <span>בחר נושא מהדשבורד — יש 8 נושאים שמכסים את כל החומר לבחינה</span>
-        </li>
-        <li>
-          <span class="step-num">2</span>
-          <span>ענה על שאלות תרגול: רב-ברירה, מעקב ביצוע, כתיבת פונקציה והשלמת קוד</span>
-        </li>
-        <li>
-          <span class="step-num">3</span>
-          <span>קרא את ההסברים — כל שאלה מגיעה עם הסבר מפורט בעברית על התשובה הנכונה</span>
-        </li>
-        <li>
-          <span class="step-num">4</span>
-          <span>נסה מצב מבחן — 6 שאלות, 3 שעות, בדיוק כמו הבחינה האמיתית</span>
-        </li>
-      </ul>
-
-      <div class="cta-wrap">
-        <a href="${dashboardUrl}" class="cta-btn">המשך ללמידה ←</a>
-      </div>
-
-      <p class="tagline">
-        כל שאלה מבוססת על תבניות אמיתיות ממבחנים קודמים.
-        ככל שתתרגל יותר — כך תגיע מוכן יותר ביום המבחן.
-      </p>
-    </div>
-    <div class="footer">
-      <p>
-        קיבלת מייל זה כי נרשמת ל-ExamPrep.<br />
-        אם לא נרשמת, ניתן להתעלם ממייל זה.
-      </p>
-    </div>
-  </div>
-</body>
-</html>`;
-}
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const APP_URL = Deno.env.get("APP_URL");
-    const RESEND_FROM_EMAIL =
-      Deno.env.get("RESEND_FROM_EMAIL") ?? "ExamPrep <noreply@examprep.app>";
-
-    if (!RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY is not configured");
-    }
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      throw new Error("Supabase service role credentials are not configured");
-    }
-    if (!APP_URL) {
-      throw new Error("APP_URL is not configured");
-    }
-
-    // Validate the caller is an authenticated Supabase user.
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Missing Authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    // Verify the JWT using the anon/public Supabase client to confirm the token.
-    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
-    if (!SUPABASE_ANON_KEY) {
-      throw new Error("SUPABASE_ANON_KEY is not configured");
-    }
-    const callerClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      global: { headers: { Authorization: authHeader } },
-      auth: { persistSession: false },
-    });
-    const { data: { user: callerUser }, error: authError } = await callerClient.auth.getUser();
-    if (authError || !callerUser) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const body: WelcomeEmailRequest = await req.json();
-    const { userId, email, displayName } = body;
-
-    if (!userId || !email) {
-      return new Response(
-        JSON.stringify({ error: "userId and email are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    // Ensure callers can only trigger emails for themselves.
-    if (callerUser.id !== userId) {
-      return new Response(
-        JSON.stringify({ error: "Forbidden" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    // Use service role client so we can read/write user_profiles regardless of RLS.
-    const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { persistSession: false },
-    });
-
-    // Idempotency check: skip if welcome email was already sent.
-    const { data: profile, error: profileError } = await adminClient
-      .from("user_profiles")
-      .select("welcome_email_sent")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (profileError) {
-      throw new Error(`Failed to read user_profiles: ${profileError.message}`);
-    }
-
-    if (profile?.welcome_email_sent === true) {
-      return new Response(
-        JSON.stringify({ skipped: true, reason: "welcome email already sent" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const dashboardUrl = `${APP_URL}/dashboard`;
-    const name = displayName ?? email.split("@")[0];
-    const html = buildEmailHtml(name, dashboardUrl);
-
-    const resendRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: RESEND_FROM_EMAIL,
-        to: [email],
-        subject: "ברוך הבא ל-ExamPrep 🎓",
-        html,
-      }),
-    });
-
-    if (!resendRes.ok) {
-      const errorText = await resendRes.text();
-      throw new Error(`Resend API error ${resendRes.status}: ${errorText}`);
-    }
-
-    // Atomically mark welcome email as sent only if it hasn't been set yet.
-    // This prevents duplicate sends in concurrent scenarios.
-    const { error: updateError } = await adminClient
-      .from("user_profiles")
-      .upsert(
-        { id: userId, welcome_email_sent: true },
-        { onConflict: "id" },
-      );
-
-    if (updateError) {
-      // The email was already sent but the flag update failed.
-      // Return an error so the caller can retry marking the flag.
-      console.error("Failed to update welcome_email_sent:", updateError.message);
-      return new Response(
-        JSON.stringify({ sent: true, flagError: updateError.message }),
-        { status: 207, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    return new Response(
-      JSON.stringify({ sent: true }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
-  } catch (e) {
-    console.error("send-welcome-email error:", e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
-  }
+const resend = new Resend(RESEND_API_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { persistSession: false },
 });
+
+serve((req: Request) =>
+  handleWelcomeEmailRequest(req, {
+    resend: {
+      send: async (input) => {
+        const result = await resend.emails.send(input);
+        return {
+          data: result.data ? { id: result.data.id } : null,
+          error: result.error ?? null,
+        };
+      },
+    },
+    events: {
+      insert: async (row) => {
+        const { error } = await supabase.from("email_events").insert(row);
+        return { error: error ? { message: error.message } : null };
+      },
+    },
+    env: {
+      RESEND_FROM,
+      APP_URL,
+      WEBHOOK_SECRET,
+      UNSUBSCRIBE_EMAIL,
+    },
+    now: () => new Date().toISOString(),
+    captureException: (err, context) => {
+      // Edge logs are tailed with `supabase functions logs send-welcome-email`.
+      // Forward to Sentry once the Deno Sentry SDK is wired in a follow-up.
+      console.error("send-welcome-email error", {
+        err: err instanceof Error ? { message: err.message, stack: err.stack } : err,
+        context,
+      });
+    },
+  }),
+);

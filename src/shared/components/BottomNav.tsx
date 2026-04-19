@@ -1,30 +1,41 @@
 import { Trophy, GraduationCap, LayoutDashboard } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
   to: string;
   icon: typeof LayoutDashboard;
   labelKey: string;
+  /** When true, the NavLink matches the path exactly — required for "/" so it
+   *  doesn't stay highlighted on every child route. */
+  end?: boolean;
 };
-
-const navItems: NavItem[] = [
-  { to: "/dashboard", icon: LayoutDashboard, labelKey: "nav.dashboard" },
-  { to: "/exam", icon: GraduationCap, labelKey: "nav.exam" },
-  { to: "/progress", icon: Trophy, labelKey: "nav.progress" },
-];
 
 export function BottomNav() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+
+  const navItems: NavItem[] = [
+    {
+      to: user ? "/" : "/dashboard",
+      icon: LayoutDashboard,
+      labelKey: "nav.dashboard",
+      end: Boolean(user),
+    },
+    { to: "/exam", icon: GraduationCap, labelKey: "nav.exam" },
+    { to: "/progress", icon: Trophy, labelKey: "nav.progress" },
+  ];
 
   return (
     <nav className="md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-[var(--border-color)] bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/65 pb-safe">
       <div className="mx-auto flex max-w-lg items-center justify-around px-2 py-1">
-        {navItems.map(({ to, icon: Icon, labelKey }) => (
+        {navItems.map(({ to, icon: Icon, labelKey, end }) => (
           <NavLink
             key={to}
             to={to}
+            end={end}
             className={({ isActive }) =>
               cn(
                 "group relative flex flex-col items-center gap-1 rounded-xl px-5 py-2 text-xs font-medium min-h-[52px] touch-manipulation",

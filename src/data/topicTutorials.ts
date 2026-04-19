@@ -1144,7 +1144,6 @@ const SLUG_TO_UUID: Record<string, string> = {
   classes_objects: "11111111-0009-0000-0000-000000000000",
   inheritance: "11111111-000a-0000-0000-000000000000",
   polymorphism: "11111111-000b-0000-0000-000000000000",
-  files_exceptions: "11111111-000c-0000-0000-000000000000",
   decorators_special: "11111111-000d-0000-0000-000000000000",
   // DevOps track (Phase 2 — Linux & Bash). UUIDs come from
   // 20260416000001_seed_curriculum_linux_bash_phase2.sql.

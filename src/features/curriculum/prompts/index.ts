@@ -11,6 +11,7 @@
  */
 
 import type { TutorConfig } from "../types";
+import { resolveTopicId } from "@/data/topicTutorials";
 
 export { pythonTutor } from "./python-tutor";
 export { linuxTutor } from "./linux-tutor";
@@ -53,6 +54,20 @@ export const tutorRegistry: Record<string, TutorConfig> = {
   strings: pythonTutor,
   lists: pythonTutor,
   tuples_sets_dicts: pythonTutor,
+  tracing: pythonTutor,
+
+  // ── Python OOP module slugs ────────────────────────────────────────────
+  classes_objects: oopTutor,
+  inheritance: oopTutor,
+  polymorphism: oopTutor,
+  decorators_special: oopTutor,
+  python_oop: oopTutor,
+
+  // ── DevOps module slugs ────────────────────────────────────────────────
+  linux_basics: linuxTutor,
+  bash_scripting: bashTutor,
+  file_permissions: permissionsTutor,
+  networking_fundamentals: networkingTutor,
 
   // ── New curriculum topic IDs ────────────────────────────────────────────
   python: pythonTutor,
@@ -70,9 +85,21 @@ export const tutorRegistry: Record<string, TutorConfig> = {
 
 /**
  * Look up the TutorConfig for a given topic or module ID.
+ *
+ * Accepts either the slug form (`classes_objects`, `linux_basics`) used in
+ * code/URLs or the UUID form (`11111111-0009-…`) used by the Supabase data
+ * layer — the UUID is normalised back to its slug before the lookup so both
+ * forms resolve to the same persona.
+ *
  * Falls back to pythonTutor when the ID is unknown.
  */
 export function getTutorConfig(topicId: string | undefined): TutorConfig {
   if (!topicId) return pythonTutor;
-  return tutorRegistry[topicId] ?? pythonTutor;
+  const direct = tutorRegistry[topicId];
+  if (direct) return direct;
+  const resolved = resolveTopicId(topicId);
+  if (resolved && tutorRegistry[resolved.slug]) {
+    return tutorRegistry[resolved.slug];
+  }
+  return pythonTutor;
 }
