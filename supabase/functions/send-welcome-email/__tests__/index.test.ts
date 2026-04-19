@@ -56,7 +56,7 @@ function makeDeps(overrides: Partial<HandlerDeps> = {}): HandlerDeps {
     env: {
       RESEND_FROM: "Logic Flow <onboarding@resend.dev>",
       APP_URL: "https://logicflow.dev",
-      SUPABASE_WEBHOOK_SECRET: SECRET,
+      WEBHOOK_SECRET: SECRET,
       UNSUBSCRIBE_EMAIL: "unsubscribe@logicflow.dev",
     },
     now: () => FIXED_NOW,
@@ -96,13 +96,13 @@ describe("pure helpers", () => {
 
   it("flags missing env vars", () => {
     expect(validateEnv({})).toEqual(
-      expect.arrayContaining(["RESEND_FROM", "APP_URL", "SUPABASE_WEBHOOK_SECRET"]),
+      expect.arrayContaining(["RESEND_FROM", "APP_URL", "WEBHOOK_SECRET"]),
     );
     expect(
       validateEnv({
         RESEND_FROM: "x",
         APP_URL: "y",
-        SUPABASE_WEBHOOK_SECRET: "z",
+        WEBHOOK_SECRET: "z",
       }),
     ).toEqual([]);
   });
@@ -222,7 +222,7 @@ describe("handleWelcomeEmailRequest", () => {
       env: {
         RESEND_FROM: "",
         APP_URL: "",
-        SUPABASE_WEBHOOK_SECRET: "",
+        WEBHOOK_SECRET: "",
       },
     });
     const res = await handleWelcomeEmailRequest(makeRequest(makePayload()), deps);
@@ -231,7 +231,7 @@ describe("handleWelcomeEmailRequest", () => {
     expect(body.error).toContain("Missing required env");
     expect(body.error).toContain("RESEND_FROM");
     expect(body.error).toContain("APP_URL");
-    expect(body.error).toContain("SUPABASE_WEBHOOK_SECRET");
+    expect(body.error).toContain("WEBHOOK_SECRET");
     expect(deps.resend.send).not.toHaveBeenCalled();
     expect(deps.events.insert).not.toHaveBeenCalled();
   });
