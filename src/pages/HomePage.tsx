@@ -309,8 +309,6 @@ const HomePage = () => {
   const oopTrackProgress = useTrackProgress("python-oop");
   const devopsTrackProgress = useTrackProgress("devops");
   const pythonResumeTarget = useResumeTarget("python-fundamentals");
-  const oopResumeTarget = useResumeTarget("python-oop");
-  const devopsResumeTarget = useResumeTarget("devops");
   const firstOopModule = getModulesByTrack("python-oop")[0];
   const oopModuleProgress = useModuleProgress(firstOopModule?.id ?? "");
 
@@ -338,7 +336,9 @@ const HomePage = () => {
       navigate("/onboarding");
       return;
     }
-    handleTrackNavigation("/tracks/python-oop", oopResumeTarget?.topicId ?? null);
+    // Always route through the track's module list — never jump straight to a
+    // topic. Mirrors the Python Fundamentals flow (Home → Dashboard → Topic).
+    navigate("/tracks/python-oop");
   };
 
   const greeting = progress.username
@@ -470,12 +470,7 @@ const HomePage = () => {
                 accentColor="#7c5cfc"
                 progressPercent={devopsTrackProgress.completionPct}
                 moduleCount={devopsTrackProgress.modules.length}
-                onSelect={() =>
-                  handleTrackNavigation(
-                    "/tracks/devops",
-                    devopsResumeTarget?.topicId ?? null,
-                  )
-                }
+                onSelect={() => navigate("/tracks/devops")}
               />
             </motion.div>
           </motion.div>
