@@ -11,6 +11,7 @@ import { translateAuthError } from "@/shared/lib/authErrors";
 import { getLogicFlowThemeClass } from "@/pages/authTheme";
 import "./AuthPages.css";
 
+// Product requirement: 60s resend cooldown to avoid Supabase email spam.
 const MAGIC_LINK_COOLDOWN_SECONDS = 60;
 
 const GoogleIcon = () => (

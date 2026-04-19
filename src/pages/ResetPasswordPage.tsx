@@ -8,9 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { MIN_PASSWORD_LENGTH, translateAuthError } from "@/shared/lib/authErrors";
-import { getPasswordStrength } from "@/shared/lib/passwordStrength";
+import { getPasswordStrength, getPasswordStrengthLevel } from "@/shared/lib/passwordStrength";
 import { getLogicFlowThemeClass } from "@/pages/authTheme";
 import "./AuthPages.css";
+
+const strengthLevelToClass: Record<number, string> = {
+  1: "bg-red-500",
+  2: "bg-amber-500",
+  3: "bg-emerald-500",
+};
 
 const ResetPasswordPage = () => {
   const { t } = useTranslation();
@@ -21,10 +27,10 @@ const ResetPasswordPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const strengthLevel = getPasswordStrengthLevel(password);
   const strength = getPasswordStrength(password);
   const strengthLabelKey = `auth.passwordStrength.${strength}` as const;
-  const strengthColorClass =
-    strength === "strong" ? "bg-emerald-500" : strength === "medium" ? "bg-amber-500" : "bg-red-500";
+  const strengthColorClass = strengthLevelToClass[Math.max(1, strengthLevel)];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +95,7 @@ const ResetPasswordPage = () => {
                       {[1, 2, 3].map((level) => (
                         <span
                           key={level}
-                          className={`h-1 rounded ${level <= (strength === "strong" ? 3 : strength === "medium" ? 2 : 1) ? strengthColorClass : "bg-muted/40"}`}
+                          className={`h-1 rounded ${level <= Math.max(1, strengthLevel) ? strengthColorClass : "bg-muted/40"}`}
                         />
                       ))}
                     </div>
