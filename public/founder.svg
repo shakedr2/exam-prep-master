@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Founder portrait placeholder">
+  <defs>
+    <linearGradient id="founder-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1c27"/>
+      <stop offset="100%" stop-color="#0a0b10"/>
+    </linearGradient>
+    <linearGradient id="founder-accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#9b7fff"/>
+      <stop offset="55%" stop-color="#7c5cfc"/>
+      <stop offset="100%" stop-color="#3ddc84"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="24" fill="url(#founder-bg)"/>
+  <circle cx="128" cy="104" r="46" fill="url(#founder-accent)" opacity="0.95"/>
+  <path d="M40 224c8-44 44-66 88-66s80 22 88 66" fill="url(#founder-accent)" opacity="0.9"/>
+  <text x="128" y="114" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, monospace" font-size="36" font-weight="700" fill="#0a0b10">S</text>
+</svg>
