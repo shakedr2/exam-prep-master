@@ -58,7 +58,7 @@ _Last updated: 2026-04-19 (ROADMAP v4 — Phase 4 active, Phase 5/7/8 added, Wel
 **Entry:** Phase 3 closed.
 **Exit criteria:**
 - [x] PR1 — `WelcomePage` + `RootRoute` gating (PR #311 merged).
-- [ ] PR2 — Resend welcome email wired via Supabase Auth webhook (B9 #320), closes B8 #319.
+- [ ] PR2 — Resend welcome email wired via Supabase Auth webhook (B9 #320), closes B8 #319. **In Progress 🚧 (PR #326)**
 - [ ] PR3 — Auth flows (signup / signin / magic-link / password reset).
 - [ ] Codex regression PR4 — route + auth tests.
 - [ ] Vercel preview green; `npm run build` passes.
